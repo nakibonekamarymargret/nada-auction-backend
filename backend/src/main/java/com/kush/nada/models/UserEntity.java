@@ -24,15 +24,19 @@ public class UserEntity {
     @JsonIgnore
     private boolean deleted = false;
 
+    @JsonIgnore
     @OneToMany
     private List<Product> products;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "bidder")
     private List<Bid> bids;  // List of bids placed by the user
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Payment> payments;  // List of payments made by the user
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Auction> auctions;
 
