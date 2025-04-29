@@ -41,6 +41,9 @@ public class AuthService {
         if (user.getPhoneNumber() == null || user.getPhoneNumber().isEmpty()) {
             throw new BadRequestException("Phone Number is required.");
         }
+        if(userRepository.existsByPhoneNumber(user.getPhoneNumber())){
+            throw new BadRequestException("Phone Number is already taken");
+        }
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         user.setRole(userRepository.count() == 0 ? Role.ADMIN : Role.USER);
 
