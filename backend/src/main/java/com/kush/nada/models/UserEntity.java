@@ -1,5 +1,6 @@
 package com.kush.nada.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kush.nada.enums.Role;
 import jakarta.persistence.*;
 
@@ -20,6 +21,8 @@ public class UserEntity {
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
+    @JsonIgnore
+    private boolean deleted = false;
 
     @OneToMany
     private List<Product> products;
@@ -36,7 +39,7 @@ public class UserEntity {
     public UserEntity() {
     }
 
-    public UserEntity(Long id, String address, String phoneNumber, String name, String email, String password, Role role, List<Product> products, List<Bid> bids, List<Payment> payments, List<Auction> auctions) {
+    public UserEntity(Long id, String address, String phoneNumber, String name, String email, String password, Role role, boolean deleted, List<Product> products, List<Bid> bids, List<Payment> payments, List<Auction> auctions) {
         this.id = id;
         this.address = address;
         this.phoneNumber = phoneNumber;
@@ -44,6 +47,7 @@ public class UserEntity {
         this.email = email;
         this.password = password;
         this.role = role;
+        this.deleted = deleted;
         this.products = products;
         this.bids = bids;
         this.payments = payments;
@@ -136,5 +140,13 @@ public class UserEntity {
 
     public void setAuctions(List<Auction> auctions) {
         this.auctions = auctions;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 }
