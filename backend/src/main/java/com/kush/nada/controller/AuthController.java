@@ -11,10 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.security.authentication.BadCredentialsException;
 
 
@@ -23,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api")
 public class AuthController {
     private final AuthService authService;
@@ -55,7 +53,7 @@ public class AuthController {
     }
 
     @PostMapping("/auth/login")
-    //** http://localhost:8080/api/auth/login
+    //** http://localhost:7107/api/auth/login
     public ResponseEntity<Map<String, Object>> userLogin(@RequestBody UserEntity user, HttpServletRequest request) throws BadCredentialsException {
         // Authenticate the user
         Authentication authentication = authenticationManager.authenticate(
