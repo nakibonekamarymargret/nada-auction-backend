@@ -16,12 +16,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.authentication.BadCredentialsException;
-
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api")
 public class AuthController {

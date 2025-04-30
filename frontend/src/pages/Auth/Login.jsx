@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { MdAlternateEmail } from "react-icons/md";
 import { IoKeySharp } from "react-icons/io5";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
+import AuthService from "../../services/AuthService";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -11,10 +12,11 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleLogin = async(e) => {
     e.preventDefault();
 
     if (!email || !password) {
@@ -22,12 +24,23 @@ const Login = () => {
       return;
     }
 
-    // Simulated login - in real life, you'd call your API and get a token
-    const fakeToken = "mock-jwt-token";
+try {
+      const response = await AuthService.login({
+        loginDetails: email,
+        password,
+      });
 
-    localStorage.setItem("token", fakeToken);
-    localStorage.setItem("rememberMe", rememberMe);
-
+      if (response.data.accessToken) {
+        localStorage.setItem("token", response.data.accessToken);
+        const name = response.data.user?.email || "User"; 
+        setEmail(name);
+        navigate("/");
+      } else {
+        setMessage("Invalid credentials");
+      }
+    } catch (error) {
+      setMessage("Invalid credentials", error);
+    }
     console.log("Logging in with:", { email, password, rememberMe });
 
     setError("");
@@ -45,7 +58,7 @@ const Login = () => {
       <div className="w-full md:w-1/2 p-4 h-full">
         <div className="bg-white/70 p-8 rounded-2xl w-full max-w-md mb-4">
           <form
-            onSubmit={handleSubmit}
+            onSubmit={handleLogin}
             className="bg-white/90 p-8 rounded-lg w-full max-w-md transform transition-all duration-700 motion-preset-slide-left-lg motion-translate-y-in-100 motion-duration-[2s] motion-ease-spring-smooth"
           >
             <h2
