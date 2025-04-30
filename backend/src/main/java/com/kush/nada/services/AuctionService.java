@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class AuctionService {
@@ -27,7 +28,7 @@ public class AuctionService {
     }
 
     //        @Transactional
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Auction createAuction(Auction auction) {
         // 1. Get authenticated seller
         UserEntity seller = getCurrentUser();
@@ -54,6 +55,10 @@ public class AuctionService {
 
         return userRepository.findByEmail(identifier)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + identifier));
+    }
+
+    public List <Auction> getAllAuctions () {
+        return auctionRepository.findAll();
     }
 
     private void validateAuction(Auction auction) {

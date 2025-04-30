@@ -1,5 +1,6 @@
 package com.kush.nada.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kush.nada.enums.ProductCategory;
 import jakarta.persistence.*;
 
@@ -21,17 +22,23 @@ public class Product {
 
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private UserEntity seller; // seller of the product
+        @JsonIgnore
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "auction_id")
-    private Auction auction;
+        @JoinColumn(name = "auction_id")
+        private Auction auction;
 
+
+    // Add a helper method to simplify ID access
+    public Long getAuctionId() {
+        return auction != null ? auction.getId() : null;
+    }
+
+    @JsonIgnore
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<Bid> bids;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<Payment> payments;
 
@@ -86,13 +93,13 @@ public class Product {
         this.category = category;
     }
 
-    public UserEntity getSeller() {
-        return seller;
-    }
-
-    public void setSeller(UserEntity seller) {
-        this.seller = seller;
-    }
+//    public UserEntity getSeller() {
+//        return seller;
+//    }
+//
+//    public void setSeller(UserEntity seller) {
+//        this.seller = seller;
+//    }
 
     public Auction getAuction() {
         return auction;
@@ -118,14 +125,13 @@ public class Product {
         this.payments = payments;
     }
 
-    public Product(Long id, String name, String description, String imageUrl, BigDecimal highestPrice, ProductCategory category, UserEntity seller, Auction auction, List<Bid> bids, List<Payment> payments) {
+    public Product(Long id, String name, String description, String imageUrl, BigDecimal highestPrice, ProductCategory category, Auction auction, List<Bid> bids, List<Payment> payments) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.imageUrl = imageUrl;
         this.highestPrice = highestPrice;
         this.category = category;
-        this.seller = seller;
         this.auction = auction;
         this.bids = bids;
         this.payments = payments;
