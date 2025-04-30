@@ -1,5 +1,7 @@
 package com.kush.nada.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.kush.nada.enums.AuctionStatus;
 import jakarta.persistence.*;
 
@@ -23,11 +25,14 @@ public class Auction {
     private AuctionStatus status;// SCHEDULED, LIVE, CLOSED
 
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;  // The auctioneer or organizer of the auction
 
-    @OneToMany(mappedBy = "auction", fetch = FetchType.LAZY)
+//    @JsonManagedReference // Allows serialization of products in auctions
+//    @JsonIgnore
+    @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL , fetch = FetchType.LAZY)
     private List<Product> products;  // List of products associated with this auction
 
     @OneToMany(mappedBy = "auction", fetch = FetchType.LAZY)
