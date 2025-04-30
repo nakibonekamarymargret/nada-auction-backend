@@ -32,9 +32,6 @@ public class AuthService {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new BadRequestException("Email is already in use");
         }
-        if (userRepository.existsByName(user.getName())) {
-            throw new BadRequestException("Name is already taken");
-        }
         if (user.getAddress() == null || user.getAddress().isEmpty()) {
             throw new BadRequestException("Address is required.");
         }
@@ -44,6 +41,15 @@ public class AuthService {
         if(userRepository.existsByPhoneNumber(user.getPhoneNumber())){
             throw new BadRequestException("Phone Number is already taken");
         }
+        if (!user.getEmail().matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            throw new BadRequestException("Invalid email format");
+        }
+
+        if (!user.getPhoneNumber().matches("^\\+?[0-9]{10,15}$")) {
+            throw new BadRequestException("Invalid phone number format");
+        }
+
+
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         user.setRole(userRepository.count() == 0 ? Role.ADMIN : Role.USER);
 
