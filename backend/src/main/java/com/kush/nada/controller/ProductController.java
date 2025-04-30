@@ -43,7 +43,6 @@ import java.util.HashMap;
 @RequestMapping("/product")
 public class ProductController {
 
-<<<<<<< HEAD
     private final ProductService productService;
     private final ResponseService responseService;
     private final S3ServiceUpload s3ServiceUpload;
@@ -91,11 +90,11 @@ public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest req
     List<ProductDto> products = productService.getAllProducts();
     return responseService.createResponse(200, products, request, HttpStatus.OK);
 }   
-    @GetMapping("/all")
-    public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
-        List<Product> products = productService.getAllProducts();
-        return responseService.createResponse(200, products, request, HttpStatus.OK);
-    }
+    // @GetMapping("/all")
+    // public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
+    //     List<Product> products = productService.getAllProducts();
+    //     return responseService.createResponse(200, products, request, HttpStatus.OK);
+    // }
 
     @GetMapping("/{id}")
 
@@ -125,19 +124,3 @@ public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest req
         return responseService.createResponse(200, "Product deleted", request, HttpStatus.OK);
     }
 }
-=======
-        private final ProductService productService;
-
-        @Autowired
-        public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
-
-    @PostMapping("/add")
-        public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-            Product createdProduct = productService.createProduct(product);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
-        }
-    }
-
->>>>>>> c2e7a99 (Add the Auction and Product)

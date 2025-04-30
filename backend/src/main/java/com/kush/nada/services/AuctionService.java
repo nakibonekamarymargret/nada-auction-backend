@@ -28,11 +28,7 @@ public class AuctionService {
     }
 
     //        @Transactional
-<<<<<<< HEAD
     @PreAuthorize("hasRole('ADMIN')")
-=======
-    @PreAuthorize("hasRole('USER')")
->>>>>>> c2e7a99 (Add the Auction and Product)
     public Auction createAuction(Auction auction) {
         // 1. Get authenticated seller
         UserEntity seller = getCurrentUser();
