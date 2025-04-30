@@ -49,6 +49,41 @@ public class UserController {
         return responseService.createResponse(200,updatedUser,request,HttpStatus.OK);
     }
 
+    @GetMapping("/user/profile")
+    @PreAuthorize("isAuthenticated() or hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> getUserWithAuctionsAndProducts(
+            HttpServletRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+
+        String email = principal.getUser().getEmail(); // or getUsername() depending on your setup
+        UserEntity user = userService.getUserWithAuctionsAndProductsByEmail(email);
+
+        return responseService.createResponse(
+                200,
+                user,
+                request,
+                HttpStatus.OK
+        );
+    }
+
+
+    @GetMapping("/user/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String ,Object>> getSingleUser(
+            @PathVariable Long id,
+            HttpServletRequest request,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        if (!principal.getUser().getId().equals(id)
+                && !principal.getUser().getRole().equals("ADMIN")) {
+            throw new AccessDeniedException("You are not authorized to view this user.");
+        }
+
+        UserEntity singleUser = userService.getUserById(id)
+                ;
+        return responseService.createResponse(200, singleUser, request, HttpStatus.OK);
+    }
+
     /// lets delete a user (soft)
 
     @DeleteMapping("/delete/user/{id}")
