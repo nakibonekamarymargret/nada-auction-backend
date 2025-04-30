@@ -30,6 +30,16 @@ public interface UserRepository extends JpaRepository<UserEntity ,Long> {
     @Query("SELECT u FROM UserEntity u WHERE u.id = :id AND u.deleted = false")
     Optional<UserEntity> findActiveUserById(@Param("id") Long id);
 
+    // Receive User with Auctions and Products in the Auctions
+//    @Query("SELECT u FROM UserEntity u " +
+//            "LEFT JOIN FETCH u.auctions a " +
+//            "LEFT JOIN FETCH a.products " +
+//            "WHERE u.email = :email")
+//    Optional<UserEntity> findByEmailWithAuctionsAndProducts(@Param("email") String email);
+
+    @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH u.auctions WHERE u.email = :email")
+    Optional<UserEntity> findByEmailWithAuctions(@Param("email") String email);
+
 
     boolean existsByEmail(String email);
 
