@@ -60,7 +60,9 @@ const handleSubmit = async (e) => {
   }
 };
 
-
+const handleLogin = () => {
+  navigate("/login");
+};
   return (
     <div className="flex flex-col md:flex-row items-start items-stretch gap-[5vw] max-w-5xl mx-auto">
       {/* Left image */}
@@ -176,6 +178,14 @@ const handleSubmit = async (e) => {
               {message && (
                 <div className="text-green-500 text-sm mb-4">{message}</div>
               )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-black/70">Already have an account?</span>
+              <button type="button" onClick={handleLogin}>
+                <span className="text-green-600 hover:text-green/50">
+                  Login
+                </span>
+              </button>
             </div>
           </form>
         </div>

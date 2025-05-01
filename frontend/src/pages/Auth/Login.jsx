@@ -45,7 +45,7 @@ const { email, password, confirmPassword } = credentials;
         localStorage.setItem("user", JSON.stringify(response.data));
       }
       setTimeout(() => {
-        navigate("/nada");
+        navigate("/");
       },2000)
 
     } catch (err) {
@@ -63,7 +63,11 @@ const { email, password, confirmPassword } = credentials;
       }
     }
 
+
   };
+const handleRegister = () => {
+  navigate("/register");
+};
 
   return (
     <div className="flex flex-col md:flex-row items-start gap-[5vw] max-w-5xl mx-auto">
@@ -77,11 +81,12 @@ const { email, password, confirmPassword } = credentials;
             style={{ fontFamily: "var(--font-roboto)" }}
             className="text-2xl font-normal mb-4 text-center mt-6"
           >
-            Welcome back to <b className="text-dark font-semi-bold">NADA</b>{" "}
+            Hi <b className="text-dark font-semi-bold">there</b>{" "}
           </h2>
 
           <p className="text-gray-500 text-center mb-6">
-            Login to your account
+            Login to continue your journey with{" "}
+            <b className="text-dark font-semi-bold">NADA</b>
           </p>
           {message && (
             <div className="text-green-500 text-sm mb-4">{message}</div>
@@ -225,6 +230,14 @@ const { email, password, confirmPassword } = credentials;
               <a href="#" className="text-blue-500 mb-2 mx-3  sm:mb-0">
                 Forgot password?
               </a>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-black/70">Don't have an account?</span>
+              <button type="button" onClick={handleRegister}>
+                <span className="text-green-600 hover:text-green/50">
+                  Register
+                </span>
+              </button>
             </div>
           </form>
         </div>
