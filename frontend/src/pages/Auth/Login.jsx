@@ -37,7 +37,7 @@ const Login = () => {
       if (response.ok) {
         // If your response is like { returnTimestamp: ..., returnCode: ..., ReturnObject: { token: '...', role: '...' } }
         const { token, role } = data.ReturnObject;
-       
+
         console.log("Role variable value BEFORE if:", role); // DEBUG
         console.log("Type of role variable:", typeof role); // DEBUG
         console.log("Result of role === 'ADMIN' comparison:", role === "ADMIN"); // DEBUG
