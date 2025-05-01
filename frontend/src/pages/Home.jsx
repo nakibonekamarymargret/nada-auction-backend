@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import AnimatedImage from "../components/ui/AnimatedImage";
 
 const productData = [
   {
@@ -38,13 +39,7 @@ const productData = [
 const Home = () => {
   return (
     <div className="container mx-auto px-4">
-      <div className="flex w-full h-98 p-4">
-        <img
-          src="/bg1.jpg"
-          alt="Background"
-          className="w-full h-full object-cover rounded-md"
-        />
-      </div>
+      <AnimatedImage />
 
       <div className="popular-products p-6">
         <h2
@@ -93,7 +88,7 @@ const Home = () => {
                   {product.description}
                 </p>
                 <Button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4  mt-3">
-                  View 
+                  View
                 </Button>
               </CardContent>
             </Card>
