@@ -24,9 +24,9 @@ public class UserEntity {
     @JsonIgnore
     private boolean deleted = false;
 
-    @JsonIgnore
-    @OneToMany
-    private List<Product> products;
+//    @JsonIgnore
+//    @OneToMany
+//    private List<Product> products; // Removed relationship between User -> Product
 
     @JsonIgnore
     @OneToMany(mappedBy = "bidder")
@@ -43,7 +43,7 @@ public class UserEntity {
     public UserEntity() {
     }
 
-    public UserEntity(Long id, String address, String phoneNumber, String name, String email, String password, Role role, boolean deleted, List<Product> products, List<Bid> bids, List<Payment> payments, List<Auction> auctions) {
+    public UserEntity(Long id, String address, String phoneNumber, String name, String email, String password, Role role, boolean deleted, List<Bid> bids, List<Payment> payments, List<Auction> auctions) {
         this.id = id;
         this.address = address;
         this.phoneNumber = phoneNumber;
@@ -52,7 +52,7 @@ public class UserEntity {
         this.password = password;
         this.role = role;
         this.deleted = deleted;
-        this.products = products;
+//        this.products = products;
         this.bids = bids;
         this.payments = payments;
         this.auctions = auctions;
@@ -114,13 +114,13 @@ public class UserEntity {
         this.role = role;
     }
 
-    public List<Product> getProducts() {
-        return products;
-    }
-
-    public void setProducts(List<Product> products) {
-        this.products = products;
-    }
+//    public List<Product> getProducts() {
+//        return products;
+//    }
+//
+//    public void setProducts(List<Product> products) {
+//        this.products = products;
+//    }
 
     public List<Bid> getBids() {
         return bids;

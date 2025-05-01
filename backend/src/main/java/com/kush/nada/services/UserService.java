@@ -7,6 +7,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -45,6 +46,29 @@ public class UserService {
         userRepository.save(user);
         return user;
     }
+
+    public UserEntity getUserById(Long id) {
+        return userRepository.findActiveUserById(id)
+
+                .orElseThrow(() -> new NotFoundException("No User found with Id: " + id));
+    }
+
+//    public UserEntity getUserWithAuctionsAndProductsByEmail(String email) {
+//        return userRepository.findByEmailWithAuctionsAndProducts(email)
+//                .orElseThrow(() -> new NotFoundException("User not found with email: " + email));
+//    }
+
+    public UserEntity getUserWithAuctionsAndProductsByEmail(String email) {
+        UserEntity user = userRepository.findByEmailWithAuctions(email)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        // Manually initialize auction products
+        user.getAuctions().forEach(a -> a.getProducts().size());
+
+        return user;
+    }
+
+
     public UserEntity restoreUser(Long id) {
         // Fetch the user, including soft-deleted ones
         UserEntity user = userRepository.findDeletedUserById(id)
