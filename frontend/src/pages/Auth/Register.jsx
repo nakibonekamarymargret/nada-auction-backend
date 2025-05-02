@@ -23,11 +23,41 @@ const Register = () => {
     setUser({ ...user, [name]: value });
   };
 
+<<<<<<< HEAD
+  try {
+    const response = await AuthService.register(user);
+    
+    console.log("Registration response:", response.data);
+    setMessage("Registration successful. Redirecting to login...");
+
+    setTimeout(() => {
+      navigate("/login");
+    }, 2000);
+  } catch (err) {
+    const message =
+      err.response?.data?.returnMessage || "An unexpected error occurred.";
+    console.log("Error:", message);
+
+    // Map backend messages to specific fields
+    if (message.toLowerCase().includes("name")) {
+      setError({ name: message });
+    } else if (message.toLowerCase().includes("email")) {
+      setError({ email: message });
+    } else if (message.toLowerCase().includes("password")) {
+      setError({ password: message });
+    } else if (message.toLowerCase().includes("address")) {
+      setError({ address: message });
+    } else if (message.toLowerCase().includes("phone")) {
+      setError({ phoneNumber: message });
+    } else {
+      setError({ general: message });
+=======
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name || !email || !password || !address || !phoneNumber) {
       setError("Please fill out all fields.");
       return;
+>>>>>>> 27885d3a6eeb8357dd02a34bc2d85e7e65e855d7
     }
     console.log("Registering user", user);
     setError("");

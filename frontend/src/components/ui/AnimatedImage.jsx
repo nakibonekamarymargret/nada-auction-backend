@@ -41,17 +41,18 @@ const AnimatedImage = () => {
     },
     [Autoplay({ delay: 5000, stopOnInteraction: false })]
   );
+  
   return (
     <div className="overflow-hidden" ref={emblaRef}>
       <div className="flex">
         {carouselItems.map((item) => (
-          <div className="flex-[0_0_100%] relative" key={item}>
+          <div className="flex-[0_0_100%] relative" key={item.id}> {/* Change this to item.id */}
             <img
               src={item.image}
               alt={`carousel ${item.id}`}
               className="w-full h-96 object-cover rounded-lg"
             />
-            <div className="absolute bottom-5 left-5  bg-opacity-50 text-white px-4 py-2 rounded">
+            <div className="absolute bottom-5 left-5 bg-opacity-50 text-white px-4 py-2 rounded">
               <p className="text-lg font-semibold">{item.text}</p>
               <p className="text-lg font-semibold">{item.describe}</p>
             </div>
@@ -63,3 +64,5 @@ const AnimatedImage = () => {
 };
 
 export default AnimatedImage;
+
+
