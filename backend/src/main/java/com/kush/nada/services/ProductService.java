@@ -1,5 +1,6 @@
 package com.kush.nada.services;
 
+import com.kush.nada.enums.AuctionStatus;
 import com.kush.nada.models.Auction;
 import com.kush.nada.models.Product;
 import com.kush.nada.models.UserEntity;
@@ -27,6 +28,13 @@ public class ProductService {
         }
         Auction auction = auctionRepository.findById(auctionId)
                 .orElseThrow(() -> new RuntimeException("Auction not found"));
+
+         if (auction.getStatus() == AuctionStatus.CLOSED) {
+             throw new IllegalStateException("Cannot add product to a closed auction.");
+         }
+         if (auction.getStatus() == AuctionStatus.LIVE) {
+             throw new IllegalStateException("Cannot add product to a Live auction.");
+         }
 
         product.setAuction(auction);
         return productRepository.save(product);
