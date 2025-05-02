@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 @CrossOrigin
@@ -66,9 +67,24 @@ public class ProductController {
 //        }
 
         Product createdProduct = productService.createProduct(product, auctionId);
+        if (product.getName() == null || product.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Product name is required.");
+        }
+        if (product.getDescription() == null || product.getDescription().trim().isEmpty()) {
+            throw new IllegalArgumentException("Product description is required.");
+        }
+        if (product.getHighestPrice() == null || product.getHighestPrice().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Price must be a non-negative value.");
+        }
+
+        if (product.getCategory() == null) {
+            throw new IllegalArgumentException("Product category is required.");
+        }
 
         return responseService.createResponse(200, createdProduct, request, HttpStatus.CREATED);
     }
+
+
 
     @GetMapping("/all")
     public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
