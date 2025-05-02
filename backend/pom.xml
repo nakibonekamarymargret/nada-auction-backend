@@ -42,6 +42,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.googlecode.libphonenumber</groupId>
+			<artifactId>libphonenumber</artifactId>
+			<version>8.13.21</version> <!-- You can adjust this version if needed -->
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
