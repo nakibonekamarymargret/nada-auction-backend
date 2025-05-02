@@ -6,55 +6,62 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, Object> response = new HashMap<>();
-        response.put("returnCode", 400); // 400 Bad Request for validation errors
-        response.put("error", "Validation failed"); // General error message
+        response.put("returnCode", 400);
+        response.put("error", "Validation failed");
 
-        // Collect all validation error details for each invalid field
-        ex.getBindingResult().getFieldErrors().forEach(error -> {
-            response.put(error.getField(), error.getDefaultMessage()); // Map field name to its validation error message
-        });
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                response.put(error.getField(), error.getDefaultMessage())
+        );
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    // Handle other exceptions like IllegalArgumentException
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(IllegalArgumentException ex) {
         Map<String, Object> response = new HashMap<>();
-        response.put("returnCode", 400); // 400 for bad requests
-        response.put("error", ex.getMessage()); // Pass the message of the IllegalArgumentException
-
+        response.put("returnCode", 400);
+        response.put("error", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    // Handle UserNotFoundException
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, Object>> handleMaxSizeException(MaxUploadSizeExceededException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("error", "File size exceeds the allowed limit!");
+        response.put("status", HttpStatus.PAYLOAD_TOO_LARGE.value());
+        return new ResponseEntity<>(response, HttpStatus.PAYLOAD_TOO_LARGE);
+    }
+
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleUserNotFoundException(NotFoundException ex, HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> handleNotFoundException(NotFoundException ex, HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", LocalDateTime.now());
         response.put("path", request.getRequestURI());
-        response.put("returnCode", 404); // 404 for not found
-        response.put("returnMessage", ex.getMessage()); // Pass the message
+        response.put("returnCode", 404);
+        response.put("returnMessage", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
+
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<Map<String, Object>> handleUserNotFoundException(BadRequestException ex, HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> handleBadRequestException(BadRequestException ex, HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", LocalDateTime.now());
         response.put("path", request.getRequestURI());
-        response.put("returnCode", 404); // 404 for not found
-        response.put("returnMessage", ex.getMessage()); // Pass the message
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        response.put("returnCode", 400);
+        response.put("returnMessage", ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(IllegalStateException.class)

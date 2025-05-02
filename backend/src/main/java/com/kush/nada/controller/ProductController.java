@@ -14,138 +14,25 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-
-//@RestController
-//@RequestMapping("/product")
-//public class ProductController {
-//
-//        private final ProductService productService;
-//        private final ResponseService responseService;
-//
-//        @Autowired
-//        public ProductController(ProductService productService, ResponseService responseService) {
-//        this.productService = productService;
-//        this.responseService = responseService;
-//    }
-//
-//    @PostMapping("/add")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<Map<String, Object>> createProduct(
-//            @RequestBody Product product,
-//            HttpServletRequest request,
-//            @AuthenticationPrincipal UserPrincipal principal) {
-//
-//        Product createdProduct = productService.createProduct(product, principal.getUser());
-//        return responseService.createResponse(200, createdProduct, request, HttpStatus.OK);
-//    }
-//
-//
-//}
-//
-//
-//@RestController
-//@RequestMapping("/product")
-//public class ProductController {
-//
-//    @Autowired
-//    private ProductService productService;
-//
-//    @Autowired
-//    private ResponseService responseService;
-//
-//    @Autowired
-//    private final S3ServiceUpload s3ServiceUpload;
-//    // CREATE
-////    @PostMapping("/add/{auctionId}")
-////    @PreAuthorize("hasRole('ADMIN')")
-////    public ResponseEntity<Map<String, Object>> createProduct(
-////            @RequestBody Product product,
-////            @PathVariable Long auctionId,
-////            HttpServletRequest request,
-////            @AuthenticationPrincipal UserPrincipal principal) {
-////
-////        Product createdProduct = productService.createProduct(product, auctionId);
-////        return responseService.createResponse(200, createdProduct, request, HttpStatus.OK);
-////    }
-//
-//    @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<Map<String, Object>> createProduct(
-//            @RequestPart("product") Product product,
-//            @RequestPart("file") MultipartFile file,
-//            HttpServletRequest request,
-//            @AuthenticationPrincipal UserPrincipal principal) throws IOException {
-//
-//        // 1. Upload image to S3
-//        String imageUrl = s3ServiceUpload.uploadFile(file);
-//        product.setImageUrl(imageUrl);
-//
-//        // 2. Validate and associate auction
-//        Long auctionId = product.getAuctionId();
-//        if (auctionId == null) {
-//            throw new IllegalArgumentException("Auction ID must be provided");
-//        }
-//
-//        // 3. Create product with seller association
-//        Product createdProduct = productService.createProduct(product, principal.getUser());
-//
-//        return responseService.createResponse(
-//                200,
-//                createdProduct,
-//                request,
-//                HttpStatus.CREATED
-//        );
-//    }
-//}
-//
-//    // READ ALL
-//    @GetMapping("/all")
-//    // @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
-//        List<Product> products = productService.getAllProducts();
-//        return responseService.createResponse(200, products, request, HttpStatus.OK);
-//    }
-//
-//    // READ BY ID
-//    @GetMapping("/{id}")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<Map<String, Object>> getProductById(
-//            @PathVariable Long id,
-//            HttpServletRequest request) {
-//
-//        Product product = productService.getProductById(id);
-//        return responseService.createResponse(200, product, request, HttpStatus.OK);
-//    }
-//
-//    // UPDATE
-//    @PutMapping("/{id}")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<Map<String, Object>> updateProduct(
-//            @PathVariable Long id,
-//            @RequestBody Product productDetails,
-//            HttpServletRequest request) {
-//
-//        Product updatedProduct = productService.updateProduct(id, productDetails);
-//        return responseService.createResponse(200, updatedProduct, request, HttpStatus.OK);
-//    }
-//
-//    // DELETE
-//    @DeleteMapping("/{id}")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<Map<String, Object>> deleteProduct(
-//            @PathVariable Long id,
-//            HttpServletRequest request) {
-//
-//        productService.deleteProduct(id);
-//        return responseService.createResponse(200, "Product deleted", request, HttpStatus.OK);
-//    }
-//}
-
+@CrossOrigin
 @RestController
 @RequestMapping("/product")
 public class ProductController {
