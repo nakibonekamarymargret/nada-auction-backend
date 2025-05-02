@@ -32,6 +32,7 @@ const handleSubmit = async (e) => {
 
   try {
     const response = await AuthService.register(user);
+    
     console.log("Registration response:", response.data);
     setMessage("Registration successful. Redirecting to login...");
 
