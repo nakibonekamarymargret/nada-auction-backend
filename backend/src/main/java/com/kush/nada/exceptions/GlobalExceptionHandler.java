@@ -63,4 +63,25 @@ public class GlobalExceptionHandler {
         response.put("returnMessage", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+<<<<<<< HEAD
+=======
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalStateException(IllegalStateException ex, HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("path", request.getRequestURI());
+        response.put("returnCode", 400); // 400 for bad request
+        response.put("returnMessage", ex.getMessage()); // Your custom message like "Cannot add product to a closed auction."
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    // Optional: fallback for unexpected errors
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<Map<String, String>> handleOtherExceptions(Exception ex) {
+//        Map<String, String> response = new HashMap<>();
+//        response.put("error", "Something went wrong: " + ex.getMessage());
+//        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
+>>>>>>> Development
 }

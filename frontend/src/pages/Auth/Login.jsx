@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { MdAlternateEmail } from "react-icons/md";
 import { IoKeySharp } from "react-icons/io5";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
+<<<<<<< HEAD
 import AuthService from "../../services/AuthService";
 
 const Login = () => {
@@ -68,6 +69,39 @@ const { email, password, confirmPassword } = credentials;
 const handleRegister = () => {
   navigate("/register");
 };
+=======
+
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!email || !password) {
+      setError("Please fill out both fields.");
+      return;
+    }
+
+    // Simulated login - in real life, you'd call your API and get a token
+    const fakeToken = "mock-jwt-token";
+
+    localStorage.setItem("token", fakeToken);
+    localStorage.setItem("rememberMe", rememberMe);
+
+    console.log("Logging in with:", { email, password, rememberMe });
+
+    setError("");
+    navigate("/dashboard");
+  };
+
+
+>>>>>>> Development
 
   return (
     <div className="flex flex-col md:flex-row items-start gap-[5vw] max-w-5xl mx-auto">
@@ -77,6 +111,7 @@ const handleRegister = () => {
 
       <div className="w-full md:w-1/2 p-4 h-full">
         <div className="bg-white/70 p-8 rounded-2xl w-full max-w-md mb-4">
+<<<<<<< HEAD
           <h2
             style={{ fontFamily: "var(--font-roboto)" }}
             className="text-2xl font-normal mb-4 text-center mt-6"
@@ -100,6 +135,25 @@ const handleRegister = () => {
             )}
             {/* Email Field */}
 
+=======
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white/90 p-8 rounded-lg w-full max-w-md transform transition-all duration-700 motion-preset-slide-left-lg motion-translate-y-in-100 motion-duration-[2s] motion-ease-spring-smooth"
+          >
+            <h2
+              style={{ fontFamily: "var(--font-roboto)" }}
+              className="text-2xl font-normal mb-4 text-center mt-6"
+            >
+              Welcome back to <b className="text-dark font-semi-bold">NADA</b>{" "}
+            </h2>
+
+            <p className="text-gray-500 text-center mb-6">
+              Login to your account
+            </p>
+            {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
+
+            {/* Email Field */}
+>>>>>>> Development
             <div className="p-5 relative">
               <label
                 htmlFor="email"
@@ -116,6 +170,7 @@ const handleRegister = () => {
                 <input
                   type="email"
                   id="email"
+<<<<<<< HEAD
                   name="email"
                   value={email}
                   onChange={handleChange}
@@ -125,6 +180,13 @@ const handleRegister = () => {
                 {error.email && (
                   <p className="text-red-500 text-xs mt-1">{error.email}</p>
                 )}
+=======
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mt-1 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your email"
+                />
+>>>>>>> Development
               </div>
             </div>
 
@@ -144,6 +206,7 @@ const handleRegister = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
+<<<<<<< HEAD
                   name="password"
                   value={password}
                   onChange={handleChange}
@@ -192,6 +255,13 @@ const handleRegister = () => {
                     {error.confirmPassword}
                   </p>
                 )}
+=======
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="mt-1 block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your password"
+                />
+>>>>>>> Development
                 <div
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer"
                   onClick={() => setShowPassword(!showPassword)}
@@ -204,6 +274,10 @@ const handleRegister = () => {
                 </div>
               </div>
             </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> Development
             {/* Remember Me */}
             <div className="flex items-center p-5">
               <input
@@ -231,6 +305,7 @@ const handleRegister = () => {
                 Forgot password?
               </a>
             </div>
+<<<<<<< HEAD
             <div className="flex items-center gap-2">
               <span className="text-black/70">Don't have an account?</span>
               <button type="button" onClick={handleRegister}>
@@ -239,6 +314,8 @@ const handleRegister = () => {
                 </span>
               </button>
             </div>
+=======
+>>>>>>> Development
           </form>
         </div>
       </div>

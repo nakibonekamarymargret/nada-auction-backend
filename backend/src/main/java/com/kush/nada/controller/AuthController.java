@@ -22,6 +22,10 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+<<<<<<< HEAD
+=======
+
+>>>>>>> Development
 @CrossOrigin
 @RestController
 @RequestMapping("/api")

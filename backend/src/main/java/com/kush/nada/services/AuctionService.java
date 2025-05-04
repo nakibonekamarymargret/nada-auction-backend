@@ -60,6 +60,19 @@ public class AuctionService {
     public List <Auction> getAllAuctions () {
         return auctionRepository.findAll();
     }
+<<<<<<< HEAD
+=======
+    public List <Auction> getLiveAuctions(){
+        return auctionRepository.findByStatus(AuctionStatus.LIVE);
+    }
+
+    public List <Auction> getScheduledAuctions(){
+        return auctionRepository.findByStatus(AuctionStatus.SCHEDULED);
+    }
+    public List <Auction> getClosedAuctions(){
+        return auctionRepository.findByStatus(AuctionStatus.CLOSED);
+    }
+>>>>>>> Development
 
     private void validateAuction(Auction auction) {
         LocalDateTime now = LocalDateTime.now();
