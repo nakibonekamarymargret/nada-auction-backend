@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { IoKeySharp } from "react-icons/io5";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
+// Import AuthService (assuming it's in the correct location)
+import AuthService from "../../services/AuthService";
 
 const Register = () => {
   const [user, setUser] = useState({
@@ -13,17 +15,21 @@ const Register = () => {
     phoneNumber: "",
   });
 
-  const { name, email, password, address, phoneNumber } = user;
+  const { password } = user;
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState({});
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUser({ ...user, [name]: value });
   };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError({});
+  setMessage("");
 
-<<<<<<< HEAD
   try {
     const response = await AuthService.register(user);
     
@@ -51,21 +57,13 @@ const Register = () => {
       setError({ phoneNumber: message });
     } else {
       setError({ general: message });
-=======
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!name || !email || !password || !address || !phoneNumber) {
-      setError("Please fill out all fields.");
-      return;
->>>>>>> 27885d3a6eeb8357dd02a34bc2d85e7e65e855d7
     }
-    console.log("Registering user", user);
-    setError("");
-    navigate("/login"); // Redirect after registration logic
-  };
+  }
+};
 
-  
-
+const handleLogin = () => {
+  navigate("/login");
+};
   return (
     <div className="flex flex-col md:flex-row items-start items-stretch gap-[5vw] max-w-5xl mx-auto">
       {/* Left image */}
@@ -85,9 +83,11 @@ const Register = () => {
           Create your account
         </h2>
         <div className="bg-white/70 p-8 rounded-2xl w-full max-w-md mb-4">
-          <form onSubmit={handleSubmit}>
-            {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
+          {error.general && (
+            <div className="text-red-500 text-sm mb-4">{error.general}</div>
+          )}
 
+          <form onSubmit={handleSubmit}>
             {[
               {
                 label: "Name",
@@ -130,6 +130,7 @@ const Register = () => {
                   className="mt-1 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder={placeholder}
                 />
+                <p className="text-red-500  text-xs mt-1">{error[name]}</p>
               </div>
             ))}
 
@@ -155,6 +156,9 @@ const Register = () => {
                   className="mt-1 block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your password"
                 />
+                {error.password && (
+                  <p className="text-red-500 text-xs mt-1">{error.password}</p>
+                )}
                 <div
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer"
                   onClick={() => setShowPassword(!showPassword)}
@@ -172,6 +176,17 @@ const Register = () => {
               <Button type="submit" className="w-full">
                 Register
               </Button>
+              {message && (
+                <div className="text-green-500 text-sm mb-4">{message}</div>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-black/70">Already have an account?</span>
+              <button type="button" onClick={handleLogin}>
+                <span className="text-green-600 hover:text-green/50">
+                  Login
+                </span>
+              </button>
             </div>
           </form>
         </div>

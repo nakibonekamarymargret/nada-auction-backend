@@ -3,10 +3,8 @@ import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import Navbar from "./components/ui/Navbar";
 import Home from "./pages/Home";
-import CreateProduct from "./pages/products/CreateProduct";
 import AuctionForm from "./pages/products/AuctionForm";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import AddProduct from "./pages/admin/AddProduct";
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -29,7 +27,6 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/auction" element={<AuctionForm />} />
         <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/add" element={<AddProduct />} />
       </Routes>
     </Layout>
   );
