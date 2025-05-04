@@ -1,6 +1,7 @@
 package com.kush.nada.services;
 
 import com.kush.nada.enums.AuctionStatus;
+import com.kush.nada.exceptions.NotFoundException;
 import com.kush.nada.models.Auction;
 import com.kush.nada.models.Bid;
 import com.kush.nada.models.Product;
@@ -33,30 +34,45 @@ public class BidService {
     }
 
     // CREATE
+
     public Bid createBid(Bid bid, Long productId, Long auctionId, Long userId) {
         if (auctionId == null || productId == null || userId == null) {
-            throw new IllegalArgumentException("Auction ID, Product ID, and User ID must be provided.");
+            throw new IllegalStateException("Product ID must be provided.");
         }
 
         Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new RuntimeException("Auction not found"));
+                .orElseThrow(() -> new NotFoundException("Auction not found"));
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new NotFoundException("Product not found"));
+
+        if (product.isClosed()) {
+            throw new IllegalStateException("Bidding is closed for this product.");
+        }
+
+        if (product.getLastBidTime() != null &&
+                product.getLastBidTime().plusSeconds(30).isBefore(LocalDateTime.now())) {
+            product.setClosed(true);
+            productRepository.save(product);
+            throw new IllegalStateException("Bidding timed out for this product.");
+        }
 
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
 
         if (auction.getStatus() != AuctionStatus.LIVE) {
-            throw new RuntimeException("Auction is not live. Cannot place a bid.");
+            throw new IllegalStateException("Auction is not live. Cannot place a bid.");
         }
 
         if (bid.getAmount().doubleValue() <= auction.getCurrentPrice()) {
-            throw new RuntimeException("Bid must be higher than current price.");
+            throw new IllegalStateException("Bid must be higher than current price.");
         }
 
         auction.setCurrentPrice(bid.getAmount().doubleValue());
         auctionRepository.save(auction);
+
+        product.setLastBidTime(LocalDateTime.now()); // Track bid time per product
+        productRepository.save(product); //
 
         bid.setAuction(auction);
         bid.setProduct(product);
@@ -66,10 +82,43 @@ public class BidService {
         return bidRepository.save(bid);
     }
 
+//    public Bid createBid(Bid bid, Long productId, Long auctionId, Long userId) {
+//        if (auctionId == null || productId == null || userId == null) {
+//            throw new IllegalStateException("Auction ID, Product ID, and User ID must be provided.");
+//        }
+//
+//        Auction auction = auctionRepository.findById(auctionId)
+//                .orElseThrow(() -> new NotFoundException("Auction not found"));
+//
+//        Product product = productRepository.findById(productId)
+//                .orElseThrow(() -> new NotFoundException("Product not found"));
+//
+//        UserEntity user = userRepository.findById(userId)
+//                .orElseThrow(() -> new NotFoundException("User not found"));
+//
+//        if (auction.getStatus() != AuctionStatus.LIVE) {
+//            throw new IllegalStateException("Auction is not live. Cannot place a bid.");
+//        }
+//
+//        if (bid.getAmount().doubleValue() <= auction.getCurrentPrice()) {
+//            throw new IllegalStateException("Bid must be higher than current price.");
+//        }
+//
+//        auction.setCurrentPrice(bid.getAmount().doubleValue());
+//        auctionRepository.save(auction);
+//
+//        bid.setAuction(auction);
+//        bid.setProduct(product);
+//        bid.setBidder(user);
+//        bid.setBidTime(LocalDateTime.now());
+//
+//        return bidRepository.save(bid);
+//    }
+
     // READ (Get One)
     public Bid getBidById(Long id) {
         return bidRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Bid not found"));
+                .orElseThrow(() -> new NotFoundException("Bid not found"));
     }
 
     // READ (Get All)
@@ -80,7 +129,7 @@ public class BidService {
     // UPDATE
     public Bid updateBid(Long id, Bid updatedBid) {
         Bid existingBid = bidRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Bid not found"));
+                .orElseThrow(() -> new NotFoundException("Bid not found"));
 
         existingBid.setAmount(updatedBid.getAmount());
         existingBid.setBidTime(LocalDateTime.now()); // Update time if necessary
