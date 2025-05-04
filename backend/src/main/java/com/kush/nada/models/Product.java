@@ -5,6 +5,7 @@ import com.kush.nada.enums.ProductCategory;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -19,10 +20,13 @@ public class Product {
     private BigDecimal highestPrice;
     @Enumerated(EnumType.STRING)  // Store the enum as a string in the database
     private ProductCategory category;
+    private LocalDateTime lastBidTime;
+    private boolean isClosed = false;
 
 
 
-        @JsonIgnore
+
+    @JsonIgnore
 
     @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "auction_id")
@@ -93,13 +97,21 @@ public class Product {
         this.category = category;
     }
 
-//    public UserEntity getSeller() {
-//        return seller;
-//    }
-//
-//    public void setSeller(UserEntity seller) {
-//        this.seller = seller;
-//    }
+    public LocalDateTime getLastBidTime() {
+        return lastBidTime;
+    }
+
+    public void setLastBidTime(LocalDateTime lastBidTime) {
+        this.lastBidTime = lastBidTime;
+    }
+
+    public boolean isClosed() {
+        return isClosed;
+    }
+
+    public void setClosed(boolean closed) {
+        isClosed = closed;
+    }
 
     public Auction getAuction() {
         return auction;
@@ -125,17 +137,19 @@ public class Product {
         this.payments = payments;
     }
 
-    public Product(Long id, String name, String description, String imageUrl, BigDecimal highestPrice, ProductCategory category, Auction auction, List<Bid> bids, List<Payment> payments) {
+    public Product(Long id, String name, String description, String imageUrl,
+                   BigDecimal highestPrice, ProductCategory category, LocalDateTime lastBidTime,
+                   boolean isClosed, Auction auction, List<Bid> bids, List<Payment> payments) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.imageUrl = imageUrl;
         this.highestPrice = highestPrice;
         this.category = category;
+        this.lastBidTime = lastBidTime;
+        this.isClosed = isClosed;
         this.auction = auction;
         this.bids = bids;
         this.payments = payments;
     }
-
-
 }
