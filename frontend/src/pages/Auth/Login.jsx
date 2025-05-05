@@ -31,7 +31,7 @@ const Login = () => {
     console.log("Logging in with:", { email, password, rememberMe });
 
     setError("");
-    navigate("/dashboard");
+    navigate("/");
   };
 
 

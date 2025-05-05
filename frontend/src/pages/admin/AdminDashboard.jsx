@@ -1,7 +1,7 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/ui/app-sidebar";
+import AuctionModal from "../auctions/AuctionModal";
 import {
   Users,
   Gavel,
@@ -11,17 +11,23 @@ import {
   UserPlus,
   Settings,
 } from "lucide-react";
+import AddProductModal from "./AddProductModal";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const AdminDashboard = () => {
 
-const navigate = useNavigate();
 
-  const handleAddProduct = () => {
-    navigate("/add");
-  }
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen bg-gray-100">
+      <div className="flex min-h-screen bg-gray-100  w-full">
         <AppSidebar />
         <main className="flex-1 p-6 overflow-y-auto">
           <SidebarTrigger />
@@ -85,18 +91,81 @@ const navigate = useNavigate();
               Quick Actions
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <button
-                className="flex items-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-lg shadow
-                 hover:bg-indigo-700"
-                onClick={handleAddProduct}>
-                <PlusCircle className="w-5 h-5" /> Add Product
-              </button>
-              <button className="flex items-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700">
-                <Gavel className="w-5 h-5" /> Start Auction
-              </button>
-              <button className="flex items-center gap-2 px-4 py-3 bg-gray-600 text-white rounded-lg shadow hover:bg-gray-700">
-                <Settings className="w-5 h-5" /> Settings
-              </button>
+              <AddProductModal
+                onProductCreated={(product) =>
+                  console.log("New Prodct:", product)
+                }
+              />
+              <div className="flex items-center">
+                <AuctionModal
+                  onAuctionCreated={(auction) =>
+                    console.log("New Auction:", auction)
+                  }
+                />
+              </div>
+            </div>
+          </div>
+          {/* Recent Products  Table */}
+          <div className="bg-white rounded-xl shadow p-6 mb-10">
+            <h2 className="text-xl font-semibold mb-6 text-gray-800">
+              Recent Products
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm text-left text-gray-700">
+                <thead className="bg-gray-200 uppercase text-xs font-semibold">
+                  <tr>
+                    <th className="px-4 py-2">Product Name</th>
+                    <th className="px-4 py-2">Category</th>
+                    <th className="px-4 py-2">Price</th>
+                    <th className="px-4 py-2">Status</th>
+                    <th className="px-4 py-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    {
+                      name: "iPhone 14",
+                      category: "Electronics",
+                      price: "$999",
+                      status: "Available",
+                      actions: "Edit | Delete",
+                    },
+                    {
+                      name: "MacBook Pro",
+                      category: "Electronics",
+                      price: "$1,999",
+                      status: "Sold",
+                      actions: "View | Delete",
+                    },
+                  ].map((product, idx) => (
+                    <tr key={idx} className="border-b hover:bg-gray-50">
+                      <td className="px-4 py-2">{product.name}</td>
+                      <td className="px-4 py-2">{product.category}</td>
+                      <td className="px-4 py-2">{product.price}</td>
+                      <td className="px-4 py-2">{product.status}</td>
+                      <td className="px-4 py-2">{product.actions}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="pagination justify-end">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious href="#" />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationLink href="#">1</PaginationLink>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationNext href="#" />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           </div>
 
@@ -142,6 +211,7 @@ const navigate = useNavigate();
             </div>
           </div>
         </main>
+        <p className="text">Hi</p>
       </div>
     </SidebarProvider>
   );
