@@ -47,6 +47,7 @@ public class BidController {
 
     private final BidService bidService;
 <<<<<<< HEAD
+<<<<<<< HEAD
     private final ProductService productService;
     private final ProductService productService;
     private final ResponseService responseService;
@@ -77,6 +78,9 @@ public class BidController {
     // Place a bid
 =======
     private final ProductService productService; // Assuming ProductService fetches products
+=======
+    private final ProductService productService;
+>>>>>>> 1ceedcb (Add the payment functionalities using stripe sandbox, remove the PaymentMethod enums to allow for flexibility after integrating stripe payment system)
     private final ResponseService responseService;
 
     public BidController(BidService bidService, ProductService productService, ResponseService responseService) {

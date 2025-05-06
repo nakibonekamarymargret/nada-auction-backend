@@ -83,6 +83,7 @@ public ResponseEntity<Map<String, Object>> createProduct(
 }
 
 
+<<<<<<< HEAD
 
 
 @GetMapping("/all")
@@ -95,6 +96,13 @@ public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest req
     //     List<Product> products = productService.getAllProducts();
     //     return responseService.createResponse(200, products, request, HttpStatus.OK);
     // }
+=======
+    @GetMapping("/all")
+    public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
+        List<Product> products = productService.getAllProducts();
+        return responseService.createResponse(200, products, request, HttpStatus.OK);
+    }
+>>>>>>> 1ceedcb (Add the payment functionalities using stripe sandbox, remove the PaymentMethod enums to allow for flexibility after integrating stripe payment system)
 
     @GetMapping("/{id}")
 
