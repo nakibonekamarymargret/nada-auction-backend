@@ -82,38 +82,6 @@ public class BidService {
         return bidRepository.save(bid);
     }
 
-//    public Bid createBid(Bid bid, Long productId, Long auctionId, Long userId) {
-//        if (auctionId == null || productId == null || userId == null) {
-//            throw new IllegalStateException("Auction ID, Product ID, and User ID must be provided.");
-//        }
-//
-//        Auction auction = auctionRepository.findById(auctionId)
-//                .orElseThrow(() -> new NotFoundException("Auction not found"));
-//
-//        Product product = productRepository.findById(productId)
-//                .orElseThrow(() -> new NotFoundException("Product not found"));
-//
-//        UserEntity user = userRepository.findById(userId)
-//                .orElseThrow(() -> new NotFoundException("User not found"));
-//
-//        if (auction.getStatus() != AuctionStatus.LIVE) {
-//            throw new IllegalStateException("Auction is not live. Cannot place a bid.");
-//        }
-//
-//        if (bid.getAmount().doubleValue() <= auction.getCurrentPrice()) {
-//            throw new IllegalStateException("Bid must be higher than current price.");
-//        }
-//
-//        auction.setCurrentPrice(bid.getAmount().doubleValue());
-//        auctionRepository.save(auction);
-//
-//        bid.setAuction(auction);
-//        bid.setProduct(product);
-//        bid.setBidder(user);
-//        bid.setBidTime(LocalDateTime.now());
-//
-//        return bidRepository.save(bid);
-//    }
 
     // READ (Get One)
     public Bid getBidById(Long id) {

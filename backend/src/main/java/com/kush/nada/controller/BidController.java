@@ -22,7 +22,7 @@ import java.util.Map;
 public class BidController {
 
     private final BidService bidService;
-    private final ProductService productService; // Assuming ProductService fetches products
+    private final ProductService productService;
     private final ResponseService responseService;
 
     public BidController(BidService bidService, ProductService productService, ResponseService responseService) {
