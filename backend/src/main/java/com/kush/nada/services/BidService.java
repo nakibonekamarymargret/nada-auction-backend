@@ -19,21 +19,17 @@ import java.util.List;
 public class BidService {
 
     private final BidRepository bidRepository;
-    private final AuctionRepository auctionRepository;
-    private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final ProductRepository productRepository;
+    private final AuctionRepository auctionRepository;
 
-    public BidService(BidRepository bidRepository,
-                      AuctionRepository auctionRepository,
-                      ProductRepository productRepository,
-                      UserRepository userRepository) {
+
+    public BidService(BidRepository bidRepository, UserRepository userRepository, ProductRepository productRepository, AuctionRepository auctionRepository) {
         this.bidRepository = bidRepository;
-        this.auctionRepository = auctionRepository;
-        this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.productRepository = productRepository;
+        this.auctionRepository = auctionRepository;
     }
-
-    // CREATE
 
     public Bid createBid(Bid bid, Long productId, Long auctionId, Long userId) {
         if (auctionId == null || productId == null || userId == null) {
@@ -42,7 +38,6 @@ public class BidService {
 
         Auction auction = auctionRepository.findById(auctionId)
                 .orElseThrow(() -> new NotFoundException("Auction not found"));
-
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new NotFoundException("Product not found"));
 
@@ -60,7 +55,7 @@ public class BidService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        if (auction.getStatus() != AuctionStatus.LIVE) {
+        if (!AuctionStatus.LIVE.equals(auction.getStatus())) {
             throw new IllegalStateException("Auction is not live. Cannot place a bid.");
         }
 
@@ -74,42 +69,24 @@ public class BidService {
         product.setLastBidTime(LocalDateTime.now()); // Track bid time per product
         productRepository.save(product); //
 
-        bid.setAuction(auction);
-        bid.setProduct(product);
+        // Set full entity references
         bid.setBidder(user);
+        bid.setProduct(product);
+        bid.setAuction(auction);
         bid.setBidTime(LocalDateTime.now());
 
         return bidRepository.save(bid);
     }
+    public List<Bid> getAllBidsForProduct(Long productId) {
+        return bidRepository.findByProductId(productId);
+    }
 
-
-    // READ (Get One)
     public Bid getBidById(Long id) {
-        return bidRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Bid not found"));
+        return bidRepository.findById(id).orElseThrow(() -> new RuntimeException("Bid not found"));
     }
 
-    // READ (Get All)
-    public List<Bid> getAllBids() {
-        return bidRepository.findAll();
-    }
-
-    // UPDATE
-    public Bid updateBid(Long id, Bid updatedBid) {
-        Bid existingBid = bidRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Bid not found"));
-
-        existingBid.setAmount(updatedBid.getAmount());
-        existingBid.setBidTime(LocalDateTime.now()); // Update time if necessary
-
-        return bidRepository.save(existingBid);
-    }
-
-    // DELETE
-    public void deleteBid(Long id) {
-        Bid existingBid = bidRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Bid not found"));
-        bidRepository.delete(existingBid);
+    public Bid findTopByProductIdOrderByAmountDesc(Long productId) {
+        return bidRepository.findTopByProductIdOrderByAmountDesc(productId);
     }
 }
 
