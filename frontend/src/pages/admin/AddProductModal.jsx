@@ -12,9 +12,7 @@ import {
 } from "@/components/ui/select";
 import ProductService from "../../services/ProductService";
 
-// Tiptap imports
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+// Dialog UI components
 import {
   Dialog,
   DialogContent,
@@ -22,41 +20,30 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
+
 import axios from "axios";
 
 const AddProductModal = () => {
   const [formData, setFormData] = useState({
-      name: "",
-      description: "",
-      highestPrice: "",
-      category: "",
-      auctionId: "", // Auction id for the selected auction
-    });
+    name: "",
+    description: "",
+    highestPrice: "",
+    category: "",
+    auctionId: "", // Auction id for the selected auction
+  });
 
   const [file, setFile] = useState(null);
-   const [loading, setLoading] = useState(false);
-   const [success, setSuccess] = useState(false);
-   const [error, setError] = useState("");
-   const [auctions, setAuctions] = useState([]); // State to store the fetched auctions
-   const [isAuctionModalOpen, setAuctionModalOpen] = useState(false); // Modal state
- 
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+  const [auctions, setAuctions] = useState([]); // State to store fetched auctions
+  const [isAuctionModalOpen, setAuctionModalOpen] = useState(false); // Modal state
 
   const token = localStorage.getItem("token");
-  
-    // Tiptap editor instance
-    const editor = useEditor({
-      extensions: [StarterKit],
-      content: "",
-      onUpdate: ({ editor }) => {
-        setFormData((prev) => ({
-          ...prev,
-          description: editor.getHTML(),
-        }));
-      },
-    });
+
   useEffect(() => {
-    // Fetch auctions from the API when component mounts
     const fetchAuctions = async () => {
       try {
         const response = await axios.get("http://localhost:7107/auctions/all", {
@@ -64,7 +51,12 @@ const AddProductModal = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        setAuctions(response.data.data); // Adjust based on API response structure
+
+        const fetchedAuctions = Array.isArray(response.data.ReturnObject)
+          ? response.data.ReturnObject
+          : [];
+
+        setAuctions(fetchedAuctions);
       } catch (err) {
         console.error("Error fetching auctions:", err);
         setError("Failed to fetch auctions");
@@ -94,16 +86,18 @@ const AddProductModal = () => {
 
     try {
       await ProductService.add(formData, file, token);
+
       setSuccess(true);
+
+      // Reset form
       setFormData({
         name: "",
         description: "",
         highestPrice: "",
         category: "",
-        auctionId: "", // Reset auction selection
+        auctionId: "",
       });
       setFile(null);
-      editor.commands.clearContent();
     } catch (err) {
       setError("Failed to create product.");
       console.error(err);
@@ -112,148 +106,165 @@ const AddProductModal = () => {
     }
   };
 
-
-
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="default">Create Product</Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create Product</DialogTitle>
-          <DialogDescription>
-            Provide details for your product. Fill in th required fields.
-          </DialogDescription>
-        </DialogHeader>
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 max-w-md mx-auto mt-6 p-4 border rounded-xl shadow"
-        >
-          <div className="flex flex-nowrap gap-2">
-            {/* Select Auction Button */}
-            <div className="select-auction">
-              <Button
-                type="button"
-                onClick={() => setAuctionModalOpen(true)} // Open modal to select auction
-              >
-                Select Auction
-              </Button>
-              <div className="hidden">
-                <Select
-                  value={formData.auctionId}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, auctionId: value }))
-                  }
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an auction" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {auctions.map((auction) => (
-                      <SelectItem key={auction.id} value={auction.id}>
-                        {auction.startingPrice} - {auction.status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+      <DialogContent className="sm:max-w-[600px]">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Create Product</DialogTitle>
+            <DialogDescription>
+              Provide details for your product. Fill in the required fields.
+            </DialogDescription>
+          </DialogHeader>
 
-            {/* Auction Modal to Create Auction */}
-            <AuctionModal
-              isOpen={isAuctionModalOpen}
-              onClose={() => setAuctionModalOpen(false)}
-              onAuctionCreated={(auction) => {
-                console.log("New Auction:", auction);
-                setFormData((prev) => ({
-                  ...prev,
-                  auctionId: auction.id,
-                }));
-                setAuctionModalOpen(false); // Close the modal after selecting auction
-              }}
-            />
+          {error && <p className="text-red-500 text-center">{error}</p>}
+          {success && (
+            <p className="text-green-500 text-center">
+              Product created successfully!
+            </p>
+          )}
+
+          {/* Select Auction */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="auctionId" className="text-right">
+              Auction
+            </Label>
+            <Select
+              value={formData.auctionId}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, auctionId: value }))
+              }
+              required
+              className="col-span-3"
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select an auction" />
+              </SelectTrigger>
+              <SelectContent>
+                {auctions.length > 0 ? (
+                  auctions.map((auction) => (
+                    <SelectItem key={auction.id} value={auction.id.toString()}>
+                      {auction.title || `Auction ID: ${auction.id}`} (
+                      {auction.status})
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem disabled>No auctions available</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Product Name */}
-          <div>
-            <Label htmlFor="name">Product Name</Label>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+              Name
+            </Label>
             <Input
               id="name"
               name="name"
               value={formData.name}
               onChange={handleChange}
+              className="col-span-3"
               required
             />
           </div>
 
-          {/* Description with Tiptap */}
-          <div>
-            <Label htmlFor="description">Description</Label>
-            <div className="border rounded-md p-2 min-h-[150px]">
-              <EditorContent editor={editor} />
-            </div>
+          {/* Description - Replaced Tiptap with simple textarea */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="description" className="text-right">
+              Description
+            </Label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              className="col-span-3 border rounded-md p-2 min-h-[100px]"
+              required
+            />
           </div>
 
           {/* Highest Price */}
-          <div>
-            <Label htmlFor="highestPrice">Highest Price</Label>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="highestPrice" className="text-right">
+              Highest Price
+            </Label>
             <Input
               id="highestPrice"
               name="highestPrice"
               type="number"
+              step="0.01"
+              min="0"
               value={formData.highestPrice}
               onChange={handleChange}
+              className="col-span-3"
               required
             />
           </div>
 
           {/* Category Dropdown */}
-          <div>
-            <Label htmlFor="category">Category</Label>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label className="text-right">Category</Label>
             <Select
               value={formData.category}
               onValueChange={(value) =>
                 setFormData((prev) => ({ ...prev, category: value }))
               }
               required
+              className="col-span-3"
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ART">ART</SelectItem>
-                <SelectItem value="ELECTRONICS">ELECTRONICS</SelectItem>
-                <SelectItem value="ANTIQUES">ANTIQUES</SelectItem>
-                <SelectItem value="JEWELRY">JEWELRY</SelectItem>
+                <SelectItem value="ART">Art</SelectItem>
+                <SelectItem value="ELECTRONICS">Electronics</SelectItem>
+                <SelectItem value="ANTIQUES">Antiques</SelectItem>
+                <SelectItem value="JEWELRY">Jewelry</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* File Upload */}
-          <div>
-            <Label htmlFor="file">Upload Image</Label>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="file" className="text-right">
+              Image
+            </Label>
             <Input
               id="file"
               name="file"
               type="file"
               accept="image/*"
               onChange={handleFileChange}
+              className="col-span-3"
               required
             />
           </div>
 
-          {/* Error and Success Messages */}
-          {error && <p className="text-red-500">{error}</p>}
-          {success && (
-            <p className="text-green-500">Product created successfully!</p>
-          )}
+          <DialogFooter>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Creating..." : "Create Product"}
+            </Button>
+          </DialogFooter>
 
-          {/* Submit Button */}
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading ? "Submitting..." : "Create Product"}
-          </Button>
+          {/* Hidden Auction Modal Trigger */}
+          <div className="hidden">
+            <AuctionModal
+              isOpen={isAuctionModalOpen}
+              onClose={() => setAuctionModalOpen(false)}
+              onAuctionCreated={(auction) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  auctionId: auction.id,
+                }));
+                setAuctionModalOpen(false);
+              }}
+            />
+          </div>
         </form>
       </DialogContent>
     </Dialog>

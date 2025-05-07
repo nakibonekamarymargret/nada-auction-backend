@@ -1,20 +1,42 @@
-import React, { useState } from "react";
+// Navbar.jsx
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AiOutlineHeart, AiOutlineUser, AiOutlineBell } from "react-icons/ai";
+import { CiLogin } from "react-icons/ci";
+import { FaUserPlus } from "react-icons/fa6";
+
+
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    !!localStorage.getItem("token")
+  );
+
+  const isLoginPage = location.pathname === "/login";
+  const isRegisterPage = location.pathname === "/register";
+
+  // Sync auth state when token changes or route changes
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsAuthenticated(!!token);
+  }, [location]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    setIsAuthenticated(false);
+    setDropdownOpen(false);
+  };
+
+  const handleLogin = () => {
     navigate("/login");
   };
 
-  const isAuthenticated = true; 
-  const isLoginPage = location.pathname === "/login";
-  const isRegisterPage = location.pathname === "/register";
+  const handleRegister = () => {
+    navigate("/register");
+  };
 
   if (isLoginPage || isRegisterPage) return null;
 
@@ -38,26 +60,30 @@ const Navbar = () => {
           />
         </div>
 
-        {/* Right side icons */}
+        {/* Right side content based on login status */}
         <div className="flex items-center gap-10 text-sm">
-          <div className="flex flex-col items-center cursor-pointer">
-            <AiOutlineHeart size={20} />
-            <span>My Watch List</span>
-          </div>
+          {isAuthenticated ? (
+            <>
+              {/* Authenticated User Items */}
+              <div
+                className="flex flex-col items-center cursor-pointer"
+                onClick={() => navigate("/watchlist")}
+              >
+                <AiOutlineHeart size={20} />
+                <span>My Watch List</span>
+              </div>
 
-          {/* Dropdown User Menu */}
-          <div className="flex flex-col items-center cursor-pointer relative">
-            <AiOutlineUser
-              size={20}
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-            />
-            <span>My Activity</span>
+              {/* Dropdown Menu */}
+              <div className="flex flex-col items-center cursor-pointer relative">
+                <AiOutlineUser
+                  size={20}
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                />
+                <span>My Activity</span>
 
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-12 w-48 bg-white text-black rounded-md shadow-lg border z-50">
-                <ul className="py-1 text-sm">
-                  {isAuthenticated ? (
-                    <>
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-12 w-48 bg-white text-black rounded-md shadow-lg border z-50">
+                    <ul className="py-1 text-sm">
                       <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
                         Bids
                       </li>
@@ -73,32 +99,35 @@ const Navbar = () => {
                       >
                         Logout
                       </li>
-                    </>
-                  ) : (
-                    <>
-                      <li
-                        onClick={() => navigate("/login")}
-                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                      >
-                        Login
-                      </li>
-                      <li
-                        onClick={() => navigate("/register")}
-                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                      >
-                        Register
-                      </li>
-                    </>
-                  )}
-                </ul>
+                    </ul>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          <div className="flex flex-col items-center cursor-pointer">
-            <AiOutlineBell size={20} />
-            <span>Alerts</span>
-          </div>
+              <div className="flex flex-col items-center cursor-pointer">
+                <AiOutlineBell size={20} />
+                <span>Alerts</span>
+              </div>
+            </>
+          ) : (
+            // Not logged in: show Login & Register as buttons
+            <div className="flex gap-6 items-center">
+              <button
+                onClick={handleLogin}
+                className="px-4 py-2 text-sm font-medium text-black rounded hover:text-blue-700 transition"
+              >
+                <CiLogin />
+                Login
+              </button>
+              <button
+                onClick={handleRegister}
+                className="px-4 py-2 text-sm font-medium text-black  rounded hover:text-green-700 transition"
+              >
+                <FaUserPlus />
+                Register
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

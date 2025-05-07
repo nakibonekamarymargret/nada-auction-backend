@@ -8,13 +8,13 @@ import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false); // This state is not used in the provided logic, but kept
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!email || !password) {
@@ -22,19 +22,46 @@ const Login = () => {
       return;
     }
 
-    // Simulated login - in real life, you'd call your API and get a token
-    const fakeToken = "mock-jwt-token";
+    try {
+      const response = await fetch("http://localhost:7107/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    localStorage.setItem("token", fakeToken);
-    localStorage.setItem("rememberMe", rememberMe);
+      const data = await response.json();
+      console.log("Backend response data:", data); // Keep this log to see the full response structure
 
-    console.log("Logging in with:", { email, password, rememberMe });
+      if (response.ok) {
+        // If your response is like { returnTimestamp: ..., returnCode: ..., ReturnObject: { token: '...', role: '...' } }
+        const { token, role } = data.ReturnObject;
+       
+        console.log("Role variable value BEFORE if:", role); // DEBUG
+        console.log("Type of role variable:", typeof role); // DEBUG
+        console.log("Result of role === 'ADMIN' comparison:", role === "ADMIN"); // DEBUG
 
-    setError("");
-    navigate("/");
+        // Save the token and role in localStorage
+        localStorage.setItem("token", token);
+        localStorage.setItem("role", role);
+
+        // Navigate based on the role
+        if (role === "ADMIN") {
+          console.log("Login: Role is ADMIN. Navigating to /admin"); // DEBUG
+          navigate("/admin");
+        } else {
+          console.log("Login: Role is NOT ADMIN. Navigating to /"); // DEBUG
+          navigate("/");
+        }
+      } else {
+        setError(data.message || "Login failed.");
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      setError("An error occurred. Please try again.");
+    }
   };
-
-
 
   return (
     <div className="flex flex-col md:flex-row items-start gap-[5vw] max-w-5xl mx-auto">

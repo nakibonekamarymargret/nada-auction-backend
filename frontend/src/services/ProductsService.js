@@ -2,7 +2,7 @@ import axios from "axios";
 
 const API_URL = "http://localhost:7107/product";
 
-const ProductService = {
+const ProductsService = {
   // Get all products
   getAll: async () => {
     return await axios.get(`${API_URL}/all`);
@@ -14,6 +14,7 @@ const ProductService = {
   },
 
   // Add a new product
+  
   add: async (productData, file, auctionId, token) => {
     const formData = new FormData();
     formData.append("product", JSON.stringify(productData));
@@ -25,6 +26,7 @@ const ProductService = {
     };
     return axios.post(`${API_URL}/add/${auctionId}`, formData, config);
   },
+
   updateProduct: async (id, productData, token) => {
     const config = {
       headers: {
@@ -33,6 +35,7 @@ const ProductService = {
     };
     return axios.put(`${API_URL}/${id}`, productData, config);
   },
+
   deleteProduct: async (id, token) => {
     const config = {
       headers: {
@@ -43,4 +46,4 @@ const ProductService = {
   },
 };
 
-export default ProductService;
+export default ProductsService;
