@@ -30,52 +30,51 @@ public class AuctionController {
         this.auctionService = auctionService;
         this.responseService = responseService;
     }
-@PostMapping("/add")
-@PreAuthorize("hasRole('ADMIN')")
-public ResponseEntity<Map<String, Object>> createAuction(@RequestBody Auction auction, HttpServletRequest request) {
-    // Validate fields before saving
-    if (auction.getStartTime() == null || auction.getStartTime().isBefore(LocalDateTime.now())) {
-        throw new IllegalArgumentException("Start time must be in the future.");
-    }
-    if (auction.getEndTime() == null || auction.getEndTime().isBefore(auction.getStartTime())) {
-        throw new IllegalArgumentException("End time must be after start time.");
-    }
-    if (auction.getStartingPrice() == null || auction.getStartingPrice() < 0) {
-        throw new IllegalArgumentException("Starting price must be non-negative.");
+
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping ("/add")
+    public ResponseEntity<Map<String , Object>> createAuction(@RequestBody Auction auction , HttpServletRequest request) {
+        auction.setStatus(AuctionStatus.SCHEDULED); // Set the initial state BEFORE saving
+        Auction createdAuction = auctionService.createAuction(auction);
+
+        if (auction.getStartTime() == null || auction.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Start time must be in the future.");
+        }
+
+        if (auction.getEndTime() == null || auction.getEndTime().isBefore(auction.getStartTime())) {
+            throw new IllegalArgumentException("End time must be after start time.");
+        }
+        if (auction.getStartingPrice() == null || auction.getStartingPrice().doubleValue() < 0) {
+            throw new IllegalArgumentException("Starting price must be non-negative.");
+        }
+
+
+        return responseService.createResponse(201, createdAuction, request ,HttpStatus.OK);
     }
 
-    // Set status based on time
-    auction.setStatus(
-        auction.getStartTime().isAfter(LocalDateTime.now()) 
-            ? AuctionStatus.SCHEDULED 
-            : AuctionStatus.LIVE
-    );
-
-    Auction createdAuction = auctionService.createAuction(auction);
-    return responseService.createResponse(201, createdAuction, request, HttpStatus.OK);
-}
-
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all")
     public ResponseEntity<Map<String , Object>> getAllAuctions(HttpServletRequest request){
        List <Auction> auctions = auctionService.getAllAuctions();
         return responseService.createResponse(200,auctions,request,HttpStatus.OK);
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/live")
     public ResponseEntity<Map<String , Object>> getLiveAuctions(HttpServletRequest request){
         List<Auction> liveAuctions = auctionService.getLiveAuctions();
         return responseService.createResponse(200, liveAuctions , request , HttpStatus.OK);
     }
 
-   // @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/scheduled")
     public ResponseEntity<Map<String , Object>> getScheduledAuctions(HttpServletRequest request){
         List<Auction> liveAuctions = auctionService.getScheduledAuctions();
         return responseService.createResponse(200, liveAuctions , request , HttpStatus.OK);
     }
 
-   // @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/closed")
     public ResponseEntity<Map<String , Object>> getClosedAuctions(HttpServletRequest request){
         List<Auction> liveAuctions = auctionService.getClosedAuctions();
