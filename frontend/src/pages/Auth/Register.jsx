@@ -19,6 +19,9 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState({});
   const [message, setMessage] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState(""); // State for password confirmation
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false); // State for showing confirmation password
+  
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -32,12 +35,17 @@ const handleSubmit = async (e) => {
 
   try {
     const response = await AuthService.register(user);
-    
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
     console.log("Registration response:", response.data);
-    setMessage("Registration successful. Redirecting to login...");
+    setMessage("Registration successful. Redirecting to Home page...");
 
     setTimeout(() => {
-      navigate("/login");
+      navigate("/");
     }, 2000);
   } catch (err) {
     const message =
@@ -171,7 +179,39 @@ const handleLogin = () => {
                 </div>
               </div>
             </div>
-
+ {/* Password Confirmation Field */}
+            <div className="mb-3 relative">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Confirm Password
+              </label>
+              <div className="relative">
+                <IoKeySharp
+                  className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500"
+                  size={20}
+                />
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="mt-1 block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Confirm your password"
+                />
+                <div
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <FaRegEyeSlash size={20} />
+                  ) : (
+                    <FaRegEye size={20} />
+                  )}
+                </div>
+              </div>
+            </div>
             <div className="mb-6">
               <Button type="submit" className="w-full">
                 Register
