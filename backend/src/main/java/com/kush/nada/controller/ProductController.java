@@ -1,6 +1,7 @@
 package com.kush.nada.controller;
 
 import com.kush.nada.models.Product;
+import com.kush.nada.dtos.ProductDto;
 import com.kush.nada.models.UserPrincipal;
 import com.kush.nada.services.ProductService;
 import com.kush.nada.services.ResponseService;
@@ -28,10 +29,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
 
+
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+
 @CrossOrigin
 @RestController
 @RequestMapping("/product")
@@ -86,18 +91,32 @@ public class ProductController {
 
 
 
-    @GetMapping("/all")
-    public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
-        List<Product> products = productService.getAllProducts();
-        return responseService.createResponse(200, products, request, HttpStatus.OK);
-    }
+    // @GetMapping("/all")
+    // public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
+    //     List<Product> products = productService.getAllProducts();
+    //     return responseService.createResponse(200, products, request, HttpStatus.OK);
+@GetMapping("/all")
+public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
+    List<ProductDto> products = productService.getAllProducts();
+    return responseService.createResponse(200, products, request, HttpStatus.OK);
+}   
+@GetMapping("/{id}")
+   // @PreAuthorize("hasRole('ADMIN')")
+    // public ResponseEntity<Map<String, Object>> getProductById(@PathVariable Long id, HttpServletRequest request) {
+    //     Product product = productService.getProductById(id);
+    //     return responseService.createResponse(200, product, request, HttpStatus.OK);
+    // }
+     public ResponseEntity<Map<String, Object>> getProductById(@PathVariable Long id, HttpServletRequest request) {
+        // Call the service method that returns the DTO
+        ProductDto productDto = productService.getProductDtoById(id);
+         Map<String, Object> responseMap = new HashMap<>();
+         responseMap.put("status", 200); 
+         responseMap.put("ReturnObject", productDto);
 
-    @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> getProductById(@PathVariable Long id, HttpServletRequest request) {
-        Product product = productService.getProductById(id);
-        return responseService.createResponse(200, product, request, HttpStatus.OK);
-    }
+         return ResponseEntity.ok(responseMap); 
+      }
+
+    // 
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
