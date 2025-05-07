@@ -1,6 +1,5 @@
 package com.kush.nada.models;
 
-import com.kush.nada.enums.PaymentMethod;
 import com.kush.nada.enums.PaymentStatus;
 import jakarta.persistence.*;
 
@@ -18,8 +17,11 @@ public class Payment {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus; // Status of the payment (PENDING, COMPLETED, etc.)
 
-    @Enumerated(EnumType.STRING)
-    private PaymentMethod paymentMethod; // Payment method (CREDIT_CARD, PAYPAL, etc.)
+//    @Enumerated(EnumType.STRING)
+//    private PaymentMethod paymentMethod; // Payment method (CREDIT_CARD, PAYPAL, etc.)
+
+    @Column(name = "payment_method")
+    private String paymentMethod;  // String to store Stripe's payment method
 
     private LocalDateTime paymentDate;
 
@@ -41,7 +43,7 @@ public class Payment {
     public Payment() {
     }
 
-    public Payment(Long id, Double amount, PaymentStatus paymentStatus, PaymentMethod paymentMethod, LocalDateTime paymentDate, UserEntity user, Bid bid, Auction auction, Product product) {
+    public Payment(Long id, Double amount, PaymentStatus paymentStatus, String paymentMethod, LocalDateTime paymentDate, UserEntity user, Bid bid, Auction auction, Product product) {
         this.id = id;
         this.amount = amount;
         this.paymentStatus = paymentStatus;
@@ -77,11 +79,11 @@ public class Payment {
         this.paymentStatus = paymentStatus;
     }
 
-    public PaymentMethod getPaymentMethod() {
+    public String getPaymentMethod() {
         return paymentMethod;
     }
 
-    public void setPaymentMethod(PaymentMethod paymentMethod) {
+    public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
 

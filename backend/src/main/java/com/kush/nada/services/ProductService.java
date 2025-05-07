@@ -15,11 +15,14 @@ import java.util.List;
 @Service
 public class ProductService {
 
-    @Autowired
     private ProductRepository productRepository;
+    private AuctionRepository auctionRepository;
 
     @Autowired
-    private AuctionRepository auctionRepository;
+    public ProductService(ProductRepository productRepository, AuctionRepository auctionRepository) {
+        this.productRepository = productRepository;
+        this.auctionRepository = auctionRepository;
+    }
 
     // CREATE
      public Product createProduct(Product product, Long auctionId) {
@@ -76,7 +79,6 @@ public class ProductService {
     }
 
     // DELETE
-   // @Transactional
     public void deleteProduct(Long id) {
         Product product = getProductById(id);
         productRepository.delete(product);
