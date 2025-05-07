@@ -23,7 +23,7 @@ import {
 const items = [
   {
     title: "NADA",
-    url: "#",
+    url: "/",
     icon: FaHome,
   },
   {
