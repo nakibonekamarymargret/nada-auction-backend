@@ -5,10 +5,12 @@ import Navbar from "./components/ui/Navbar";
 import Home from "./pages/Home";
 import AuctionForm from "./pages/products/AuctionForm";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import ViewProduct from "./pages/products/ViewProduct";
+import ProtectedAdminRoute from "./pages/Auth/ProtectedAdminRoute";
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const hideNavbarOn = ["/admin", "/login", "/register","/add"];
+  const hideNavbarOn = ["/admin", "/login", "/register", "/add"];
 
   return (
     <>
@@ -25,8 +27,26 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Home />} />
-        <Route path="/auction" element={<AuctionForm />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+
+        {/* Admin-protected routes */}
+        <Route
+          path="/auction"
+          element={
+            <ProtectedAdminRoute>
+              <AuctionForm />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedAdminRoute>
+              <AdminDashboard />
+            </ProtectedAdminRoute>
+          }
+        />
+
+        <Route path="/product/:id" element={<ViewProduct />} />
       </Routes>
     </Layout>
   );

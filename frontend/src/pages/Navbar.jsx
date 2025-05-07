@@ -55,8 +55,9 @@ const Navbar = () => {
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
+    localStorage.removeItem("token"); // Remove the token from localStorage
+    setUser(null); // Set the user state to null to update the navbar
+    setDropdownOpen(false); // Close the dropdown if it's open
   };
 
   // Toggle dropdown on avatar click
@@ -64,12 +65,6 @@ const Navbar = () => {
     setDropdownOpen((prevState) => !prevState);
   };
 
-  // Handle profile view
-  // This function is called when the user clicks on the profile link in the dropdown
-  const handleActivityView = () => {
-    navigate(`/activity/${user.id}`); // Navigate to the Activity page for the logged-in user
-    setDropdownOpen(false); // Close dropdown after clicking the activity link
-  };
   return (
     <nav className="bg-stone-50 backdrop-blur-sm text-white px-6 py-3 flex justify-between items-center sticky top-0 z-50 w-full">
       <Link to="/">

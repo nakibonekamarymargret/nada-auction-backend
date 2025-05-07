@@ -85,6 +85,7 @@ public class ProductController {
     }
 
 
+
     @GetMapping("/all")
     public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
         List<Product> products = productService.getAllProducts();
