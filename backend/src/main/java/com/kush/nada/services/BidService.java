@@ -80,9 +80,6 @@ public class BidService {
     public List<Bid> getAllBidsForProduct(Long productId) {
         return bidRepository.findByProductId(productId);
     }
-     public List<Bid> getAllBids() {
-        return bidRepository.findAll();
-    }
 
     public Bid getBidById(Long id) {
         return bidRepository.findById(id).orElseThrow(() -> new RuntimeException("Bid not found"));
