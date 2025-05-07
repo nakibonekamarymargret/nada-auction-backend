@@ -3,10 +3,14 @@ package com.kush.nada.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kush.nada.enums.ProductCategory;
 import jakarta.persistence.*;
+import jakarta.persistence.Column;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
+
 
 @Entity
 @Table(name = "products_table")
@@ -15,7 +19,8 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name ;
-    private String description;
+@Column(columnDefinition = "TEXT")
+private String description;
     private String imageUrl;
     private BigDecimal highestPrice;
     @Enumerated(EnumType.STRING)  // Store the enum as a string in the database

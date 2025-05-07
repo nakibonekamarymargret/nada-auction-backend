@@ -193,10 +193,10 @@ const AdminDashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen bg-gray-100 w-full">
+      <div className="flex min-h-screen  w-full">
         <AppSidebar />
         <main className="flex-1 p-8 overflow-y-auto">
-          <div className="nav flex items-center justify-between p-4 rounded-lg mb-6">
+          <div className="nav flex items-center justify-between p-4 rounded-lg mb-6 shadow w-full">
             <SidebarTrigger />
             <div className="user-icon flex items-center">
               <img
