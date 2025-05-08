@@ -3,7 +3,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/ui/app-sidebar";
 import AuctionModal from "../auctions/AuctionModal";
 import AddProductModal from "./AddProductModal";
-import {EditProductModal} from "../products/EditProductModal";
+import { EditProductModal } from "../products/EditProductModal";
 import { Bargraph } from "../../components/ui/Bargraph";
 import { Users, Gavel, PackageCheck, Timer } from "lucide-react";
 import { PieChartStatus } from "../../components/ui/PieChartStatus";
@@ -196,7 +196,6 @@ const AdminDashboard = () => {
         <AppSidebar />
         <main className="flex-1 overflow-y-auto">
           <div className="nav flex items-center justify-between p-4 rounded-lg mb-6  shadow w-full">
-
             <SidebarTrigger />
             <div className="user-icon flex items-center">
               <img
