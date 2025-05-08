@@ -8,7 +8,6 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import ViewProduct from "./pages/products/ViewProduct";
 import ProtectedAdminRoute from "./pages/Auth/ProtectedAdminRoute";
 import WatchAuction from "./pages/auctions/WatchAuction";
- Development
 
 const Layout = ({ children }) => {
   const location = useLocation();
