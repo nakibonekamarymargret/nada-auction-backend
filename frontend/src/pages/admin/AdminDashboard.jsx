@@ -159,7 +159,6 @@ const AdminDashboard = () => {
       )
     );
   };
-
   if (loading) {
     return <div>Loading dashboard...</div>;
   }
@@ -193,10 +192,14 @@ const AdminDashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen bg-gray-100 w-full">
+      <div className="flex min-h-screen  w-full">
         <AppSidebar />
-        <main className="flex-1 p-8 overflow-y-auto">
-          <div className="nav flex items-center justify-between p-4 rounded-lg mb-6">
+        <main className="flex-1 overflow-y-auto">
+          <div className="nav flex items-center justify-between p-4 rounded-lg mb-6  shadow w-full">
+<<<<<<< HEAD
+=======
+
+>>>>>>> b9164b7258b837b66d59c9084b5c8d6537e5285d
             <SidebarTrigger />
             <div className="user-icon flex items-center">
               <img
@@ -207,152 +210,157 @@ const AdminDashboard = () => {
               <span className="text-white ml-2">Admin</span>
             </div>
           </div>
+          <div className="p-8">
+            <header className="mb-10">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                Dashboard
+              </h1>
+              <p className="text-gray-600">General Report</p>
+            </header>
 
-          <header className="mb-10">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
-            <p className="text-gray-600">General Report</p>
-          </header>
-
-          {/* Stats Cards */}
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-            {stats.map(({ title, value, icon, color }) => (
-              <div
-                key={title}
-                className="bg-white rounded-lg shadow p-4 flex items-center space-x-4"
-              >
-                <div className={`p-3 rounded-full ${color}`} aria-hidden="true">
-                  <span className="text-gray-800">{icon}</span>
+            {/* Stats Cards */}
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+              {stats.map(({ title, value, icon, color }) => (
+                <div
+                  key={title}
+                  className="bg-white rounded-lg shadow p-4 flex items-center space-x-4"
+                >
+                  <div
+                    className={`p-3 rounded-full ${color}`}
+                    aria-hidden="true"
+                  >
+                    <span className="text-gray-800">{icon}</span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">{title}</p>
+                    <p className="text-2xl font-bold text-gray-900">{value}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">{title}</p>
-                  <p className="text-2xl font-bold text-gray-900">{value}</p>
-                </div>
-              </div>
-            ))}
-          </section>
+              ))}
+            </section>
 
-          {/* Charts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-            <Bargraph chartData={chartData} />
-            <PieChartStatus statusCounts={statusCounts} />
-          </div>
-
-          {/* Quick Actions */}
-          <section className="mb-10">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-              Quick Actions
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <AddProductModal
-                onProductCreated={(product) =>
-                  console.log("New Product:", product)
-                }
-              />
-              <AuctionModal
-                onAuctionCreated={(auction) =>
-                  console.log("New Auction:", auction)
-                }
-              />
+            {/* Charts */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+              <Bargraph chartData={chartData} />
+              <PieChartStatus statusCounts={statusCounts} />
             </div>
-          </section>
 
-          {/* Recent Products Table */}
-          <section className="bg-white rounded-lg shadow p-6 mb-10">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">
-              Recent Products
-            </h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm text-left text-gray-800">
-                <thead className="bg-gray-100 text-xs uppercase font-semibold text-gray-600">
-                  <tr>
-                    <th className="px-4 py-3">Product Name</th>
-                    <th className="px-4 py-3">Category</th>
-                    <th className="px-4 py-3">Current Price</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentProducts.length > 0 ? (
-                    recentProducts.map((product) => (
-                      <tr
-                        key={product.id}
-                        className="border-b hover:bg-gray-50"
-                      >
-                        <td className="px-4 py-3">{product.name}</td>
-                        <td className="px-4 py-3">{product.category}</td>
-                        <td className="px-4 py-3">
-                          ${product.price.toFixed(2)}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-block px-2 py-1 text-xs font-semibold rounded ${
-                              product.status === "LIVE"
-                                ? "bg-green-100 text-green-800"
-                                : product.status === "SCHEDULED"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {product.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-blue-600 flex items-center space-x-2">
-                          
-                          <EditProductModal
-                            product={product}
-                            onProductUpdated={handleUpdateProduct}
-                          />
-                          <button
-                            onClick={() => handleDeleteProduct(product.id)}
-                            className="text-red-600 hover:text-red-800 focus:outline-none"
-                          >
-                            <RiDeleteBin6Line size={18} />
-                          </button>
+            {/* Quick Actions */}
+            <section className="mb-10">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+                Quick Actions
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <AddProductModal
+                  onProductCreated={(product) =>
+                    console.log("New Product:", product)
+                  }
+                />
+                <AuctionModal
+                  onAuctionCreated={(auction) =>
+                    console.log("New Auction:", auction)
+                  }
+                />
+              </div>
+            </section>
+
+            {/* Recent Products Table */}
+            <section className="bg-white rounded-lg shadow p-6 mb-10">
+              <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                Recent Products
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm text-left text-gray-800">
+                  <thead className="bg-gray-100 text-xs uppercase font-semibold text-gray-600">
+                    <tr>
+                      <th className="px-4 py-3">Product Name</th>
+                      <th className="px-4 py-3">Category</th>
+                      <th className="px-4 py-3">Current Price</th>
+                      <th className="px-4 py-3">Status</th>
+                      <th className="px-4 py-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentProducts.length > 0 ? (
+                      recentProducts.map((product) => (
+                        <tr
+                          key={product.id}
+                          className="border-b hover:bg-gray-50"
+                        >
+                          <td className="px-4 py-3">{product.name}</td>
+                          <td className="px-4 py-3">{product.category}</td>
+                          <td className="px-4 py-3">
+                            ${product.price.toFixed(2)}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`inline-block px-2 py-1 text-xs font-semibold rounded ${
+                                product.status === "LIVE"
+                                  ? "bg-green-100 text-green-800"
+                                  : product.status === "SCHEDULED"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {product.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-blue-600 flex items-center space-x-2">
+                            <EditProductModal
+                              product={product}
+                              onProductUpdated={handleUpdateProduct}
+                            />
+                            <button
+                              onClick={() => handleDeleteProduct(product.id)}
+                              className="text-red-600 hover:text-red-800 focus:outline-none"
+                            >
+                              <RiDeleteBin6Line size={18} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="5"
+                          className="px-4 py-6 text-center text-gray-500"
+                        >
+                          No products found
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="5"
-                        className="px-4 py-6 text-center text-gray-500"
-                      >
-                        No products found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
 
-          {/* Recent Bids Table */}
-          <section className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">
-              Recent Bids
-            </h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm text-left text-gray-800">
-                <thead className="bg-gray-100 text-xs uppercase font-semibold text-gray-600">
-                  <tr>
-                    <th className="px-4 py-3">User</th>
-                    <th className="px-4 py-3">Product</th>
-                    <th className="px-4 py-3">Bid Amount</th>
-                    <th className="px-4 py-3">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-3">John Doe</td>
-                    <td className="px-4 py-3">iPhone 14</td>
-                    <td className="px-4 py-3">$1,200</td>
-                    <td className="px-4 py-3">May 2, 2025</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
+            {/* Recent Bids Table */}
+            <section className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                Recent Bids
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm text-left text-gray-800">
+                  <thead className="bg-gray-100 text-xs uppercase font-semibold text-gray-600">
+                    <tr>
+                      <th className="px-4 py-3">User</th>
+                      <th className="px-4 py-3">Product</th>
+                      <th className="px-4 py-3">Bid Amount</th>
+                      <th className="px-4 py-3">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b hover:bg-gray-50">
+                      <td className="px-4 py-3">John Doe</td>
+                      <td className="px-4 py-3">iPhone 14</td>
+                      <td className="px-4 py-3">$1,200</td>
+                      <td className="px-4 py-3">May 2, 2025</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
         </main>
       </div>
     </SidebarProvider>

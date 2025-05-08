@@ -44,8 +44,7 @@ private String title;
 
     public Auction(Long id, String title,Double startingPrice, Double currentPrice, LocalDateTime startTime, LocalDateTime endTime, AuctionStatus status, UserEntity user, List<Product> products, List<Bid> bids) {
         this.id = id;
-            this.title = title;
-
+        this.title = title;
         this.startingPrice = startingPrice;
         this.currentPrice = currentPrice;
         this.startTime = startTime;
