@@ -83,11 +83,19 @@ public ResponseEntity<Map<String, Object>> createProduct(
 }
 
 
+
+
 @GetMapping("/all")
 public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
     List<ProductDto> products = productService.getAllProducts();
     return responseService.createResponse(200, products, request, HttpStatus.OK);
 }   
+    @GetMapping("/all")
+    public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
+        List<Product> products = productService.getAllProducts();
+        return responseService.createResponse(200, products, request, HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
 
      public ResponseEntity<Map<String, Object>> getProductById(@PathVariable Long id, HttpServletRequest request) {

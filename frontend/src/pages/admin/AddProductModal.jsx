@@ -30,6 +30,10 @@ const AddProductModal = () => {
     highestPrice: "",
     category: "",
     auctionId: "",
+<<<<<<< HEAD
+=======
+
+>>>>>>> b9164b7258b837b66d59c9084b5c8d6537e5285d
   });
 
   const [file, setFile] = useState(null);
@@ -46,6 +50,10 @@ const AddProductModal = () => {
     const fetchAuctions = async () => {
       try {
         const response = await AuctionService.getAll(token);
+<<<<<<< HEAD
+=======
+
+>>>>>>> b9164b7258b837b66d59c9084b5c8d6537e5285d
         const fetchedAuctions = Array.isArray(response.data.ReturnObject)
           ? response.data.ReturnObject
           : [];
@@ -154,6 +162,10 @@ const AddProductModal = () => {
         });
         setFile(null);
       }, 2000);
+<<<<<<< HEAD
+=======
+
+>>>>>>> b9164b7258b837b66d59c9084b5c8d6537e5285d
     } catch (err) {
       console.error("Product creation failed", err);
       setError(
@@ -179,6 +191,7 @@ const AddProductModal = () => {
             </DialogDescription>
           </DialogHeader>
 
+<<<<<<< HEAD
           {/* Error & Success Messages */}
           {error && <p className="text-red-500 text-center mb-4">{error}</p>}
           {success && (
@@ -188,6 +201,17 @@ const AddProductModal = () => {
           )}
 
           {/* Auction Selection */}
+=======
+
+          {error && <p className="text-red-500 text-center">{error}</p>}
+          {success && (
+            <p className="text-green-500 text-center">
+              Product created successfully!
+            </p>
+          )}
+
+          {/* Select Auction */}
+>>>>>>> b9164b7258b837b66d59c9084b5c8d6537e5285d
           <div className="grid grid-cols-4 items-center gap-4 mb-4">
             <Label htmlFor="auctionId" className="text-right">
               Auction
@@ -220,6 +244,10 @@ const AddProductModal = () => {
 
           {/* Product Name */}
           <div className="grid grid-cols-4 items-center gap-4 mb-4">
+<<<<<<< HEAD
+=======
+
+>>>>>>> b9164b7258b837b66d59c9084b5c8d6537e5285d
             <Label htmlFor="name" className="text-right">
               Name
             </Label>
@@ -235,6 +263,10 @@ const AddProductModal = () => {
 
           {/* Description */}
           <div className="grid grid-cols-4 items-center gap-4 mb-4">
+<<<<<<< HEAD
+=======
+
+>>>>>>> b9164b7258b837b66d59c9084b5c8d6537e5285d
             <Label htmlFor="description" className="text-right">
               Description
             </Label>
@@ -249,7 +281,12 @@ const AddProductModal = () => {
           </div>
 
           {/* Highest Price */}
+<<<<<<< HEAD
           <div className="grid grid-cols-4 items-center gap-4 mb-4">
+=======
+
+          <div className="grid grid-cols-4 items-center gap-4">
+>>>>>>> b9164b7258b837b66d59c9084b5c8d6537e5285d
             <Label htmlFor="highestPrice" className="text-right">
               Highest Price
             </Label>
@@ -268,6 +305,10 @@ const AddProductModal = () => {
 
           {/* Category Dropdown */}
           <div className="grid grid-cols-4 items-center gap-4 mb-4">
+<<<<<<< HEAD
+=======
+          <div className="grid grid-cols-4 items-center gap-4">
+>>>>>>> b9164b7258b837b66d59c9084b5c8d6537e5285d
             <Label className="text-right">Category</Label>
             <Select
               value={formData.category}
@@ -292,6 +333,11 @@ const AddProductModal = () => {
 
           {/* Image Upload */}
           <div className="grid grid-cols-4 items-center gap-4 mb-4">
+<<<<<<< HEAD
+=======
+          {/* File Upload */}
+          <div className="grid grid-cols-4 items-center gap-4">
+>>>>>>> b9164b7258b837b66d59c9084b5c8d6537e5285d
             <Label htmlFor="file" className="text-right">
               Image
             </Label>
@@ -306,7 +352,13 @@ const AddProductModal = () => {
             />
           </div>
 
+<<<<<<< HEAD
           {/* Submit Button */}
+=======
+
+          {/* Submit Button */}
+
+>>>>>>> b9164b7258b837b66d59c9084b5c8d6537e5285d
           <DialogFooter>
             <Button type="submit" disabled={loading}>
               {loading ? "Creating..." : "Create Product"}
@@ -314,6 +366,10 @@ const AddProductModal = () => {
           </DialogFooter>
 
           {/* Hidden Trigger for Auction Modal */}
+<<<<<<< HEAD
+=======
+
+>>>>>>> b9164b7258b837b66d59c9084b5c8d6537e5285d
           <div className="hidden">
             <AuctionModal
               isOpen={isAuctionModalOpen}

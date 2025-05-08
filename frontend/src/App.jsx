@@ -8,6 +8,10 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import ViewProduct from "./pages/products/ViewProduct";
 import ProtectedAdminRoute from "./pages/Auth/ProtectedAdminRoute";
 import WatchAuction from "./pages/auctions/WatchAuction";
+<<<<<<< HEAD
+=======
+ Development
+>>>>>>> b9164b7258b837b66d59c9084b5c8d6537e5285d
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -29,7 +33,10 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Home />} />
         <Route path="/watch-auction/:id" element={<WatchAuction />} />
+<<<<<<< HEAD
 
+=======
+>>>>>>> b9164b7258b837b66d59c9084b5c8d6537e5285d
         {/* Admin-protected routes */}
         <Route
           path="/auction"
