@@ -14,7 +14,8 @@ public class Auction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+@Column(name = "title", nullable = false)
+private String title;
     private Double startingPrice;   // Starting point for bidding
     private Double currentPrice;    // Current highest bid
 
@@ -41,8 +42,9 @@ public class Auction {
     public Auction() {
     }
 
-    public Auction(Long id, Double startingPrice, Double currentPrice, LocalDateTime startTime, LocalDateTime endTime, AuctionStatus status, UserEntity user, List<Product> products, List<Bid> bids) {
+    public Auction(Long id, String title,Double startingPrice, Double currentPrice, LocalDateTime startTime, LocalDateTime endTime, AuctionStatus status, UserEntity user, List<Product> products, List<Bid> bids) {
         this.id = id;
+        this.title = title;
         this.startingPrice = startingPrice;
         this.currentPrice = currentPrice;
         this.startTime = startTime;
@@ -60,7 +62,13 @@ public class Auction {
     public void setId(Long id) {
         this.id = id;
     }
+public String getTitle() {
+    return title;
+}
 
+public void setTitle(String title) {
+    this.title = title;
+}
     public Double getStartingPrice() {
         return startingPrice;
     }

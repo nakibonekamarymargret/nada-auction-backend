@@ -1,18 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import AuctionModal from "../auctions/AuctionModal";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import ProductService from "../../services/ProductService";
-
-// Dialog UI components
+import React, { useState } from "react";
+import axios from "axios";
 import {
   Dialog,
   DialogContent,
@@ -22,8 +9,19 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-
-import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import AuctionModal from "../auctions/AuctionModal";
+import AuctionService from "../../services/AuctionService";
+import ProductService from "../../services/ProductService";
 
 const AddProductModal = () => {
   const [formData, setFormData] = useState({
@@ -31,35 +29,37 @@ const AddProductModal = () => {
     description: "",
     highestPrice: "",
     category: "",
-    auctionId: "", // Auction id for the selected auction
+    auctionId: "",
+
   });
 
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
-  const [auctions, setAuctions] = useState([]); // State to store fetched auctions
-  const [isAuctionModalOpen, setAuctionModalOpen] = useState(false); // Modal state
+  const [auctions, setAuctions] = useState([]);
+  const [isAuctionModalOpen, setAuctionModalOpen] = useState(false);
 
   const token = localStorage.getItem("token");
 
-  useEffect(() => {
+  // Fetch active auctions on mount
+  React.useEffect(() => {
     const fetchAuctions = async () => {
       try {
-        const response = await axios.get("http://localhost:7107/auctions/all", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await AuctionService.getAll(token);
 
         const fetchedAuctions = Array.isArray(response.data.ReturnObject)
           ? response.data.ReturnObject
           : [];
 
-        setAuctions(fetchedAuctions);
+        const activeAuctions = fetchedAuctions.filter(
+          (auction) => auction.status !== "CLOSED"
+        );
+
+        setAuctions(activeAuctions);
       } catch (err) {
         console.error("Error fetching auctions:", err);
-        setError("Failed to fetch auctions");
+        setError("Failed to load available auctions.");
       }
     };
 
@@ -68,10 +68,7 @@ const AddProductModal = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e) => {
@@ -80,27 +77,92 @@ const AddProductModal = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
     setLoading(true);
-    setSuccess(false);
     setError("");
+    setSuccess(false);
+
+    // Basic validations
+    if (!formData.auctionId) {
+      setError("Please select an auction.");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.name.trim()) {
+      setError("Product name is required.");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.description.trim()) {
+      setError("Product description is required.");
+      setLoading(false);
+      return;
+    }
+
+    if (
+      !formData.highestPrice ||
+      isNaN(formData.highestPrice) ||
+      Number(formData.highestPrice) < 0
+    ) {
+      setError("Highest price must be a non-negative number.");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.category) {
+      setError("Product category is required.");
+      setLoading(false);
+      return;
+    }
+
+    if (!file) {
+      setError("An image file is required.");
+      setLoading(false);
+      return;
+    }
 
     try {
-      await ProductService.add(formData, file, token);
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("description", formData.description);
+      data.append("highestPrice", formData.highestPrice);
+      data.append("category", formData.category);
+      data.append("file", file);
 
+      const response = await axios.post(
+        `http://localhost:7107/product/add/${formData.auctionId}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log("Product creation response:", response.data);
+
+      // Show success message after product is created
       setSuccess(true);
+      setTimeout(() => {
+        setSuccess(false);
+        setFormData({
+          name: "",
+          description: "",
+          highestPrice: "",
+          category: "",
+          auctionId: "",
+        });
+        setFile(null);
+      }, 2000);
 
-      // Reset form
-      setFormData({
-        name: "",
-        description: "",
-        highestPrice: "",
-        category: "",
-        auctionId: "",
-      });
-      setFile(null);
     } catch (err) {
-      setError("Failed to create product.");
-      console.error(err);
+      console.error("Product creation failed", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to create product. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -120,6 +182,7 @@ const AddProductModal = () => {
             </DialogDescription>
           </DialogHeader>
 
+
           {error && <p className="text-red-500 text-center">{error}</p>}
           {success && (
             <p className="text-green-500 text-center">
@@ -128,7 +191,7 @@ const AddProductModal = () => {
           )}
 
           {/* Select Auction */}
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-4 items-center gap-4 mb-4">
             <Label htmlFor="auctionId" className="text-right">
               Auction
             </Label>
@@ -159,7 +222,8 @@ const AddProductModal = () => {
           </div>
 
           {/* Product Name */}
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-4 items-center gap-4 mb-4">
+
             <Label htmlFor="name" className="text-right">
               Name
             </Label>
@@ -173,8 +237,9 @@ const AddProductModal = () => {
             />
           </div>
 
-          {/* Description - Replaced Tiptap with simple textarea */}
-          <div className="grid grid-cols-4 items-center gap-4">
+          {/* Description */}
+          <div className="grid grid-cols-4 items-center gap-4 mb-4">
+
             <Label htmlFor="description" className="text-right">
               Description
             </Label>
@@ -189,6 +254,7 @@ const AddProductModal = () => {
           </div>
 
           {/* Highest Price */}
+
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="highestPrice" className="text-right">
               Highest Price
@@ -207,6 +273,7 @@ const AddProductModal = () => {
           </div>
 
           {/* Category Dropdown */}
+          <div className="grid grid-cols-4 items-center gap-4 mb-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label className="text-right">Category</Label>
             <Select
@@ -229,6 +296,8 @@ const AddProductModal = () => {
             </Select>
           </div>
 
+          {/* Image Upload */}
+          <div className="grid grid-cols-4 items-center gap-4 mb-4">
           {/* File Upload */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="file" className="text-right">
@@ -245,13 +314,17 @@ const AddProductModal = () => {
             />
           </div>
 
+
+          {/* Submit Button */}
+
           <DialogFooter>
             <Button type="submit" disabled={loading}>
               {loading ? "Creating..." : "Create Product"}
             </Button>
           </DialogFooter>
 
-          {/* Hidden Auction Modal Trigger */}
+          {/* Hidden Trigger for Auction Modal */}
+
           <div className="hidden">
             <AuctionModal
               isOpen={isAuctionModalOpen}
