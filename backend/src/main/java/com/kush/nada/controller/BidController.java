@@ -116,7 +116,17 @@ public class BidController {
 
         return responseService.createResponse(200, returnData, request, HttpStatus.OK);
     }
+@GetMapping("/all")
+@PreAuthorize("hasRole('ADMIN')") // Only admins can view all bids
+public ResponseEntity<Map<String, Object>> getAllBids(HttpServletRequest request) {
+    List<Bid> bids = bidService.getAllBids();
 
+    Map<String, Object> returnData = new HashMap<>();
+    returnData.put("ReturnObject", bids);
+    returnData.put("message", "All bids retrieved successfully.");
+
+    return responseService.createResponse(200, returnData, request, HttpStatus.OK);
+}
     // Helper Method
     private Long extractUserId(UserPrincipal principal) {
         if (principal == null) {
