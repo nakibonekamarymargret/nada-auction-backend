@@ -55,8 +55,9 @@ const Navbar = () => {
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
+    localStorage.removeItem("token"); // Remove the token from localStorage
+    setUser(null); // Set the user state to null to update the navbar
+    setDropdownOpen(false); // Close the dropdown if it's open
   };
 
   // Toggle dropdown on avatar click
@@ -64,12 +65,6 @@ const Navbar = () => {
     setDropdownOpen((prevState) => !prevState);
   };
 
-  // Handle profile view
-  // This function is called when the user clicks on the profile link in the dropdown
-  const handleActivityView = () => {
-    navigate(`/activity/${user.id}`); // Navigate to the Activity page for the logged-in user
-    setDropdownOpen(false); // Close dropdown after clicking the activity link
-  };
   return (
     <nav className="bg-stone-50 backdrop-blur-sm text-white px-6 py-3 flex justify-between items-center sticky top-0 z-50 w-full">
       <Link to="/">
@@ -96,67 +91,9 @@ const Navbar = () => {
               />
             </div>
 
-            <div className="flex items-center gap-10 text-sm">
-                      <div className="flex flex-col items-center cursor-pointer">
-                        <AiOutlineHeart size={20} />
-                        <span>My Watch List</span>
-                      </div>
-            
-                      {/* Dropdown User Menu */}
-                      <div className="flex flex-col items-center cursor-pointer relative">
-                        <AiOutlineUser
-                          size={20}
-                          onClick={() => setDropdownOpen(!dropdownOpen)}
-                        />
-                        <span>My Activity</span>
-            
-                        {dropdownOpen && (
-                          <div className="absolute right-0 mt-12 w-48 bg-white text-black rounded-md shadow-lg border z-50">
-                            <ul className="py-1 text-sm">
-                              {isAuthenticated ? (
-                                <>
-                                  <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                                    Bids
-                                  </li>
-                                  <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                                    Recently Viewed
-                                  </li>
-                                  <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                                    Buy Again
-                                  </li>
-                                  <li
-                                    onClick={handleLogout}
-                                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                                  >
-                                    Logout
-                                  </li>
-                                </>
-                              ) : (
-                                <>
-                                  <li
-                                    onClick={() => navigate("/login")}
-                                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                                  >
-                                    Login
-                                  </li>
-                                  <li
-                                    onClick={() => navigate("/register")}
-                                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                                  >
-                                    Register
-                                  </li>
-                                </>
-                              )}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-            
-                      <div className="flex flex-col items-center cursor-pointer">
-                        <AiOutlineBell size={20} />
-                        <span>Alerts</span>
-                      </div>
-                    </div>
+            <Link to="/notifications" className="hover:text-fuchsia-300">
+              <FiBell size={20} />
+            </Link>
 
             <div className="relative">
               <div ref={avatarRef} onClick={handleAvatarClick}>

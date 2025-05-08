@@ -45,7 +45,7 @@
 		<dependency>
 			<groupId>com.googlecode.libphonenumber</groupId>
 			<artifactId>libphonenumber</artifactId>
-			<version>8.13.21</version> <!-- You can adjust this version if needed -->
+			<version>8.13.21</version>
 		</dependency>
 
 		<dependency>
@@ -83,9 +83,27 @@
 			<version>0.11.5</version>
 			<scope>compile</scope>
 		</dependency>
+		<!-- Jackson for JSON handling -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+<!--				<version>2.15.0</version> -->
+			</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+<dependency>
+    <groupId>javax.xml.bind</groupId>
+    <artifactId>jaxb-api</artifactId>
+    <version>2.3.0</version>
+</dependency>
+		<!--The stripe Payment Dependency-->
+		<dependency>
+			<groupId>com.stripe</groupId>
+			<artifactId>stripe-java</artifactId>
+			<version>24.6.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>

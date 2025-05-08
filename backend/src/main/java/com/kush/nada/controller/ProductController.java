@@ -1,7 +1,9 @@
 package com.kush.nada.controller;
 
 import com.kush.nada.models.Product;
+import com.kush.nada.dtos.ProductDto;
 import com.kush.nada.models.UserPrincipal;
+import com.kush.nada.enums.ProductCategory;
 import com.kush.nada.services.ProductService;
 import com.kush.nada.services.ResponseService;
 import com.kush.nada.services.S3ServiceUpload;
@@ -28,10 +30,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
 
+
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+
 @CrossOrigin
 @RestController
 @RequestMapping("/product")
@@ -49,43 +55,41 @@ public class ProductController {
     }
 
     @PostMapping(value = "/add/{auctionId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> createProduct(
-            @RequestPart("product") Product product,
-            @PathVariable Long auctionId,
-            @RequestPart("file") MultipartFile file,
-            HttpServletRequest request,
-            @AuthenticationPrincipal UserPrincipal principal) throws IOException {
+@PreAuthorize("hasRole('ADMIN')")
+public ResponseEntity<Map<String, Object>> createProduct(
+        @RequestParam("name") String name,
+        @RequestParam("description") String description,
+        @RequestParam("highestPrice") BigDecimal highestPrice,
+        @RequestParam("category") String category,
+        @RequestPart("file") MultipartFile file,
+        @PathVariable Long auctionId,
+        HttpServletRequest request,
+        @AuthenticationPrincipal UserPrincipal principal) throws IOException {
 
-        // Upload image to S3
-        String imageUrl = s3ServiceUpload.uploadFile(file);
-        product.setImageUrl(imageUrl);
+    // Create Product object manually
+    Product product = new Product();
+    product.setName(name);
+    product.setDescription(description);
+    product.setHighestPrice(highestPrice);
+    product.setCategory(ProductCategory.valueOf(category)); 
 
-        // Ensure auction ID exists
-//        if (product.getAuction() == null || product.getAuction().getId() == null) {
-//            throw new IllegalArgumentException("Auction ID must be provided.");
-//        }
+    // Handle image
+    String imageUrl = s3ServiceUpload.uploadFile(file);
+    product.setImageUrl(imageUrl);
 
-        Product createdProduct = productService.createProduct(product, auctionId);
-        if (product.getName() == null || product.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Product name is required.");
-        }
-        if (product.getDescription() == null || product.getDescription().trim().isEmpty()) {
-            throw new IllegalArgumentException("Product description is required.");
-        }
-        if (product.getHighestPrice() == null || product.getHighestPrice().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Price must be a non-negative value.");
-        }
+    Product createdProduct = productService.createProduct(product, auctionId);
 
-        if (product.getCategory() == null) {
-            throw new IllegalArgumentException("Product category is required.");
-        }
-
-        return responseService.createResponse(200, createdProduct, request, HttpStatus.CREATED);
-    }
+    return responseService.createResponse(200, createdProduct, request, HttpStatus.CREATED);
+}
 
 
 
+
+@GetMapping("/all")
+public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
+    List<ProductDto> products = productService.getAllProducts();
+    return responseService.createResponse(200, products, request, HttpStatus.OK);
+}   
     @GetMapping("/all")
     public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
         List<Product> products = productService.getAllProducts();
@@ -93,11 +97,18 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> getProductById(@PathVariable Long id, HttpServletRequest request) {
-        Product product = productService.getProductById(id);
-        return responseService.createResponse(200, product, request, HttpStatus.OK);
-    }
+
+     public ResponseEntity<Map<String, Object>> getProductById(@PathVariable Long id, HttpServletRequest request) {
+        // Call the service method that returns the DTO
+        ProductDto productDto = productService.getProductDtoById(id);
+         Map<String, Object> responseMap = new HashMap<>();
+         responseMap.put("status", 200); 
+         responseMap.put("ReturnObject", productDto);
+
+         return ResponseEntity.ok(responseMap); 
+      }
+
+    // 
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
