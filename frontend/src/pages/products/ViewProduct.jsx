@@ -129,6 +129,7 @@ const ViewProduct = () => {
           Watch Auction
         </button>
       </div>
+
     );
   } else if (auction.status === "CLOSED") {
     actionButton = (

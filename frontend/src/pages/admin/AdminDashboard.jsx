@@ -159,7 +159,6 @@ const AdminDashboard = () => {
       )
     );
   };
-
   if (loading) {
     return <div>Loading dashboard...</div>;
   }
@@ -197,6 +196,7 @@ const AdminDashboard = () => {
         <AppSidebar />
         <main className="flex-1 overflow-y-auto">
           <div className="nav flex items-center justify-between p-4 rounded-lg mb-6  shadow w-full">
+
             <SidebarTrigger />
             <div className="user-icon flex items-center">
               <img

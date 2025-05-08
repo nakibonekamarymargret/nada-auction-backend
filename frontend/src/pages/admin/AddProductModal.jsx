@@ -30,6 +30,7 @@ const AddProductModal = () => {
     highestPrice: "",
     category: "",
     auctionId: "",
+
   });
 
   const [file, setFile] = useState(null);
@@ -46,6 +47,7 @@ const AddProductModal = () => {
     const fetchAuctions = async () => {
       try {
         const response = await AuctionService.getAll(token);
+
         const fetchedAuctions = Array.isArray(response.data.ReturnObject)
           ? response.data.ReturnObject
           : [];
@@ -154,6 +156,7 @@ const AddProductModal = () => {
         });
         setFile(null);
       }, 2000);
+
     } catch (err) {
       console.error("Product creation failed", err);
       setError(
@@ -179,15 +182,15 @@ const AddProductModal = () => {
             </DialogDescription>
           </DialogHeader>
 
-          {/* Error & Success Messages */}
-          {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
+          {error && <p className="text-red-500 text-center">{error}</p>}
           {success && (
-            <p className="text-green-500 text-center mb-4">
-              🎉 Product created successfully!
+            <p className="text-green-500 text-center">
+              Product created successfully!
             </p>
           )}
 
-          {/* Auction Selection */}
+          {/* Select Auction */}
           <div className="grid grid-cols-4 items-center gap-4 mb-4">
             <Label htmlFor="auctionId" className="text-right">
               Auction
@@ -220,6 +223,7 @@ const AddProductModal = () => {
 
           {/* Product Name */}
           <div className="grid grid-cols-4 items-center gap-4 mb-4">
+
             <Label htmlFor="name" className="text-right">
               Name
             </Label>
@@ -235,6 +239,7 @@ const AddProductModal = () => {
 
           {/* Description */}
           <div className="grid grid-cols-4 items-center gap-4 mb-4">
+
             <Label htmlFor="description" className="text-right">
               Description
             </Label>
@@ -249,7 +254,8 @@ const AddProductModal = () => {
           </div>
 
           {/* Highest Price */}
-          <div className="grid grid-cols-4 items-center gap-4 mb-4">
+
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="highestPrice" className="text-right">
               Highest Price
             </Label>
@@ -268,6 +274,7 @@ const AddProductModal = () => {
 
           {/* Category Dropdown */}
           <div className="grid grid-cols-4 items-center gap-4 mb-4">
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label className="text-right">Category</Label>
             <Select
               value={formData.category}
@@ -291,6 +298,8 @@ const AddProductModal = () => {
 
           {/* Image Upload */}
           <div className="grid grid-cols-4 items-center gap-4 mb-4">
+          {/* File Upload */}
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="file" className="text-right">
               Image
             </Label>
@@ -305,7 +314,9 @@ const AddProductModal = () => {
             />
           </div>
 
+
           {/* Submit Button */}
+
           <DialogFooter>
             <Button type="submit" disabled={loading}>
               {loading ? "Creating..." : "Create Product"}
@@ -313,6 +324,7 @@ const AddProductModal = () => {
           </DialogFooter>
 
           {/* Hidden Trigger for Auction Modal */}
+
           <div className="hidden">
             <AuctionModal
               isOpen={isAuctionModalOpen}
