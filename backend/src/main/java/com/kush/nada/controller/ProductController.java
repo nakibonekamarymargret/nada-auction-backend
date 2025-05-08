@@ -83,7 +83,6 @@ public ResponseEntity<Map<String, Object>> createProduct(
 }
 
 
-
 @GetMapping("/all")
 public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
     List<ProductDto> products = productService.getAllProducts();

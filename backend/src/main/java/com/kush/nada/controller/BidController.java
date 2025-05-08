@@ -1,5 +1,5 @@
 package com.kush.nada.controller;
-import com.stripe.model.checkout.Session;
+
 import com.kush.nada.models.Bid;
 import com.kush.nada.models.Product;
 import com.kush.nada.models.UserPrincipal;
@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import com.stripe.model.checkout.Session;
 
 import java.util.HashMap;
