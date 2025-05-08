@@ -196,10 +196,6 @@ const AdminDashboard = () => {
         <AppSidebar />
         <main className="flex-1 overflow-y-auto">
           <div className="nav flex items-center justify-between p-4 rounded-lg mb-6  shadow w-full">
-<<<<<<< HEAD
-=======
-
->>>>>>> b9164b7258b837b66d59c9084b5c8d6537e5285d
             <SidebarTrigger />
             <div className="user-icon flex items-center">
               <img
