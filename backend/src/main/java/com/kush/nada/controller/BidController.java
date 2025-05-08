@@ -7,7 +7,9 @@ import com.kush.nada.services.BidService;
 import com.kush.nada.services.ProductService;
 import com.kush.nada.services.ResponseService;
 import com.kush.nada.services.StripeService;
+import com.kush.nada.services.StripeService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +18,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import com.stripe.model.checkout.Session;
+import com.stripe.model.checkout.Session;
 
+import java.util.HashMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +31,16 @@ public class BidController {
 
     private final BidService bidService;
     private final ProductService productService;
+    private final ProductService productService;
     private final ResponseService responseService;
+    private final StripeService stripeService;
+
+    @Autowired
+    public BidController(
+            BidService bidService,
+            ProductService productService,
+            ResponseService responseService,
+            StripeService stripeService) {
     private final StripeService stripeService;
 
     @Autowired
@@ -40,8 +53,10 @@ public class BidController {
         this.productService = productService;
         this.responseService = responseService;
         this.stripeService = stripeService;
+        this.stripeService = stripeService;
     }
 
+    // Place a bid
     // Place a bid
     @PostMapping("/place/{productId}")
     @PreAuthorize("hasRole('USER')")
@@ -56,6 +71,10 @@ public class BidController {
 
         if (product.getAuction() == null) {
             return responseService.createResponse(400, "Product has no associated auction", request, HttpStatus.BAD_REQUEST);
+        Product product = productService.getProductById(productId);
+
+        if (product.getAuction() == null) {
+            return responseService.createResponse(400, "Product has no associated auction", request, HttpStatus.BAD_REQUEST);
         }
 
         Bid createdBid = bidService.createBid(bid, productId, product.getAuction().getId(), userId);
@@ -63,10 +82,22 @@ public class BidController {
         Map<String, Object> returnData = new HashMap<>();
         returnData.put("bid", createdBid);
         returnData.put("message", "Bid placed successfully. Awaiting final confirmation.");
+        Bid createdBid = bidService.createBid(bid, productId, product.getAuction().getId(), userId);
 
+        Map<String, Object> returnData = new HashMap<>();
+        returnData.put("bid", createdBid);
+        returnData.put("message", "Bid placed successfully. Awaiting final confirmation.");
+
+        return responseService.createResponse(200, returnData, request, HttpStatus.CREATED);
         return responseService.createResponse(200, returnData, request, HttpStatus.CREATED);
     }
 
+    // Check result after bidding closes
+    @GetMapping("/check-result/{productId}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> checkAuctionResult(
+            @PathVariable Long productId,
+            @AuthenticationPrincipal UserPrincipal principal,
     // Check result after bidding closes
     @GetMapping("/check-result/{productId}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
@@ -117,17 +148,7 @@ public class BidController {
 
         return responseService.createResponse(200, returnData, request, HttpStatus.OK);
     }
-@GetMapping("/all")
-@PreAuthorize("hasRole('ADMIN')") // Only admins can view all bids
-public ResponseEntity<Map<String, Object>> getAllBids(HttpServletRequest request) {
-    List<Bid> bids = bidService.getAllBids();
 
-    Map<String, Object> returnData = new HashMap<>();
-    returnData.put("ReturnObject", bids);
-    returnData.put("message", "All bids retrieved successfully.");
-
-    return responseService.createResponse(200, returnData, request, HttpStatus.OK);
-}
     // Helper Method
     private Long extractUserId(UserPrincipal principal) {
         if (principal == null) {
