@@ -7,6 +7,7 @@ import AuctionForm from "./pages/products/AuctionForm";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ViewProduct from "./pages/products/ViewProduct";
 import ProtectedAdminRoute from "./pages/Auth/ProtectedAdminRoute";
+import WatchAuction from "./pages/auctions/WatchAuction";
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -27,6 +28,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Home />} />
+        <Route path="/watch-auction/:id" element={<WatchAuction />} />
 
         {/* Admin-protected routes */}
         <Route
