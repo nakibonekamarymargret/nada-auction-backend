@@ -20,58 +20,58 @@ const Register = () => {
   const [error, setError] = useState({});
   const [message, setMessage] = useState("");
   const [confirmPassword, setConfirmPassword] = useState(""); // State for password confirmation
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false); // State for showing confirmation password
-  
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // State for showing confirmation password
+
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUser({ ...user, [name]: value });
   };
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError({});
-  setMessage("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError({});
+    setMessage("");
 
-  try {
-    const response = await AuthService.register(user);
+    try {
+      const response = await AuthService.register(user);
 
-    // Check if passwords match
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
+      // Check if passwords match
+      if (password !== confirmPassword) {
+        setError("Passwords do not match.");
+        return;
+      }
+      console.log("Registration response:", response.data);
+      setMessage("Registration successful. Redirecting to Home page...");
+
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
+    } catch (err) {
+      const message =
+        err.response?.data?.returnMessage || "An unexpected error occurred.";
+      console.log("Error:", message);
+
+      // Map backend messages to specific fields
+      if (message.toLowerCase().includes("name")) {
+        setError({ name: message });
+      } else if (message.toLowerCase().includes("email")) {
+        setError({ email: message });
+      } else if (message.toLowerCase().includes("password")) {
+        setError({ password: message });
+      } else if (message.toLowerCase().includes("address")) {
+        setError({ address: message });
+      } else if (message.toLowerCase().includes("phone")) {
+        setError({ phoneNumber: message });
+      } else {
+        setError({ general: message });
+      }
     }
-    console.log("Registration response:", response.data);
-    setMessage("Registration successful. Redirecting to Home page...");
+  };
 
-    setTimeout(() => {
-      navigate("/");
-    }, 2000);
-  } catch (err) {
-    const message =
-      err.response?.data?.returnMessage || "An unexpected error occurred.";
-    console.log("Error:", message);
-
-    // Map backend messages to specific fields
-    if (message.toLowerCase().includes("name")) {
-      setError({ name: message });
-    } else if (message.toLowerCase().includes("email")) {
-      setError({ email: message });
-    } else if (message.toLowerCase().includes("password")) {
-      setError({ password: message });
-    } else if (message.toLowerCase().includes("address")) {
-      setError({ address: message });
-    } else if (message.toLowerCase().includes("phone")) {
-      setError({ phoneNumber: message });
-    } else {
-      setError({ general: message });
-    }
-  }
-};
-
-const handleLogin = () => {
-  navigate("/login");
-};
+  const handleLogin = () => {
+    navigate("/login");
+  };
   return (
     <div className="flex flex-col md:flex-row items-start items-stretch gap-[5vw] max-w-5xl mx-auto">
       {/* Left image */}
@@ -179,7 +179,7 @@ const handleLogin = () => {
                 </div>
               </div>
             </div>
- {/* Password Confirmation Field */}
+            {/* Password Confirmation Field */}
             <div className="mb-3 relative">
               <label
                 htmlFor="confirmPassword"

@@ -90,7 +90,11 @@ public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest req
     List<ProductDto> products = productService.getAllProducts();
     return responseService.createResponse(200, products, request, HttpStatus.OK);
 }   
-
+    // @GetMapping("/all")
+    // public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
+    //     List<Product> products = productService.getAllProducts();
+    //     return responseService.createResponse(200, products, request, HttpStatus.OK);
+    // }
 
     @GetMapping("/{id}")
 

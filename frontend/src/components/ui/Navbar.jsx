@@ -5,8 +5,6 @@ import { AiOutlineHeart, AiOutlineUser, AiOutlineBell } from "react-icons/ai";
 import { CiLogin } from "react-icons/ci";
 import { FaUserPlus } from "react-icons/fa6";
 
-
-
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();

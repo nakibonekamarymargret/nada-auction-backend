@@ -80,13 +80,13 @@ const ViewProduct = () => {
 
   const toggleDetails = () => setShowDetails((prev) => !prev);
   const toggleWatchlist = () => setIsWatchlisted((prev) => !prev);
-// const handleWatchLiveAuction = () => {
-//   const auctionId = auction.id;
-//   const watchWindow = window.open(`/watch-auction/${auctionId}`, "_blank");
-//   if (!watchWindow) {
-//     alert("Please allow pop-ups to watch the auction.");
-//   }
-// };
+  // const handleWatchLiveAuction = () => {
+  //   const auctionId = auction.id;
+  //   const watchWindow = window.open(`/watch-auction/${auctionId}`, "_blank");
+  //   if (!watchWindow) {
+  //     alert("Please allow pop-ups to watch the auction.");
+  //   }
+  // };
 
   if (!product) {
     return (
@@ -129,7 +129,6 @@ const ViewProduct = () => {
           Watch Auction
         </button>
       </div>
-
     );
   } else if (auction.status === "CLOSED") {
     actionButton = (
