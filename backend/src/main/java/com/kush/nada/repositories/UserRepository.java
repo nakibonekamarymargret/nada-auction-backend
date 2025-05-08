@@ -14,42 +14,6 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<UserEntity ,Long> {
 
     Optional<UserEntity> findByEmail(String email);
-<<<<<<< HEAD
-
-    @Query("SELECT u FROM UserEntity u WHERE u.deleted = false")
-    List<UserEntity> findAllActiveUsers();
-
-    // All soft-deleted users
-    @Query("SELECT u FROM UserEntity u WHERE u.deleted = true"
-    )
-    List<UserEntity> findAllDeletedUsers();
-
-    // Get deleted user by ID
-    @Query("SELECT u FROM UserEntity u WHERE u.id = :id AND u.deleted = true")
-    Optional<UserEntity> findDeletedUserById(@Param("id") Long id);
-
-    @Query("SELECT u FROM UserEntity u WHERE u.id = :id AND u.deleted = false")
-    Optional<UserEntity> findActiveUserById(@Param("id") Long id);
-
-    // Receive User with Auctions and Products in the Auctions
-//    @Query("SELECT u FROM UserEntity u " +
-//            "LEFT JOIN FETCH u.auctions a " +
-//            "LEFT JOIN FETCH a.products " +
-//            "WHERE u.email = :email")
-//    Optional<UserEntity> findByEmailWithAuctionsAndProducts(@Param("email") String email);
-
-    @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH u.auctions WHERE u.email = :email")
-    Optional<UserEntity> findByEmailWithAuctions(@Param("email") String email);
-
-
-    boolean existsByEmail(String email);
-
-    boolean existsByName(String name);
-
-    boolean existsByPhoneNumber(String phoneNumber);
-}
-=======
->>>>>>> 803c7f9 (Add the CRUD in the Auction and Product as well as the product photo)
 
     @Query("SELECT u FROM UserEntity u WHERE u.deleted = false")
     List<UserEntity> findAllActiveUsers();
