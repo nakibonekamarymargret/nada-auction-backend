@@ -80,6 +80,13 @@ const ViewProduct = () => {
 
   const toggleDetails = () => setShowDetails((prev) => !prev);
   const toggleWatchlist = () => setIsWatchlisted((prev) => !prev);
+// const handleWatchLiveAuction = () => {
+//   const auctionId = auction.id;
+//   const watchWindow = window.open(`/watch-auction/${auctionId}`, "_blank");
+//   if (!watchWindow) {
+//     alert("Please allow pop-ups to watch the auction.");
+//   }
+// };
 
   if (!product) {
     return (
@@ -107,12 +114,22 @@ const ViewProduct = () => {
     );
   } else if (auction.status === "LIVE") {
     actionButton = (
-      <button
-        onClick={() => navigate(`/live-auction/${auction.id}`)}
-        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2 transition-colors duration-200"
-      >
-        View Live Auction
-      </button>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2">
+        <button
+          onClick={() => navigate(`/live-auction/${auction.id}`)}
+          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+        >
+          View Live Auction
+        </button>
+
+        <button
+          onClick={() => window.open(`/watch-auction/${auction.id}`, "_blank")}
+          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+        >
+          Watch Auction
+        </button>
+      </div>
+
     );
   } else if (auction.status === "CLOSED") {
     actionButton = (
