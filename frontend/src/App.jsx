@@ -12,7 +12,6 @@ import WatchAuction from "./pages/auctions/WatchAuction";
 const Layout = ({ children }) => {
   const location = useLocation();
   const hideNavbarOn = ["/admin", "/login", "/register", "/add"];
-  const hideNavbarOn = ["/admin", "/login", "/register", "/add"];
 
   return (
     <>

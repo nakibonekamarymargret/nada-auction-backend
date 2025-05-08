@@ -229,7 +229,6 @@ const AddProductModal = () => {
               value={formData.name}
               onChange={handleChange}
               className="col-span-3"
-              className="col-span-3"
               required
             />
           </div>
@@ -260,11 +259,8 @@ const AddProductModal = () => {
               type="number"
               step="0.01"
               min="0"
-              step="0.01"
-              min="0"
               value={formData.highestPrice}
               onChange={handleChange}
-              className="col-span-3"
               className="col-span-3"
               required
             />
@@ -280,7 +276,6 @@ const AddProductModal = () => {
               }
               required
               className="col-span-3"
-              className="col-span-3"
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
@@ -291,9 +286,6 @@ const AddProductModal = () => {
                 <SelectItem value="ANTIQUES">Antiques</SelectItem>
                 <SelectItem value="JEWELRY">Jewelry</SelectItem>
                 <SelectItem value="ART">Art</SelectItem>
-                <SelectItem value="ELECTRONICS">Electronics</SelectItem>
-                <SelectItem value="ANTIQUES">Antiques</SelectItem>
-                <SelectItem value="JEWELRY">Jewelry</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -309,7 +301,6 @@ const AddProductModal = () => {
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="col-span-3"
               className="col-span-3"
               required
             />
