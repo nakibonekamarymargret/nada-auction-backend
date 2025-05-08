@@ -2,6 +2,8 @@ package com.kush.nada.services;
 
 import com.kush.nada.enums.AuctionStatus;
 import com.kush.nada.models.Auction;
+import com.kush.nada.dtos.AuctionDto;
+import com.kush.nada.dtos.ProductDto;
 import com.kush.nada.models.Product;
 import com.kush.nada.models.UserEntity;
 import com.kush.nada.repositories.AuctionRepository;
@@ -9,6 +11,9 @@ import com.kush.nada.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import java.util.Optional;
+
+import java.util.stream.Collectors;
 
 import java.util.List;
 
@@ -45,14 +50,76 @@ public class ProductService {
 
     // READ ALL
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
-    }
+   public List<ProductDto> getAllProducts() {
+    List<Product> products = productRepository.findAll();
+
+    return products.stream().map(product -> {
+        Auction auction = product.getAuction();
+        AuctionDto auctionDto = null;
+
+        if (auction != null) {
+            auctionDto = new AuctionDto(
+                auction.getId(),
+                auction.getStatus(),
+                auction.getStartTime(),
+                auction.getEndTime()
+            );
+        }
+
+        return new ProductDto(
+            product.getId(),
+            product.getName(),
+            product.getDescription(),
+            product.getImageUrl(),
+            product.getHighestPrice(),
+            product.getCategory(),
+            product.getLastBidTime(),
+            product.isClosed(),
+            auctionDto
+        );
+    }).collect(Collectors.toList());
+}
+
 
     // READ BY ID
     public Product getProductById(Long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
+    }
+public Product findByName(String name) {
+    Optional<Product> optionalProduct = productRepository.findByName(name);
+return optionalProduct.orElse(null);
+
+
+}
+public ProductDto getProductDtoById(Long id) { 
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        Auction auction = product.getAuction(); 
+        AuctionDto auctionDto = null;
+        if (auction != null) {
+            auctionDto = new AuctionDto(
+                auction.getId(),
+                auction.getStatus(),
+                auction.getStartTime(),
+                auction.getEndTime()
+            );
+        }
+
+        ProductDto productDto = new ProductDto(
+            product.getId(),
+            product.getName(),
+            product.getDescription(),
+            product.getImageUrl(),
+            product.getHighestPrice(),
+            product.getCategory(),
+            product.getLastBidTime(),
+            product.isClosed(),
+            auctionDto // Include the Auction DTO
+        );
+
+        return productDto;
     }
 
     // UPDATE
