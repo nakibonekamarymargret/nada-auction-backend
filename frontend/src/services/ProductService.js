@@ -27,7 +27,7 @@ const ProductService = {
         "Content-Type": "application/json",
       },
     };
-    return axios.put(`${API_URL}/${id}`, productData, config);
+    return axios.put(`${API_URL}/edit/${id}`, productData, config);
   },
 
   deleteProduct: async (id, token) => {
@@ -36,24 +36,10 @@ const ProductService = {
         Authorization: `Bearer ${token}`,
       },
     };
-    return axios.delete(`${API_URL}/${id}`, config);
+    return axios.delete(`${API_URL}/delete/${id}`, config);
   },
-  updateProduct: async (id, productData, token) => {
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-    return axios.put(`${API_URL}/${id}`, productData, config);
-  },
-  deleteProduct: async (id, token) => {
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-    return axios.delete(`${API_URL}/${id}`, config);
-  },
+ 
+ 
 };
 
 export default ProductService;

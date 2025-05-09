@@ -28,4 +28,6 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
     }
 
     List<Bid> findByProductIdOrderByAmountDesc(Long productId);
+
+    void deleteByProduct_Id(Long productId);
 }

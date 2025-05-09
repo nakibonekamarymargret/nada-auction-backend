@@ -1,13 +1,17 @@
 package com.kush.nada.services;
 
+import com.kush.nada.dtos.ProductUpdateDto;
 import com.kush.nada.enums.AuctionStatus;
+import com.kush.nada.exceptions.NotFoundException;
 import com.kush.nada.models.Auction;
 import com.kush.nada.dtos.AuctionDto;
 import com.kush.nada.dtos.ProductDto;
 import com.kush.nada.models.Product;
 import com.kush.nada.models.UserEntity;
 import com.kush.nada.repositories.AuctionRepository;
+import com.kush.nada.repositories.BidRepository;
 import com.kush.nada.repositories.ProductRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -22,11 +26,14 @@ public class ProductService {
 
     private ProductRepository productRepository;
     private AuctionRepository auctionRepository;
+    private final BidRepository bidRepository;
 
     @Autowired
-    public ProductService(ProductRepository productRepository, AuctionRepository auctionRepository) {
+    public ProductService(ProductRepository productRepository, AuctionRepository auctionRepository ,BidRepository bidRepository) {
         this.productRepository = productRepository;
         this.auctionRepository = auctionRepository;
+        this.bidRepository= bidRepository;
+
     }
 
     // CREATE
@@ -124,30 +131,48 @@ public ProductDto getProductDtoById(Long id) {
 
     // UPDATE
   //  @Transactional
-    public Product updateProduct(Long id, Product productDetails) {
-        Product existingProduct = getProductById(id);
+    @Transactional // Ensure this annotation is present
+    public Product updateProduct(Long id, ProductUpdateDto productDetailsDto) {
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Product not found with id " + id));
 
-        // Validate auction if changed
-        if (productDetails.getAuctionId() != null &&
-                !productDetails.getAuctionId().equals(existingProduct.getAuctionId())) {
-
-            Auction newAuction = auctionRepository.findById(productDetails.getAuctionId())
-                    .orElseThrow(() -> new RuntimeException("New auction not found"));
-            existingProduct.setAuction(newAuction);
+        // Update fields conditionally
+        if (productDetailsDto.getName() != null) {
+            existingProduct.setName(productDetailsDto.getName());
+        }
+        if (productDetailsDto.getDescription() != null) {
+            existingProduct.setDescription(productDetailsDto.getDescription());
+        }
+        if (productDetailsDto.getCategory() != null) {
+            existingProduct.setCategory(productDetailsDto.getCategory());
         }
 
-        // Update other fields
-        existingProduct.setName(productDetails.getName());
-        existingProduct.setDescription(productDetails.getDescription());
-        existingProduct.setHighestPrice(productDetails.getHighestPrice());
-        existingProduct.setCategory(productDetails.getCategory());
 
-        return productRepository.save(existingProduct);
+        // Save the changes
+        Product savedProduct = productRepository.save(existingProduct);
+
+        // *** IMPORTANT: Initialize the lazy-loaded Auction relationship ***
+        // Accessing the related object or one of its properties forces Hibernate
+        // to fetch it from the database while the entity is still managed.
+        if (savedProduct.getAuction() != null) {
+            // Accessing a property like getStatus() is a common way to trigger initialization
+            // Make sure getAuction().getStatus() doesn't itself cause another lazy load issue if Auction has complex relations
+            AuctionStatus auctionStatus = savedProduct.getAuction().getStatus();
+            // You can optionally log this status here to confirm it's loaded
+            // System.out.println("Initialized auction status: " + auctionStatus);
+        }
+        // *** The auction relationship is now loaded for the returned entity ***
+
+
+        // Return the saved and initialized product entity
+        return savedProduct;
     }
 
     // DELETE
+    @Transactional
     public void deleteProduct(Long id) {
         Product product = getProductById(id);
+        bidRepository.deleteByProduct_Id(id);
         productRepository.delete(product);
     }
 }

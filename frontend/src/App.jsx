@@ -8,6 +8,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import ViewProduct from "./pages/products/ViewProduct";
 import ProtectedAdminRoute from "./pages/Auth/ProtectedAdminRoute";
 import WatchAuction from "./pages/auctions/WatchAuction";
+import ProfilePage from "./pages/admin/ProfilePage";
+import ProductsByCategoryPage from "./pages/products/ProductsByCategoryPage";
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -29,6 +31,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Home />} />
         <Route path="/watch-auction/:id" element={<WatchAuction />} />
+        <Route path="/products/:status" element={<ProductsByCategoryPage />} />
+
         {/* Admin-protected routes */}
         <Route
           path="/auction"
@@ -43,6 +47,14 @@ function App() {
           element={
             <ProtectedAdminRoute>
               <AdminDashboard />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <ProtectedAdminRoute>
+              <ProfilePage />
             </ProtectedAdminRoute>
           }
         />
