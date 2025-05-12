@@ -101,6 +101,7 @@ public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest req
 
      public ResponseEntity<Map<String, Object>> getProductById(@PathVariable Long id, HttpServletRequest request) {
         // Call the service method that returns the DTO
+        System.out.println("Received request for product ID: " + id);
         ProductDto productDto = productService.getProductDtoById(id);
          Map<String, Object> responseMap = new HashMap<>();
          responseMap.put("status", 200); 

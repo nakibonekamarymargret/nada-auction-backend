@@ -98,7 +98,13 @@
     <artifactId>jaxb-api</artifactId>
     <version>2.3.0</version>
 </dependency>
+		<!-- WEB SOCKET -->
+<dependency>
+  <groupId>org.springframework.boot</groupId>            
+  <artifactId>spring-boot-starter-websocket</artifactId>
+</dependency>
 		<!--The stripe Payment Dependency-->
+
 		<dependency>
 			<groupId>com.stripe</groupId>
 			<artifactId>stripe-java</artifactId>
