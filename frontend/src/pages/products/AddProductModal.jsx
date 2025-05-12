@@ -8,20 +8,20 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@/components/ui/dialog.jsx";
+import { Button } from "@/components/ui/button.jsx";
+import { Input } from "@/components/ui/input.jsx";
+import { Label } from "@/components/ui/label.jsx";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from "@/components/ui/select";
-import AuctionModal from "../auctions/AuctionModal";
-import AuctionService from "../../services/AuctionService";
-import ProductService from "../../services/ProductService";
+} from "@/components/ui/select.jsx";
+import AuctionModal from "../auctions/AuctionModal.jsx";
+import AuctionService from "../../services/AuctionService.js";
+import ProductService from "../../services/ProductService.js";
 
 const AddProductModal = () => {
   const [formData, setFormData] = useState({
