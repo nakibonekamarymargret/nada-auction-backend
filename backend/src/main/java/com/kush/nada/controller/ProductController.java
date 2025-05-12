@@ -89,7 +89,7 @@ public ResponseEntity<Map<String, Object>> createProduct(
 public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
     List<ProductDto> products = productService.getAllProducts();
     return responseService.createResponse(200, products, request, HttpStatus.OK);
-}
+}   
 
     @GetMapping("/{id}")
 
@@ -103,7 +103,6 @@ public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest req
          return ResponseEntity.ok(responseMap); 
       }
 
-    // 
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
