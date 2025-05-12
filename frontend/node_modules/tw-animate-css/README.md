@@ -137,13 +137,13 @@ To customize the animation parameters, use the following classes:
 
 ### Ready-to-Use Animations
 
-| Class                                  | Description                                                                                                                                         |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`accordion-down`][Docs_Accordion]     | Accordion down animation. Requires `--radix-accordion-content-height` or `--bits-accordion-content-height` to be set to the content's height.       |
-| [`accordion-up`][Docs_Accordion]       | Accordion up animation. Requires `--radix-accordion-content-height` or `--bits-accordion-content-height` to be set to the content's height.         |
-| [`collapsible-down`][Docs_Collapsible] | Collapsible down animation. Requires `--radix-collapsible-content-height` or `--bits-collapsible-content-height` to be set to the content's height. |
-| [`collapsible-up`][Docs_Collapsible]   | Collapsible up animation. Requires `--radix-collapsible-content-height` or `--bits-collapsible-content-height` to be set to the content's height.   |
-| [`caret-blink`][Docs_Caret]            | Blinking animation for caret/cursor.                                                                                                                |
+| Class                                  | Description                                                                                                                                                                              |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`accordion-down`][Docs_Accordion]     | Accordion down animation. Requires one of `--radix-accordion-content-height`, `--bits-accordion-content-height` or `--reka-accordion-content-height` to be set to the content's height.  |
+| [`accordion-up`][Docs_Accordion]       | Accordion up animation. Requires one of `--radix-accordion-content-height`, `--bits-accordion-content-height` or `--reka-accordion-content-height` to be set to the content's height.    |
+| [`collapsible-down`][Docs_Collapsible] | Collapsible down animation. Requires `--radix-collapsible-content-height`, `--bits-collapsible-content-height` or `--reka-collapsible-content-height` to be set to the content's height. |
+| [`collapsible-up`][Docs_Collapsible]   | Collapsible up animation. Requires `--radix-collapsible-content-height`, `--bits-collapsible-content-height` or `--reka-collapsible-content-height` to be set to the content's height.   |
+| [`caret-blink`][Docs_Caret]            | Blinking animation for caret/cursor.                                                                                                                                                     |
 
 ## Examples
 

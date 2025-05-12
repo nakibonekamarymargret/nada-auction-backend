@@ -12,6 +12,7 @@ import com.kush.nada.repositories.ProductRepository;
 import com.kush.nada.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -31,13 +32,15 @@ public class BidService {
         this.auctionRepository = auctionRepository;
     }
 
+
     public Bid createBid(Bid bid, Long productId, Long auctionId, Long userId) {
         if (auctionId == null || productId == null || userId == null) {
-            throw new IllegalStateException("Product ID must be provided.");
+            throw new IllegalStateException("Product ID and Auction ID must be provided.");
         }
 
         Auction auction = auctionRepository.findById(auctionId)
                 .orElseThrow(() -> new NotFoundException("Auction not found"));
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new NotFoundException("Product not found"));
 
@@ -59,28 +62,53 @@ public class BidService {
             throw new IllegalStateException("Auction is not live. Cannot place a bid.");
         }
 
-        if (bid.getAmount().doubleValue() <= auction.getCurrentPrice()) {
-            throw new IllegalStateException("Bid must be higher than current price.");
+        // Determine minimum required bid
+        BigDecimal minRequiredBid;
+
+        if (product.getLastBidAmount() == null) {
+            // First bid on this product
+            minRequiredBid = BigDecimal.valueOf(auction.getStartingPrice());
+        } else {
+            // Subsequent bids: must be higher than last bid on this product
+            minRequiredBid = product.getLastBidAmount();
         }
 
-        auction.setCurrentPrice(bid.getAmount().doubleValue());
-        auctionRepository.save(auction);
+        if (bid.getAmount().compareTo(minRequiredBid) <= 0) {
+            throw new IllegalStateException("Bid must be higher than the product's current minimum of " + minRequiredBid);
+        }
 
-        product.setLastBidTime(LocalDateTime.now()); // Track bid time per product
-        productRepository.save(product); //
-
-        // Set full entity references
+        // Set bid details
         bid.setBidder(user);
         bid.setProduct(product);
         bid.setAuction(auction);
         bid.setBidTime(LocalDateTime.now());
 
-        return bidRepository.save(bid);
+        Bid savedBid = bidRepository.save(bid);
+
+        // Update product's bid info
+        product.setLastBidAmount(bid.getAmount());
+        product.setLastBidTime(LocalDateTime.now());
+
+        // Update highest price if needed
+        if (product.getHighestPrice() == null || bid.getAmount().compareTo(product.getHighestPrice()) > 0) {
+            product.setHighestPrice(bid.getAmount());
+        }
+
+        productRepository.save(product);
+
+        // Update auction's current price if this is the new highest bid
+        if (bid.getAmount().doubleValue() > auction.getCurrentPrice()) {
+            auction.setCurrentPrice(bid.getAmount().doubleValue());
+            auctionRepository.save(auction);
+        }
+
+        return savedBid;
     }
+
     public List<Bid> getAllBidsForProduct(Long productId) {
         return bidRepository.findByProductId(productId);
     }
-     public List<Bid> getAllBids() {
+    public List<Bid> getAllBids() {
         return bidRepository.findAll();
     }
 

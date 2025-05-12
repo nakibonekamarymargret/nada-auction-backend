@@ -47,14 +47,15 @@ const AddProductModal = () => {
       try {
         const response = await AuctionService.getAll(token);
         const fetchedAuctions = Array.isArray(response.data.ReturnObject)
-          ? response.data.ReturnObject
-          : [];
+            ? response.data.ReturnObject
+            : [];
 
-        const activeAuctions = fetchedAuctions.filter(
-          (auction) => auction.status !== "CLOSED"
+        // Filter auctions to only include scheduled ones
+        const scheduledAuctions = fetchedAuctions.filter(
+            (auction) => auction.status === "SCHEDULED" // Adjust this based on the actual status for scheduled auctions
         );
 
-        setAuctions(activeAuctions);
+        setAuctions(scheduledAuctions);
       } catch (err) {
         console.error("Error fetching auctions:", err);
         setError("Failed to load available auctions.");
