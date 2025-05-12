@@ -3,7 +3,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/ui/app-sidebar";
 import AuctionModal from "../auctions/AuctionModal";
 import AddProductModal from "./AddProductModal";
-import {EditProductModal} from "../products/EditProductModal";
+import { EditProductModal } from "../products/EditProductModal";
 import { Bargraph } from "../../components/ui/Bargraph";
 import { Users, Gavel, PackageCheck, Timer } from "lucide-react";
 import { PieChartStatus } from "../../components/ui/PieChartStatus";

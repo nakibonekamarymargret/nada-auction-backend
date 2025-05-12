@@ -18,24 +18,24 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name ;
-@Column(columnDefinition = "TEXT")
-private String description;
+    private String name;
+    @Column(columnDefinition = "TEXT")
+    private String description;
     private String imageUrl;
     private BigDecimal highestPrice;
     @Enumerated(EnumType.STRING)  // Store the enum as a string in the database
     private ProductCategory category;
     private LocalDateTime lastBidTime;
     private boolean isClosed = false;
-
-
+    @Column(name = "last_bid_amount", precision = 19, scale = 2)
+    private BigDecimal lastBidAmount;
 
 
     @JsonIgnore
 
     @ManyToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "auction_id")
-        private Auction auction;
+    @JoinColumn(name = "auction_id")
+    private Auction auction;
 
 
     // Add a helper method to simplify ID access
@@ -118,6 +118,14 @@ private String description;
         isClosed = closed;
     }
 
+    public BigDecimal getLastBidAmount() {
+        return lastBidAmount;
+    }
+
+    public void setLastBidAmount(BigDecimal lastBidAmount) {
+        this.lastBidAmount = lastBidAmount;
+    }
+
     public Auction getAuction() {
         return auction;
     }
@@ -142,9 +150,7 @@ private String description;
         this.payments = payments;
     }
 
-    public Product(Long id, String name, String description, String imageUrl,
-                   BigDecimal highestPrice, ProductCategory category, LocalDateTime lastBidTime,
-                   boolean isClosed, Auction auction, List<Bid> bids, List<Payment> payments) {
+    public Product(Long id, String name, String description, String imageUrl, BigDecimal highestPrice, ProductCategory category, LocalDateTime lastBidTime, boolean isClosed, BigDecimal lastBidAmount, Auction auction, List<Bid> bids, List<Payment> payments) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -153,6 +159,7 @@ private String description;
         this.category = category;
         this.lastBidTime = lastBidTime;
         this.isClosed = isClosed;
+        this.lastBidAmount = lastBidAmount;
         this.auction = auction;
         this.bids = bids;
         this.payments = payments;

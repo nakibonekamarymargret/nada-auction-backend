@@ -96,7 +96,7 @@ public class BidController {
                 .anyMatch(bid -> bid.getBidder().getId().equals(userId));
 
         if (!userPlacedBid) {
-            returnData.put("message", String.format("The winner of this product is %s at a price of $%.2f.", winnerName, winningAmount));
+            returnData.put("message", String.format("The winner for this product has been chosen. The winning price was: $%.2f.", winningAmount));
         } else if (highestBid.getBidder().getId().equals(userId)) {
             Session session = stripeService.createCheckoutSession(
                     winningAmount,
@@ -110,7 +110,7 @@ public class BidController {
             returnData.put("checkoutUrl", session.getUrl());
         } else {
             returnData.put("message", "Sorry, you did not win this time. Try next time!");
-            returnData.put("winnerInfo", String.format("The winner of this product is %s at a price of $%.2f.", winnerName, winningAmount));
+            returnData.put("winnerInfo", String.format("The winner for this product has been chosen. The winning price was: $%.2f.", winningAmount));
         }
 
         return responseService.createResponse(200, returnData, request, HttpStatus.OK);

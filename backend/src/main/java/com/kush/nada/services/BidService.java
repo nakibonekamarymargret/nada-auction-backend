@@ -10,13 +10,11 @@ import com.kush.nada.repositories.AuctionRepository;
 import com.kush.nada.repositories.BidRepository;
 import com.kush.nada.repositories.ProductRepository;
 import com.kush.nada.repositories.UserRepository;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BidService {
@@ -36,6 +34,7 @@ public class BidService {
         this.messagingTemplate = messagingTemplate;
     }
 
+
     public Bid createBid(Bid bid, Long productId, Long auctionId, Long userId) {
         Optional<Product> productOptional = productRepository.findById(productId);
         if (productOptional.isPresent()) {
@@ -49,6 +48,54 @@ public class BidService {
 
                 bid.setBidder(userRepository.findById(userId).orElse(null));
                 bid.setBidTime(LocalDateTime.now());
+        if (auctionId == null || productId == null || userId == null) {
+            throw new IllegalStateException("Product ID and Auction ID must be provided.");
+        }
+
+        Auction auction = auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new NotFoundException("Auction not found"));
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException("Product not found"));
+
+        if (product.isClosed()) {
+            throw new IllegalStateException("Bidding is closed for this product.");
+        }
+
+        if (product.getLastBidTime() != null &&
+                product.getLastBidTime().plusSeconds(30).isBefore(LocalDateTime.now())) {
+            product.setClosed(true);
+            productRepository.save(product);
+            throw new IllegalStateException("Bidding timed out for this product.");
+        }
+
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        if (!AuctionStatus.LIVE.equals(auction.getStatus())) {
+            throw new IllegalStateException("Auction is not live. Cannot place a bid.");
+        }
+
+        // Determine minimum required bid
+        BigDecimal minRequiredBid;
+
+        if (product.getLastBidAmount() == null) {
+            // First bid on this product
+            minRequiredBid = BigDecimal.valueOf(auction.getStartingPrice());
+        } else {
+            // Subsequent bids: must be higher than last bid on this product
+            minRequiredBid = product.getLastBidAmount();
+        }
+
+        if (bid.getAmount().compareTo(minRequiredBid) <= 0) {
+            throw new IllegalStateException("Bid must be higher than the product's current minimum of " + minRequiredBid);
+        }
+
+        // Set bid details
+        bid.setBidder(user);
+        bid.setProduct(product);
+        bid.setAuction(auction);
+        bid.setBidTime(LocalDateTime.now());
 
                 // Update product with latest bid info
                 if (bid.getAmount().compareTo(product.getHighestPrice()) > 0) {
@@ -62,6 +109,26 @@ public class BidService {
             }
         }
         throw new RuntimeException("Invalid product or auction ID");
+        Bid savedBid = bidRepository.save(bid);
+
+        // Update product's bid info
+        product.setLastBidAmount(bid.getAmount());
+        product.setLastBidTime(LocalDateTime.now());
+
+        // Update highest price if needed
+        if (product.getHighestPrice() == null || bid.getAmount().compareTo(product.getHighestPrice()) > 0) {
+            product.setHighestPrice(bid.getAmount());
+        }
+
+        productRepository.save(product);
+
+        // Update auction's current price if this is the new highest bid
+        if (bid.getAmount().doubleValue() > auction.getCurrentPrice()) {
+            auction.setCurrentPrice(bid.getAmount().doubleValue());
+            auctionRepository.save(auction);
+        }
+
+        return savedBid;
     }
 
     public List<Bid> getAllBidsForProduct(Long productId) {
@@ -79,4 +146,3 @@ public class BidService {
         return bidRepository.findTopByProductIdOrderByAmountDesc(productId);
     }
 }
-
