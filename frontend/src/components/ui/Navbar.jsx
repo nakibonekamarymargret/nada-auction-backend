@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { AiOutlineHeart, AiOutlineUser, AiOutlineBell } from "react-icons/ai";
 import { CiLogin } from "react-icons/ci";
 import { FaUserPlus } from "react-icons/fa6";
+import SearchService from "@/services/SearchService";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -12,6 +13,8 @@ const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     !!localStorage.getItem("token")
   );
+  const [searchTerm, setSearchTerm] = useState(""); // To store the search term
+  const [auctions, setAuctions] = useState([]); // To store the search results
 
   const isLoginPage = location.pathname === "/login";
   const isRegisterPage = location.pathname === "/register";
@@ -38,6 +41,21 @@ const Navbar = () => {
 
   if (isLoginPage || isRegisterPage) return null;
 
+  const handleSearch = async (e) => {
+    if (e.key === "Enter" && searchTerm.trim()) {
+      try {
+        // Call search service to get auctions matching the search term
+        const results = await SearchService.searchAuctions(searchTerm);
+        setAuctions(results); // Store the results in the state
+        // Navigate to the results page and pass auctions in state
+        navigate("/search-results", { state: { auctions: results } });
+        setSearchTerm("");
+      } catch (err) {
+        console.error("Search failed", err);
+      }
+    }
+  };
+
   return (
     <div className="w-full bg-white text-black border-b border-gray-300 relative z-10">
       <div className="flex justify-between items-center px-6 py-4 max-w-[1400px] mx-auto relative">
@@ -54,6 +72,9 @@ const Navbar = () => {
           <input
             type="text"
             placeholder="Search for items"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)} // Update the search term
+            onKeyDown={handleSearch} // Trigger search on Enter key press
             className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none text-black"
           />
         </div>

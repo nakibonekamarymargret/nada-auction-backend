@@ -27,6 +27,8 @@ private String description;
     private ProductCategory category;
     private LocalDateTime lastBidTime;
     private boolean isClosed = false;
+    @Column(name = "last_bid_amount", precision = 19, scale = 2)
+    private BigDecimal lastBidAmount;
 
 
 
@@ -52,6 +54,21 @@ private String description;
     private List<Payment> payments;
 
     public Product() {
+    }
+
+    public Product(Long id, String name, String description, String imageUrl, BigDecimal highestPrice, ProductCategory category, LocalDateTime lastBidTime, boolean isClosed, BigDecimal lastBidAmount, Auction auction, List<Bid> bids, List<Payment> payments) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.imageUrl = imageUrl;
+        this.highestPrice = highestPrice;
+        this.category = category;
+        this.lastBidTime = lastBidTime;
+        this.isClosed = isClosed;
+        this.lastBidAmount = lastBidAmount;
+        this.auction = auction;
+        this.bids = bids;
+        this.payments = payments;
     }
 
     public Long getId() {
@@ -118,6 +135,14 @@ private String description;
         isClosed = closed;
     }
 
+    public BigDecimal getLastBidAmount() {
+        return lastBidAmount;
+    }
+
+    public void setLastBidAmount(BigDecimal lastBidAmount) {
+        this.lastBidAmount = lastBidAmount;
+    }
+
     public Auction getAuction() {
         return auction;
     }
@@ -139,22 +164,6 @@ private String description;
     }
 
     public void setPayments(List<Payment> payments) {
-        this.payments = payments;
-    }
-
-    public Product(Long id, String name, String description, String imageUrl,
-                   BigDecimal highestPrice, ProductCategory category, LocalDateTime lastBidTime,
-                   boolean isClosed, Auction auction, List<Bid> bids, List<Payment> payments) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.imageUrl = imageUrl;
-        this.highestPrice = highestPrice;
-        this.category = category;
-        this.lastBidTime = lastBidTime;
-        this.isClosed = isClosed;
-        this.auction = auction;
-        this.bids = bids;
         this.payments = payments;
     }
 }

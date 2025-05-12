@@ -36,6 +36,7 @@ public class ProductService {
 
     }
 
+
     // CREATE
      public Product createProduct(Product product, Long auctionId) {
           if (auctionId == null) {  // Also add to see check that the ID exists
@@ -169,10 +170,8 @@ public ProductDto getProductDtoById(Long id) {
     }
 
     // DELETE
-    @Transactional
-    public void deleteProduct(Long id) {
-        Product product = getProductById(id);
-        bidRepository.deleteByProduct_Id(id);
-        productRepository.delete(product);
+        public void deleteProduct(Long id) {
+            Product product = getProductById(id);
+            productRepository.delete(product);
+        }
     }
-}

@@ -1,7 +1,9 @@
 package com.kush.nada.services;
 
 import com.kush.nada.enums.AuctionStatus;
+import com.kush.nada.exceptions.NotFoundException;
 import com.kush.nada.models.Auction;
+import com.kush.nada.models.Product;
 import com.kush.nada.models.UserEntity;
 import com.kush.nada.repositories.AuctionRepository;
 import com.kush.nada.repositories.UserRepository;
@@ -80,5 +82,26 @@ public class AuctionService {
             throw new IllegalArgumentException("End time must be after start time");
         }
 
+    }
+
+//    public List<Auction> searchAuction(String name) {
+//        List<Auction> searchedAuctions =auctionRepository.findProductsByNameInAuctions( String name);
+//
+//        if(searchedAuctions.isEmpty()){
+//            throw  new NotFoundException("No products Found with keyword" + " "+ name);
+//        }
+//        return searchedAuctions;
+//    }
+
+    public List<Auction> searchProductsByNameInAuctions(String name) {
+        // Perform the search in the repository
+        List<Auction> searchedProducts = auctionRepository.findAuctionsByProductName(name);
+
+        // Check if products are found, otherwise throw an exception
+        if (searchedProducts.isEmpty()) {
+            throw new NotFoundException("No products found with keyword: " + name);
+        }
+
+        return searchedProducts;
     }
 }

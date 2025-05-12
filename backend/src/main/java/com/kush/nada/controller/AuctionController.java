@@ -2,6 +2,7 @@ package com.kush.nada.controller;
 
 import com.kush.nada.enums.AuctionStatus;
 import com.kush.nada.models.Auction;
+import com.kush.nada.models.Product;
 import com.kush.nada.services.AuctionService;
 import com.kush.nada.services.ResponseService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -80,6 +82,17 @@ public ResponseEntity<Map<String, Object>> createAuction(@RequestBody Auction au
     public ResponseEntity<Map<String , Object>> getClosedAuctions(HttpServletRequest request){
         List<Auction> liveAuctions = auctionService.getClosedAuctions();
         return responseService.createResponse(200, liveAuctions , request , HttpStatus.OK);
+    }
+
+
+    @GetMapping("/search/product")
+    public ResponseEntity<Map<String, Object>> searchAuction(
+            @RequestParam String name,
+            HttpServletRequest request
+    ) {
+
+        List<Auction> auctionSearch = auctionService.searchProductsByNameInAuctions(name);
+        return  responseService.createResponse(200,auctionSearch ,request, HttpStatus.OK);
     }
 
 }

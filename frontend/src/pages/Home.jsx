@@ -68,7 +68,6 @@ const Home = () => {
       [status]: !prev[status],
     }));
   };
-
   const renderProducts = (filteredProducts, status) => {
     if (loading) return <p>Loading...</p>;
     if (!filteredProducts.length) return <p>No products found.</p>;
@@ -87,10 +86,13 @@ const Home = () => {
             const startTime = product?.auction?.startTime
               ? new Date(product.auction.startTime)
               : null;
+            const auctionStatus = product?.auction?.status;
 
             let label = "";
 
-            if (startTime) {
+            if (auctionStatus === "LIVE") {
+              label = "Live Now";
+            } else if (auctionStatus === "SCHEDULED" && startTime) {
               const startDate = startTime.toDateString();
               const today = now.toDateString();
               const tomorrow = new Date(now);
@@ -98,9 +100,11 @@ const Home = () => {
               const tomorrowDate = tomorrow.toDateString();
 
               if (startDate === today) {
-                label = now < startTime ? "Live Today" : "Live Now";
+                label = "Live Today";
               } else if (startDate === tomorrowDate) {
                 label = "Live Tomorrow";
+              } else {
+                label = "Upcoming";
               }
             }
 
