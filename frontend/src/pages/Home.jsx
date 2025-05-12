@@ -118,35 +118,34 @@ const Home = () => {
                       className="shadow-lg cursor-pointer hover:shadow-xl transition duration-300 border rounded-lg overflow-hidden"
                       onClick={() => handleViewProduct(product.id)}
                   >
-                    <div className="w-full h-56 relative">
-                      <img
-                          src={product.imageUrl}
-                          alt={product.name}
-                          className="w-full h-full object-cover rounded-t-md"
-                      />
-                      <div className="absolute inset-0 bg-black/50"></div>
-                    </div>
-                    <CardContent className="p-4 space-y-2">
-                      {label && (
+                      <div className="w-full h-56 relative"> {/* Fixed height */}
+                          <img
+                              src={product.imageUrl}
+                              alt={product.name}
+                              className="w-full h-full object-cover rounded-t-md"
+                          />
+                          <div className="absolute inset-0"></div>
+                      </div>
+                      <CardContent className="p-4 space-y-2">
+                          {label && (
+                              <p
+                                  className="text-lg text-blue-600 font-bold mb-1"
+                                  style={{ fontFamily: "var(--font-tenor)" }}
+                              >
+                                  {label}
+                              </p>
+                          )}
+                          <CardTitle className="text-lg font-semibold mb-2 truncate">
+                              {product.name}
+                          </CardTitle>
                           <p
-                              className="text-lg text-blue-600 font-bold mb-1"
-                              style={{ fontFamily: "var(--font-tenor)" }}
+                              className="text-base text-gray-700 line-clamp-2"
+                              style={{ fontFamily: "var(--font-roboto)" }}
                           >
-                            {label}
+                              {product.description.split(".")[0]}...
                           </p>
-                      )}
-                      <CardTitle className="text-lg font-semibold mb-2 truncate">
-                        {product.name}
-                      </CardTitle>
-                      <p
-                          className="text-base text-gray-700 line-clamp-2"
-                          style={{ fontFamily: "var(--font-roboto)" }}
-                      >
-                        {product.description.split(".")[0]}...
-                      </p>
-                    </CardContent>
-                  </Card>
-              );
+                      </CardContent>
+                  </Card> );
             })}
           </div>
           {showButton && (
