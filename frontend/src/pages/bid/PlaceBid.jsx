@@ -7,6 +7,8 @@ const PlaceBid = () => {
     const [amount, setAmount] = useState('');
     const [token] = useState(localStorage.getItem('token')); // Get the JWT token from localStorage
     const [product, setProduct] = useState(null);
+    const [message, setMessage] = useState('');
+    const [messageType, setMessageType] = useState(''); // 'success' or 'error'
 
     // Fetch product details
     useEffect(() => {
@@ -17,7 +19,8 @@ const PlaceBid = () => {
                 setProduct(productData);
             } catch (err) {
                 console.error("Failed to fetch product data:", err);
-                alert("Failed to fetch product details.  Check the console for details.");
+                setMessage("Failed to fetch product details. Check the console for details.");
+                setMessageType('error');
             }
         };
 
@@ -28,31 +31,32 @@ const PlaceBid = () => {
         e.preventDefault();
 
         if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-            alert('Please enter a valid bid amount greater than zero.');
+            setMessage('Please enter a valid bid amount greater than zero.');
+            setMessageType('error');
             return;
         }
 
         try {
             const response = await axios.post(
-                `http://localhost:7107/bids/place/${productId}`, // Use the product ID from the URL
+                `http://localhost:7107/bids/place/${productId}`,
                 { amount: Number(amount) },
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`, // Include the JWT token in the Authorization header
-                        'Content-Type': 'application/json', // Specify content type as JSON
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
                     },
                 }
             );
 
-            console.log('Bid placed successfully:', response.data);
-            alert(response.data.ReturnObject.message); // Show a success message
-            setAmount(''); // Clear the input field after successful bid
+            const successMsg = response.data?.ReturnObject?.message || 'Bid placed successfully!';
+            setMessage(successMsg);
+            setMessageType('success');
+            setAmount('');
         } catch (error) {
             console.error('Error placing bid:', error);
-            alert('Failed to place bid.  Check the console for details.');
-            if (error.response) {
-                console.error("Server Response:", error.response.data);
-            }
+            const errorMsg = error.response?.data?.ReturnObject?.message || 'Failed to place bid.';
+            setMessage(errorMsg);
+            setMessageType('error');
         }
     };
 
@@ -67,6 +71,13 @@ const PlaceBid = () => {
     return (
         <div className="container mx-auto p-4">
             <h2 className="text-2xl font-bold mb-4">Place a Bid</h2>
+
+            {/* Display success or error message */}
+            {message && (
+                <div className={`mb-4 p-3 rounded ${messageType === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    {message}
+                </div>
+            )}
 
             {/* Product Image and Description */}
             <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
