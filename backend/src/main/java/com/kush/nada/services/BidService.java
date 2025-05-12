@@ -10,10 +10,13 @@ import com.kush.nada.repositories.AuctionRepository;
 import com.kush.nada.repositories.BidRepository;
 import com.kush.nada.repositories.ProductRepository;
 import com.kush.nada.repositories.UserRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BidService {
@@ -22,61 +25,45 @@ public class BidService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final AuctionRepository auctionRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
 
-    public BidService(BidRepository bidRepository, UserRepository userRepository, ProductRepository productRepository, AuctionRepository auctionRepository) {
+    public BidService(BidRepository bidRepository, UserRepository userRepository, ProductRepository productRepository, AuctionRepository auctionRepository, SimpMessagingTemplate messagingTemplate) {
         this.bidRepository = bidRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.auctionRepository = auctionRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     public Bid createBid(Bid bid, Long productId, Long auctionId, Long userId) {
-        if (auctionId == null || productId == null || userId == null) {
-            throw new IllegalStateException("Product ID must be provided.");
+        Optional<Product> productOptional = productRepository.findById(productId);
+        if (productOptional.isPresent()) {
+            Product product = productOptional.get();
+            bid.setProduct(product);
+
+            Optional<Auction> auctionOptional = auctionRepository.findById(auctionId);
+            if (auctionOptional.isPresent()) {
+                Auction auction = auctionOptional.get();
+                bid.setAuction(auction);
+
+                bid.setBidder(userRepository.findById(userId).orElse(null));
+                bid.setBidTime(LocalDateTime.now());
+
+                // Update product with latest bid info
+                if (bid.getAmount().compareTo(product.getHighestPrice()) > 0) {
+                    product.setHighestPrice(bid.getAmount());
+                    product.setLastBidTime(bid.getBidTime());
+                    productRepository.save(product); // Save updated product
+                }
+
+                Bid savedBid = bidRepository.save(bid);
+                return savedBid;
+            }
         }
-
-        Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new NotFoundException("Auction not found"));
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new NotFoundException("Product not found"));
-
-        if (product.isClosed()) {
-            throw new IllegalStateException("Bidding is closed for this product.");
-        }
-
-        if (product.getLastBidTime() != null &&
-                product.getLastBidTime().plusSeconds(30).isBefore(LocalDateTime.now())) {
-            product.setClosed(true);
-            productRepository.save(product);
-            throw new IllegalStateException("Bidding timed out for this product.");
-        }
-
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
-
-        if (!AuctionStatus.LIVE.equals(auction.getStatus())) {
-            throw new IllegalStateException("Auction is not live. Cannot place a bid.");
-        }
-
-        if (bid.getAmount().doubleValue() <= auction.getCurrentPrice()) {
-            throw new IllegalStateException("Bid must be higher than current price.");
-        }
-
-        auction.setCurrentPrice(bid.getAmount().doubleValue());
-        auctionRepository.save(auction);
-
-        product.setLastBidTime(LocalDateTime.now()); // Track bid time per product
-        productRepository.save(product); //
-
-        // Set full entity references
-        bid.setBidder(user);
-        bid.setProduct(product);
-        bid.setAuction(auction);
-        bid.setBidTime(LocalDateTime.now());
-
-        return bidRepository.save(bid);
+        throw new RuntimeException("Invalid product or auction ID");
     }
+
     public List<Bid> getAllBidsForProduct(Long productId) {
         return bidRepository.findByProductId(productId);
     }

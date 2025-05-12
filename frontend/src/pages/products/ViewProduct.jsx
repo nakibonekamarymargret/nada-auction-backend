@@ -17,6 +17,7 @@ const ViewProduct = () => {
     try {
       const res = await axios.get(`http://localhost:7107/product/${id}`);
       const productData = res.data.ReturnObject;
+      console.log(id);
       setProduct(productData);
     } catch (err) {
       console.error("Failed to fetch product data:", err);
@@ -87,7 +88,9 @@ const ViewProduct = () => {
 //     alert("Please allow pop-ups to watch the auction.");
 //   }
 // };
-
+  const handlePlaceBid = (id) => {
+    navigate(`/bids/place/${id}`);
+  };
   if (!product) {
     return (
       <div className="container mx-auto px-4 py-6 text-center">
@@ -114,20 +117,20 @@ const ViewProduct = () => {
     );
   } else if (auction.status === "LIVE") {
     actionButton = (
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2">
+      <div className="">
         <button
-          onClick={() => navigate(`/live-auction/${auction.id}`)}
-          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+          onClick={() => navigate(`/approved/${auction.id}`)}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
         >
-          View Live Auction
+          Get approved to Bid
         </button>
 
-        <button
-          onClick={() => window.open(`/watch-auction/${auction.id}`, "_blank")}
-          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+        <p
+          style={{ fontFamily: "sans-serif" }}
+          onClick={() => handlePlaceBid(product.id)}
+          className=" cursor-pointer text-end text-blue-700 font-bold py-2 px-4  duration-200"
         >
-          Watch Auction
-        </button>
+Place Bid        </p>
       </div>
     );
   } else if (auction.status === "CLOSED") {
@@ -188,9 +191,7 @@ const ViewProduct = () => {
                 ? `$${product.highestPrice.toFixed(2)}`
                 : "No bids yet"}
             </p>
-            <p className="text-gray-700 text-sm mt-1">
-              Last Bid: {formatDateTime(product.lastBidTime)}
-            </p>
+            
             <button
               onClick={toggleDetails}
               className="text-blue-600 hover:underline text-sm mt-1 block"
