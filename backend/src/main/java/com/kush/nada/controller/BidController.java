@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -29,20 +28,17 @@ public class BidController {
     private final ProductService productService;
     private final ResponseService responseService;
     private final StripeService stripeService;
-    private final SimpMessagingTemplate messagingTemplate; // Inject SimpMessagingTemplate
-
 
     @Autowired
     public BidController(
             BidService bidService,
             ProductService productService,
             ResponseService responseService,
-            StripeService stripeService, SimpMessagingTemplate messagingTemplate) {
+            StripeService stripeService) {
         this.bidService = bidService;
         this.productService = productService;
         this.responseService = responseService;
         this.stripeService = stripeService;
-        this.messagingTemplate = messagingTemplate;
     }
 
     // Place a bid
@@ -56,15 +52,20 @@ public class BidController {
     ) {
         Long userId = extractUserId(principal);
         Product product = productService.getProductById(productId);
+
         if (product.getAuction() == null) {
             return responseService.createResponse(400, "Product has no associated auction", request, HttpStatus.BAD_REQUEST);
         }
+
         Bid createdBid = bidService.createBid(bid, productId, product.getAuction().getId(), userId);
+
         Map<String, Object> returnData = new HashMap<>();
         returnData.put("bid", createdBid);
         returnData.put("message", "Bid placed successfully. Awaiting final confirmation.");
+
         return responseService.createResponse(200, returnData, request, HttpStatus.CREATED);
     }
+
     // Check result after bidding closes
     @GetMapping("/check-result/{productId}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
@@ -115,17 +116,17 @@ public class BidController {
 
         return responseService.createResponse(200, returnData, request, HttpStatus.OK);
     }
-@GetMapping("/all")
-@PreAuthorize("hasRole('ADMIN')") // Only admins can view all bids
-public ResponseEntity<Map<String, Object>> getAllBids(HttpServletRequest request) {
-    List<Bid> bids = bidService.getAllBids();
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')") // Only admins can view all bids
+    public ResponseEntity<Map<String, Object>> getAllBids(HttpServletRequest request) {
+        List<Bid> bids = bidService.getAllBids();
 
-    Map<String, Object> returnData = new HashMap<>();
-    returnData.put("ReturnObject", bids);
-    returnData.put("message", "All bids retrieved successfully.");
+        Map<String, Object> returnData = new HashMap<>();
+        returnData.put("ReturnObject", bids);
+        returnData.put("message", "All bids retrieved successfully.");
 
-    return responseService.createResponse(200, returnData, request, HttpStatus.OK);
-}
+        return responseService.createResponse(200, returnData, request, HttpStatus.OK);
+    }
     // Helper Method
     private Long extractUserId(UserPrincipal principal) {
         if (principal == null) {

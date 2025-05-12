@@ -23,31 +23,17 @@ public class BidService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final AuctionRepository auctionRepository;
-    private final SimpMessagingTemplate messagingTemplate;
 
 
-    public BidService(BidRepository bidRepository, UserRepository userRepository, ProductRepository productRepository, AuctionRepository auctionRepository, SimpMessagingTemplate messagingTemplate) {
+    public BidService(BidRepository bidRepository, UserRepository userRepository, ProductRepository productRepository, AuctionRepository auctionRepository) {
         this.bidRepository = bidRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.auctionRepository = auctionRepository;
-        this.messagingTemplate = messagingTemplate;
     }
 
 
     public Bid createBid(Bid bid, Long productId, Long auctionId, Long userId) {
-        Optional<Product> productOptional = productRepository.findById(productId);
-        if (productOptional.isPresent()) {
-            Product product = productOptional.get();
-            bid.setProduct(product);
-
-            Optional<Auction> auctionOptional = auctionRepository.findById(auctionId);
-            if (auctionOptional.isPresent()) {
-                Auction auction = auctionOptional.get();
-                bid.setAuction(auction);
-
-                bid.setBidder(userRepository.findById(userId).orElse(null));
-                bid.setBidTime(LocalDateTime.now());
         if (auctionId == null || productId == null || userId == null) {
             throw new IllegalStateException("Product ID and Auction ID must be provided.");
         }
@@ -97,18 +83,6 @@ public class BidService {
         bid.setAuction(auction);
         bid.setBidTime(LocalDateTime.now());
 
-                // Update product with latest bid info
-                if (bid.getAmount().compareTo(product.getHighestPrice()) > 0) {
-                    product.setHighestPrice(bid.getAmount());
-                    product.setLastBidTime(bid.getBidTime());
-                    productRepository.save(product); // Save updated product
-                }
-
-                Bid savedBid = bidRepository.save(bid);
-                return savedBid;
-            }
-        }
-        throw new RuntimeException("Invalid product or auction ID");
         Bid savedBid = bidRepository.save(bid);
 
         // Update product's bid info
@@ -134,7 +108,7 @@ public class BidService {
     public List<Bid> getAllBidsForProduct(Long productId) {
         return bidRepository.findByProductId(productId);
     }
-     public List<Bid> getAllBids() {
+    public List<Bid> getAllBids() {
         return bidRepository.findAll();
     }
 
