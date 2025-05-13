@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 @CrossOrigin
 @RestController
 @RequestMapping("/bids")
@@ -127,6 +129,26 @@ public class BidController {
 
         return responseService.createResponse(200, returnData, request, HttpStatus.OK);
     }
+//Fetch Bids for a Product
+    @GetMapping("/product/{productId}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> getBidsByProduct(
+            @PathVariable Long productId,
+            HttpServletRequest request
+    ) {
+        List<Bid> bids = bidService.getAllBidsForProduct(productId)
+                .stream()
+                .sorted((b1, b2) -> b2.getAmount().compareTo(b1.getAmount())) // sort descending
+                .collect(Collectors.toList());
+
+        Map<String, Object> returnData = new HashMap<>();
+        returnData.put("ReturnObject", bids);
+        returnData.put("message", "Bids retrieved successfully.");
+
+        return responseService.createResponse(200, returnData, request, HttpStatus.OK);
+    }
+
+
     // Helper Method
     private Long extractUserId(UserPrincipal principal) {
         if (principal == null) {

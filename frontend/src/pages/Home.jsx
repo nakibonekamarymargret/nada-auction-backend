@@ -124,7 +124,7 @@ const Home = () => {
                           alt={product.name}
                           className="w-full h-full object-cover rounded-t-md"
                       />
-                      <div className="absolute inset-0 bg-black/50"></div>
+                      <div className="absolute inset-0 "></div>
                     </div>
                     <CardContent className="p-4 space-y-2">
                       {label && (
