@@ -105,6 +105,9 @@ public class BidService {
         return savedBid;
     }
 
+
+
+
     public List<Bid> getAllBidsForProduct(Long productId) {
         return bidRepository.findByProductId(productId);
     }

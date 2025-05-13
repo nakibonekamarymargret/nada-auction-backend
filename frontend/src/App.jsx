@@ -10,6 +10,7 @@ import ProtectedAdminRoute from "./pages/Auth/ProtectedAdminRoute";
 import Footer from "./pages/Footer";
 import BidApprovalForm from "./pages/bid/BidApprovalForm";
 import PlaceBid from "@/pages/bid/PlaceBid.jsx";
+import SearchResultsPage from "./pages/SearchResultsPage";
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -65,7 +66,7 @@ function App() {
         />
         <Route path="/product/:id" element={<ViewProduct />} />
         <Route path="/bids/place/:id" element={<PlaceBid />} />
-
+        <Route path="/search-results" element={<SearchResultsPage />} />
       </Routes>
     </Layout>
   );
