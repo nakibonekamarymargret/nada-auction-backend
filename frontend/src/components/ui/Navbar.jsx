@@ -93,10 +93,10 @@ const Navbar = () => {
                   </div>
 
                   {/* Dropdown Menu */}
-                  <div className="flex flex-col items-center cursor-pointer relative">
+                  <div className="flex flex-col items-center cursor-pointer relative" onClick={() => setDropdownOpen(!dropdownOpen)}>
                     <AiOutlineUser
                         size={20}
-                        onClick={() => setDropdownOpen(!dropdownOpen)}
+
                     />
                     <span>My Activity</span>
 
