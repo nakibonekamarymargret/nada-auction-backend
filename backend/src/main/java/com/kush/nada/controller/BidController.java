@@ -1,4 +1,5 @@
 package com.kush.nada.controller;
+import com.kush.nada.dtos.BidDto;
 import com.stripe.model.checkout.Session;
 import com.kush.nada.models.Bid;
 import com.kush.nada.models.Product;
@@ -121,32 +122,56 @@ public class BidController {
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')") // Only admins can view all bids
     public ResponseEntity<Map<String, Object>> getAllBids(HttpServletRequest request) {
-        List<Bid> bids = bidService.getAllBids();
+        List<BidDto> bidDtos = bidService.getAllBids()
+                .stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
 
         Map<String, Object> returnData = new HashMap<>();
-        returnData.put("ReturnObject", bids);
+        returnData.put("ReturnObject", bidDtos);
         returnData.put("message", "All bids retrieved successfully.");
 
         return responseService.createResponse(200, returnData, request, HttpStatus.OK);
     }
-//Fetch Bids for a Product
+
+    //Fetch Bids for a Product
     @GetMapping("/product/{productId}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> getBidsByProduct(
             @PathVariable Long productId,
             HttpServletRequest request
     ) {
-        List<Bid> bids = bidService.getAllBidsForProduct(productId)
+        List<BidDto> bidDtos = bidService.getAllBidsForProduct(productId)
                 .stream()
-                .sorted((b1, b2) -> b2.getAmount().compareTo(b1.getAmount())) // sort descending
+                .sorted((b1, b2) -> b2.getAmount().compareTo(b1.getAmount()))
+                .map(this::mapToDto)
                 .collect(Collectors.toList());
 
         Map<String, Object> returnData = new HashMap<>();
-        returnData.put("ReturnObject", bids);
+        returnData.put("ReturnObject", bidDtos);
         returnData.put("message", "Bids retrieved successfully.");
 
         return responseService.createResponse(200, returnData, request, HttpStatus.OK);
     }
+    @GetMapping("/my-latest/{productId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Map<String, Object>> getMyLatestBid(
+            @PathVariable Long productId,
+            @AuthenticationPrincipal UserPrincipal principal,
+            HttpServletRequest request
+    ) {
+        Long userId = extractUserId(principal);
+        Bid myLatestBid = bidService.findLatestBidByUserAndProduct(userId, productId);
+
+        if (myLatestBid == null) {
+            return responseService.createResponse(404, "No bid found for this user on this product", request, HttpStatus.NOT_FOUND);
+        }
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("message", "User's latest bid fetched");
+        payload.put("bid", myLatestBid);
+
+        return responseService.createResponse(200, payload, request, HttpStatus.OK);    }
 
 
     // Helper Method
@@ -156,4 +181,13 @@ public class BidController {
         }
         return principal.getId();
     }
+    private BidDto mapToDto(Bid bid) {
+        BidDto dto = new BidDto();
+        dto.setId(bid.getId());
+        dto.setAmount(bid.getAmount());
+        dto.setBidderName(bid.getBidder().getName());
+        dto.setBidTime(bid.getBidTime());
+        return dto;
+    }
+
 }

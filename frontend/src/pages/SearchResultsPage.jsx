@@ -1,9 +1,10 @@
-import React from "react";
+import React, {useState} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const SearchResultsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [product,setProduct]=useState({});
 
   // Extract auctions from state passed from Navbar
   const { auctions } = location.state || { auctions: [] };
@@ -42,7 +43,7 @@ const SearchResultsPage = () => {
                 </div>
               )}
               <h3 className="text-xl font-semibold truncate">
-                {auction.title}
+                {auction.product?.name}
               </h3>
               <p className="text-gray-500 text-sm mt-2">
                 Starting Price: ${auction.startingPrice}

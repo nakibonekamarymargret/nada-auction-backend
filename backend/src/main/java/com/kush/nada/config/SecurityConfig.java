@@ -47,7 +47,7 @@ public class SecurityConfig implements WebMvcConfigurer {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/register", "/api/auth/login", "/product/**","/auctions/search/product" , "/stripe/webhook").permitAll()
+                        .requestMatchers("/api/auth/register", "/api/auth/login", "/product/**","/auctions/search/product" , "/stripe/webhook","/ws/**", "/ws/info").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
@@ -64,12 +64,13 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/url/**")
-                .allowedOrigins("http://localhost:5173") // Your frontend URL
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH")
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:5173")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true); // Allow credentials (cookies, etc.)
+                .allowCredentials(true);
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {

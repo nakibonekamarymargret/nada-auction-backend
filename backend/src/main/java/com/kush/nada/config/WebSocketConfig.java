@@ -48,15 +48,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
     registry.addEndpoint("/ws")
+
             .setAllowedOriginPatterns("http://localhost:5173")
             .addInterceptors(handshakeInterceptor())
             .withSockJS();
 
-    registry.addEndpoint("/ws")
-            .setAllowedOriginPatterns("http://localhost:5173")
-            .addInterceptors(handshakeInterceptor());
   }
-
   @Bean
   public HandshakeInterceptor handshakeInterceptor() {
     return new HandshakeInterceptor() {
