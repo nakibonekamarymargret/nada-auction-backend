@@ -29,6 +29,8 @@ const Navbar = () => {
     localStorage.removeItem("token");
     setIsAuthenticated(false);
     setDropdownOpen(false);
+    navigate("/");
+
   };
 
   const handleLogin = () => {

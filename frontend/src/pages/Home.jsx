@@ -181,7 +181,7 @@ const Home = () => {
                     className="text-gray-500 text-3xl font-semibold mb-4"
                     style={{ fontFamily: "var(--font-roboto)" }}
                 >
-                    Upcoming Products
+                    Upcoming Events
                 </h2>
                 {renderProducts(getProductsByStatus("SCHEDULED"), "SCHEDULED")}
             </section>
@@ -190,7 +190,7 @@ const Home = () => {
                     className="text-gray-500 text-3xl font-semibold mb-4"
                     style={{ fontFamily: "var(--font-roboto)" }}
                 >
-                    Live Products
+                    Live Events
                 </h2>
                 {renderProducts(getProductsByStatus("LIVE"), "LIVE")}
             </section>
@@ -199,7 +199,7 @@ const Home = () => {
                     className="text-dark text-xl font-semibold mb-4"
                     style={{ fontFamily: "var(--font-roboto)" }}
                 >
-                    Closed Products
+                    Closed Events
                 </h2>
                 {renderProducts(getProductsByStatus("CLOSED"), "CLOSED")}
             </section>
