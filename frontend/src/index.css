@@ -1,8 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Tenor+Sans&display=swap');
 @import "tailwindcss";
+
+
 @import "tw-animate-css";
 
 @plugin "tailwindcss-motion";
+
 
 @custom-variant dark (&:is(.dark *));
 

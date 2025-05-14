@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -23,12 +24,12 @@ const Footer = () => {
           <h3 className="text-white font-semibold mb-2">Quick Links</h3>
           <ul className="text-gray-400 text-sm space-y-1">
             <li>
-              <a href="/about" className="hover:text-white">
+              <Link to={"/aboutUs"} className="hover:text-white">
                 About Us
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/auctions" className="hover:text-white">
+              <a href="/" className="hover:text-white">
                 Live Auctions
               </a>
             </li>{" "}
@@ -41,14 +42,14 @@ const Footer = () => {
               </a>
             </li>
             <li>
-              <a href="/contact" className="hover:text-white">
+              <Link to={"/aboutUs"} className="hover:text-white">
                 Contact
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/terms" className="hover:text-white">
+              <Link to={"/terms"} className="hover:text-white">
                 Terms & Conditions
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -57,13 +58,28 @@ const Footer = () => {
         <div>
           <h3 className="text-white font-semibold mb-2">Connect with Us</h3>
           <div className="flex space-x-4 text-gray-400">
-            <a href="#" className="hover:text-white">
+            <a
+              href="https://www.facebook.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white"
+            >
               Facebook
             </a>
-            <a href="#" className="hover:text-white">
+            <a
+              href="https://www.twitter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white"
+            >
               Twitter
             </a>
-            <a href="#" className="hover:text-white">
+            <a
+              href="https://www.instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white"
+            >
               Instagram
             </a>
           </div>
