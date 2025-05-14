@@ -128,25 +128,15 @@ const Home = () => {
                     </div>
                     <CardContent className="p-4 space-y-2">
                       {label && (
+
                           <p
-                              className="text-lg text-blue-600 font-bold mb-1"
-                              style={{ fontFamily: "var(--font-tenor)" }}
+                              className="text-base text-gray-700 line-clamp-2"
+                              style={{ fontFamily: "var(--font-roboto)" }}
                           >
-                            {label}
+                              {product.description.split(".")[0]}...
                           </p>
-                      )}
-                      <CardTitle className="text-lg font-semibold mb-2 truncate">
-                        {product.name}
-                      </CardTitle>
-                      <p
-                          className="text-base text-gray-700 line-clamp-2"
-                          style={{ fontFamily: "var(--font-roboto)" }}
-                      >
-                        {product.description.split(".")[0]}...
-                      </p>
-                    </CardContent>
-                  </Card>
-              );
+                      </CardContent>
+                  </Card> );
             })}
           </div>
           {showButton && (
