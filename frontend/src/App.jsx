@@ -10,6 +10,8 @@ import ProtectedAdminRoute from "./pages/Auth/ProtectedAdminRoute";
 import Footer from "./pages/Footer";
 import BidApprovalForm from "./pages/bid/BidApprovalForm";
 import SearchResultsPage from "./pages/SearchResultsPage";
+import AboutUsPage from "./pages/products/AboutUsPage";
+import TermsAndConditionsPage from "./pages/TermsAndConditionsPage";
 import PlaceBid from "./pages/bid/PlaceBid.jsx";
 
 
@@ -48,6 +50,9 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Home />} />
         <Route path="/approved/:auctionId" element={<BidApprovalForm />} />
+        <Route path="/aboutUs" element={<AboutUsPage />} />
+        <Route path="/terms" element={<TermsAndConditionsPage />} />
+
         {/* Admin-protected routes */}
         <Route
           path="/auction"
