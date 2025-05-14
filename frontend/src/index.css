@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Tenor+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Tenor+Sans&family=Playfair+Display:wght@400;700&family=Inter:wght@400;600;700&family=DM+Serif+Display&family=Manrope:wght@400;600;700&display=swap');
+
 @import "tailwindcss";
 
 
@@ -147,11 +148,12 @@
     --chart-5: 340 75% 55%;
   }
 }
-
-
-@theme{
-    --font-roboto: "Roboto", sans-serif; 
-    --font-baskerville: "Libre Baskerville", serif;
-    --font-tenor: "Tenor Sans", sans-serif;
-
+@theme {
+  --font-roboto: "Roboto", sans-serif;
+  --font-baskerville: "Libre Baskerville", serif;
+  --font-tenor: "Tenor Sans", sans-serif;
+  --font-playfair: "Playfair Display", serif;
+  --font-inter: "Inter", sans-serif;
+  --font-dm-serif: "DM Serif Display", serif;
+  --font-manrope: "Manrope", sans-serif;
 }
