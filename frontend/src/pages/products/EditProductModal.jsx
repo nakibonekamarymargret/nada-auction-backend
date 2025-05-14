@@ -23,18 +23,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const PRODUCT_CATEGORIES = ["ELECTRONICS", "ART", "FASHION", "HOME", "SPORTS"];
+// *** Import SweetAlert2 ***
+import Swal from "sweetalert2";
+
+// Assuming PRODUCT_CATEGORIES is defined elsewhere or is correct
+const PRODUCT_CATEGORIES = ["ELECTRONICS", "ART", "FASHION", "HOME", "SPORTS"]; // Make sure these match your backend enum exactly
 
 export function EditProductModal({ product, onProductUpdated }) {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    highestPrice: "",
+    // highestPrice: "", // Removed from state as it's not updateable via this modal
     category: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  // const [error, setError] = useState(null); // *** Error state might not be needed if using Swal ***
 
   // Load product data when modal opens
   React.useEffect(() => {
@@ -42,9 +46,10 @@ export function EditProductModal({ product, onProductUpdated }) {
       setFormData({
         name: product.name || "",
         description: product.description || "",
-        highestPrice: product.price != null ? product.price.toString() : "",
-        category: product.category || "",
+        // highestPrice: product.price != null ? product.price.toString() : "", // Removed
+        category: product.category || "", // Assuming product.category from backend is the enum string
       });
+      // setError(null); // Clear error on open
     }
   }, [product, isOpen]);
 
@@ -59,25 +64,46 @@ export function EditProductModal({ product, onProductUpdated }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!product?.id) return;
+    // Ensure product and product.id exist before proceeding
+    if (!product?.id) {
+      // Use Swal for validation error
+      Swal.fire("Error", "Product ID is missing.", "error");
+      return;
+    }
 
     setLoading(true);
-    setError(null);
+    // setError(null); // Clear previous errors
+
+    // Get the token from localStorage
+    const token = localStorage.getItem("token");
+    if (!token) {
+      Swal.fire(
+        "Authentication Error",
+        "Authentication token not found. Please log in.",
+        "error"
+      );
+      setLoading(false);
+      return;
+    }
 
     try {
+      // Construct the data matching the backend ProductUpdateDto
       const updatedData = {
         name: formData.name,
         description: formData.description,
-        highestPrice: parseFloat(formData.highestPrice),
+        // highestPrice: parseFloat(formData.highestPrice), // Removed
         category: formData.category,
+        // Add other fields if they exist in your DTO and form:
+        // imageUrl: formData.imageUrl, // Example
       };
 
       const response = await fetch(
-        `http://localhost:7107/product/${product.id}`,
+        `http://localhost:7107/product/edit/${product.id}`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(updatedData),
         }
@@ -86,40 +112,59 @@ export function EditProductModal({ product, onProductUpdated }) {
       const result = await response.json();
 
       if (response.ok) {
-        onProductUpdated(result.ReturnObject);
-        setIsOpen(false);
-        alert("Product updated successfully!");
+        // Success: Use Swal for success notification
+        if (onProductUpdated && result.ReturnObject) {
+          onProductUpdated(result.ReturnObject);
+        }
+        setIsOpen(false); // Close modal on success
+        Swal.fire("Success!", "Product updated successfully.", "success");
       } else {
-        throw new Error(result.ReturnObject || "Failed to update product.");
+        // Backend returned an error status code
+        const errorMessage =
+          result.ReturnObject ||
+          `Error: ${response.status} ${response.statusText}` ||
+          "Failed to update product.";
+        // Use Swal for error notification
+        Swal.fire("Update Failed", errorMessage, "error");
+        // Optionally log the full error result
+        console.error("Update failed:", result);
+        // setError(errorMessage); // If you still want to display error inside modal
       }
     } catch (err) {
-      setError(err.message || "An error occurred while updating the product.");
-      alert(error);
+      // Network errors or issues before getting a response
+      console.error("Fetch error during update:", err);
+      const errorMessage = err.message || "An unexpected error occurred.";
+      // Use Swal for network error notification
+      Swal.fire("Error", errorMessage, "error");
+      // setError(errorMessage); // If you still want to display error inside modal
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div>
+    <>
+      {/* This button should be placed in AdminDashboard */}
       <button
         onClick={() => setIsOpen(true)}
-        className="text-black hover:text-blue-800 focus:outline-none"
-        aria-label="Edit Product"
+        className="text-gray-600 hover:text-blue-600 focus:outline-none"
+        aria-label={`Edit Product ${product?.name || ""}`}
+        title="Edit Product"
       >
         <RiEdit2Fill size={18} />
       </button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit Product</DialogTitle>
             <DialogDescription>
-              Update the product details below.
+              Update the product details below. Click save when you're done.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
+              {/* Name */}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">
                   Name
@@ -132,6 +177,7 @@ export function EditProductModal({ product, onProductUpdated }) {
                   required
                 />
               </div>
+              {/* Description */}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="description" className="text-right">
                   Description
@@ -144,20 +190,7 @@ export function EditProductModal({ product, onProductUpdated }) {
                   required
                 />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="highestPrice" className="text-right">
-                  Price
-                </Label>
-                <Input
-                  id="highestPrice"
-                  type="number"
-                  step="0.01"
-                  value={formData.highestPrice}
-                  onChange={handleChange}
-                  className="col-span-3"
-                  required
-                />
-              </div>
+              {/* Category */}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="category" className="text-right">
                   Category
@@ -178,10 +211,23 @@ export function EditProductModal({ product, onProductUpdated }) {
                   </SelectContent>
                 </Select>
               </div>
+              {/* You can add the price input back here if you want to DISPLAY it (disabled) */}
+              {/*
+               <div className="grid grid-cols-4 items-center gap-4">
+                 <Label htmlFor="currentPrice" className="text-right">Current Price</Label>
+                 <Input
+                   id="currentPrice"
+                   value={`$${(product?.price || 0).toFixed(2)}`} // Display current price from prop
+                   className="col-span-3"
+                   disabled // Cannot edit price here
+                 />
+               </div>
+               */}
             </div>
-            {error && (
-              <p className="text-sm text-red-500 text-center">{error}</p>
-            )}
+            {/* *** Error display removed as SweetAlert handles notifications *** */}
+            {/* {error && (
+              <p className="text-sm text-red-500 text-center mt-4">{error}</p>
+            )} */}
             <DialogFooter className="mt-4">
               <Button type="submit" disabled={loading}>
                 {loading ? "Saving..." : "Save Changes"}
@@ -190,6 +236,6 @@ export function EditProductModal({ product, onProductUpdated }) {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

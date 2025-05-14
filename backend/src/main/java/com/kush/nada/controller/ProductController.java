@@ -1,5 +1,6 @@
 package com.kush.nada.controller;
 
+import com.kush.nada.dtos.ProductUpdateDto;
 import com.kush.nada.models.Product;
 import com.kush.nada.dtos.ProductDto;
 import com.kush.nada.models.UserPrincipal;
@@ -111,14 +112,39 @@ public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest req
 
     // 
 
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> updateProduct(@PathVariable Long id, @RequestBody Product productDetails, HttpServletRequest request) {
-        Product updatedProduct = productService.updateProduct(id, productDetails);
-        return responseService.createResponse(200, updatedProduct, request, HttpStatus.OK);
-    }
+//    @PatchMapping("edit/{id}")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<Map<String, Object>> updateProduct(@PathVariable Long id, @RequestBody Product productDetails, HttpServletRequest request) {
+//        Product updatedProduct = productService.updateProduct(id, productDetails);
+//        return responseService.createResponse(200, updatedProduct, request, HttpStatus.OK);
+//    }
+@PatchMapping("edit/{id}") // Matches PATCH requests to /api/products/edit/{id}
+@PreAuthorize("hasRole('ADMIN')") // Security check
+public ResponseEntity<Map<String, Object>> updateProduct(
+        @PathVariable Long id, // <-- Gets the ID from the URL path
+        @RequestBody ProductUpdateDto productDetailsDto, // *** Gets the request body and converts it to ProductUpdateDto ***
+        HttpServletRequest request // Other parameters
+) {
+    // 1. Controller receives the HTTP request (PATCH /api/products/edit/{id})
 
-    @DeleteMapping("/{id}")
+    // 2. Spring parses the request:
+    //    - It extracts the 'id' from the path and binds it to the 'id' Long parameter.
+    //    - It reads the HTTP request body (which should be JSON).
+    //    - Using its configured message converters (like Jackson), it attempts to **deserialize** the JSON body into an instance of `ProductUpdateDto`.
+    //    - ***Crucially, during this deserialization, Jackson automatically handles converting JSON fields like "category": "ELECTRONICS" into the corresponding Java Enum constant Product Category.ELECTRONICS, provided the string matches an enum value.***
+
+    // 3. Controller delegates the business logic to the Service layer:
+    Product updatedProduct = productService.updateProduct(id, productDetailsDto); // <-- Passes ID and the populated DTO to the service
+
+    // 4. Controller receives the result from the Service (the updated Product entity).
+
+    // 5. Controller prepares the HTTP response:
+    //    - It uses your ResponseService to create a response structure.
+    //    - Spring/Jackson automatically **serializes** the `updatedProduct` entity object back into JSON format.
+    return responseService.createResponse(200, updatedProduct, request, HttpStatus.OK); // <-- Sends the response back to the client
+}
+
+    @DeleteMapping("delete/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> deleteProduct(@PathVariable Long id, HttpServletRequest request) {
         productService.deleteProduct(id);

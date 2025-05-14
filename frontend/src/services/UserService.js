@@ -9,7 +9,23 @@ class UserService {
       },
     };
     const response = await axios.get(API_URL, config);
-    return response;
+    return response
+  };
+  editUser = async (updatedData, token) => {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json", // Ensure JSON format
+      },
+    };
+
+    // PATCH request to update user data
+    const response = await axios.patch(
+      `${API_URL}/edit/user`,
+      updatedData,
+      config
+    );
+    return response.data.ReturnObject; // Return the response after update
   };
 }
 
