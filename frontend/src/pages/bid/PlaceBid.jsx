@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, {useState, useEffect, useRef} from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import {useParams} from "react-router-dom";
 import Swal from "sweetalert2";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
 
 const PlaceBid = () => {
-    const { id: productId } = useParams();
+    const {id: productId} = useParams();
     const [amount, setAmount] = useState(0);
     const [product, setProduct] = useState(null);
     const [participants, setParticipants] = useState([]);
@@ -56,7 +56,7 @@ const PlaceBid = () => {
         try {
             const res = await axios.get(
                 `http://localhost:7107/bids/product/${productId}`,
-                { headers: { Authorization: `Bearer ${token}` } }
+                {headers: {Authorization: `Bearer ${token}`}}
             );
             const bids = res.data.ReturnObject.ReturnObject;
             setParticipants(deduplicateAndSort(bids));
@@ -79,7 +79,7 @@ const PlaceBid = () => {
     const fetchMyLatestBid = async () => {
         try {
             const res = await axios.get(`http://localhost:7107/bids/my-latest/${productId}`, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: {Authorization: `Bearer ${token}`},
             });
             const myBid = res.data.ReturnObject;
             const amountValue = parseFloat(myBid?.bid?.amount);
@@ -111,7 +111,8 @@ const PlaceBid = () => {
         const connect = () => {
             const socket = new SockJS(`http://localhost:7107/ws?authToken=${token}`);
             const client = Stomp.over(socket);
-            client.debug = () => {};
+            client.debug = () => {
+            };
             client.connect(
                 {},
                 () => {
@@ -181,7 +182,7 @@ const PlaceBid = () => {
         try {
             const res = await axios.post(
                 `http://localhost:7107/bids/place/${productId}`,
-                { amount: bidValue },
+                {amount: bidValue},
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -213,7 +214,7 @@ const PlaceBid = () => {
             }));
 
         } catch {
-            Swal.fire({ icon: "error", title: "Error", text: "Failed to place bid." });
+            Swal.fire({icon: "error", title: "Error", text: "Failed to place bid."});
         }
     };
 
@@ -233,7 +234,7 @@ const PlaceBid = () => {
     return (
         <div className="container mx-auto p-6">
             <h2 className="text-3xl font-bold mb-6 text-center">
-                Auction Room: {product.auction?.title}
+                Auction Room: {product?.auction.title}
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
@@ -243,18 +244,28 @@ const PlaceBid = () => {
                         alt={product.name}
                         className="w-full h-60 object-cover rounded-lg mb-4"
                     />
-                    <h3 className="text-xl font-semibold">{product.name}</h3>
-                    <p className="text-gray-600 mt-2 mb-4">{product.description || "No description available."}</p>
-                    <p className="text-xl font-bold text-gray-800 mt-2">
+                    <h3 style={{fontFamily: "var(--font-roboto)"}}
+                        className="text-xl font-semibold">{product.name}</h3>
+                    <p style={{fontFamily: "var(--font-tenor)"}}
+                       className="text-gray-600 mt-2 mb-4">{product.description || "No description available."}</p>
+
+                    <p style={{fontFamily: "var(--font-roboto)"}} className="text-md font-bold text-gray-800 mt-2">
                         Current Highest Bid:{" "}
-                        {product.highestPrice ? `$${product.highestPrice.toFixed(2)}` : "No bids yet"}
+                        <span className="text-md font-bold text-green-700 mt-2">
+                            {product.highestPrice ? `$${product.highestPrice.toFixed(2)}` : "No bids yet"}
+                        </span>
                     </p>
 
                     <div className="flex items-center space-x-2 mt-3">
                         {!showAmountInput ? (
                             <>
-                                <p className="text-lg font-bold text-green-600">
-                                    My Bid Price: ${amount.toFixed(2)}
+                                <p style={{fontFamily: "var(--font-roboto)"}}
+                                   className="text-md font-bold text-black">
+                                    My Bid Price:
+                                    <span
+                                        className="text-md font-bold text-green-700 mt-2">
+                                        ${amount.toFixed(2)}
+                                    </span>
                                 </p>
                                 {!isAuctionOver && (
                                     <button
