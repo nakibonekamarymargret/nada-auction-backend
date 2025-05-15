@@ -128,8 +128,8 @@ const Home = () => {
                                 </div>
                                 <CardContent className="p-4 space-y-2">
                                     <h3
-                                        style={{ fontFamily: "var(--font-tenor)" }}
-                                        className="text-xl font-semibold"
+                                        style={{fontFamily:"var(--font-playfair)",color:"var(--chart-2)"}}
+                                        className="text-xl font-semibold "
                                     >
                                         {product.name}
                                     </h3>

@@ -1,12 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Tenor+Sans&family=Playfair+Display:wght@400;700&family=Inter:wght@400;600;700&family=DM+Serif+Display&family=Manrope:wght@400;600;700&display=swap');
 
 @import "tailwindcss";
-
-
 @import "tw-animate-css";
 
 @plugin "tailwindcss-motion";
-
 
 @custom-variant dark (&:is(.dark *));
 
@@ -81,9 +78,9 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --color-live: #10b981;     /* Green */
-  --color-scheduled: #3b82f6;   /* Blue */
-  --color-closed: #ef4444; 
+  --color-live: #10b981;
+  --color-scheduled: #3b82f6;
+  --color-closed: #ef4444;
 }
 
 .dark {
@@ -118,7 +115,7 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-   --color-live: #34d399;
+  --color-live: #34d399;
   --color-scheduled: #60a5fa;
   --color-closed: #f87171;
 }
@@ -131,6 +128,7 @@
     @apply bg-background text-foreground;
   }
 }
+
 @layer base {
   :root {
     --chart-1: 12 76% 61%;
@@ -148,6 +146,7 @@
     --chart-5: 340 75% 55%;
   }
 }
+
 @theme {
   --font-roboto: "Roboto", sans-serif;
   --font-baskerville: "Libre Baskerville", serif;

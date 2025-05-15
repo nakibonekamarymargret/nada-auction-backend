@@ -1,4 +1,3 @@
-// Navbar.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AiOutlineHeart, AiOutlineUser, AiOutlineBell } from "react-icons/ai";
@@ -13,13 +12,13 @@ const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
       !!localStorage.getItem("token")
   );
-  const [searchTerm, setSearchTerm] = useState(""); // To store the search term
-  const [auctions, setAuctions] = useState([]); // To store the search results
+  const [searchTerm, setSearchTerm] = useState("");
+  const [auctions, setAuctions] = useState([]);
 
   const isLoginPage = location.pathname === "/login";
   const isRegisterPage = location.pathname === "/register";
 
-  // Sync auth state when token changes or route changes
+  // Sync auth state
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsAuthenticated(!!token);
@@ -31,23 +30,14 @@ const Navbar = () => {
     setDropdownOpen(false);
   };
 
-  const handleLogin = () => {
-    navigate("/login");
-  };
-
-  const handleRegister = () => {
-    navigate("/register");
-  };
-
-  if (isLoginPage || isRegisterPage) return null;
+  const handleLogin = () => navigate("/login");
+  const handleRegister = () => navigate("/register");
 
   const handleSearch = async (e) => {
     if (e.key === "Enter" && searchTerm.trim()) {
       try {
-        // Call search service to get auctions matching the search term
         const results = await SearchService.searchAuctions(searchTerm);
-        setAuctions(results); // Store the results in the state
-        // Navigate to the results page and pass auctions in state
+        setAuctions(results);
         navigate("/search-results", { state: { auctions: results } });
         setSearchTerm("");
       } catch (err) {
@@ -55,6 +45,8 @@ const Navbar = () => {
       }
     }
   };
+
+  if (isLoginPage || isRegisterPage) return null;
 
   return (
       <div className="w-full bg-white text-black border-b border-gray-300 relative z-10">
@@ -67,23 +59,25 @@ const Navbar = () => {
             NADA
           </h2>
 
-          {/* Centered Search Bar */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 w-[40%]">
-            <input
-                type="text"
-                placeholder="Search for items"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)} // Update the search term
-                onKeyDown={handleSearch} // Trigger search on Enter key press
-                className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none text-black"
-            />
-          </div>
+          {/* Centered Search Bar: Only show on home page */}
+          {location.pathname === "/" && (
+              <div className="absolute left-1/2 transform -translate-x-1/2 w-[40%]">
+                <input
+                    type="text"
+                    placeholder="Search for items"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={handleSearch}
+                    className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none text-black"
+                />
+              </div>
+          )}
 
           {/* Right side content based on login status */}
           <div className="flex items-center gap-10 text-sm">
             {isAuthenticated ? (
                 <>
-                  {/* Authenticated User Items */}
+                  {/* Watch List */}
                   <div
                       className="flex flex-col items-center cursor-pointer"
                       onClick={() => navigate("/watchlist")}
@@ -92,8 +86,8 @@ const Navbar = () => {
                     <span>My Watch List</span>
                   </div>
 
-                  {/* Dropdown Menu */}
-                  <div className="flex flex-col items-center cursor-pointer relative" onClick={() => setDropdownOpen(!dropdownOpen)}>
+                  {/* Activity Dropdown */}
+                  <div className="flex flex-col items-center cursor-pointer relative">
                     <AiOutlineUser
                         size={20}
 
@@ -103,15 +97,9 @@ const Navbar = () => {
                     {dropdownOpen && (
                         <div className="absolute right-0 mt-12 w-48 bg-white text-black rounded-md shadow-lg border z-50">
                           <ul className="py-1 text-sm">
-                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                              Bids
-                            </li>
-                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                              Recently Viewed
-                            </li>
-                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                              Buy Again
-                            </li>
+                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Bids</li>
+                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Recently Viewed</li>
+                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Buy Again</li>
                             <li
                                 onClick={handleLogout}
                                 className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
@@ -123,13 +111,13 @@ const Navbar = () => {
                     )}
                   </div>
 
+                  {/* Alerts */}
                   <div className="flex flex-col items-center cursor-pointer">
                     <AiOutlineBell size={20} />
                     <span>Alerts</span>
                   </div>
                 </>
             ) : (
-                // Not logged in: show Login & Register as buttons
                 <div className="flex gap-6 items-center">
                   <button
                       onClick={handleLogin}
@@ -140,7 +128,7 @@ const Navbar = () => {
                   </button>
                   <button
                       onClick={handleRegister}
-                      className="px-4 py-2 text-sm font-medium text-black  rounded hover:text-green-700 transition"
+                      className="px-4 py-2 text-sm font-medium text-black rounded hover:text-green-700 transition"
                   >
                     <FaUserPlus />
                     Register
