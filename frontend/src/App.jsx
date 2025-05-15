@@ -14,6 +14,7 @@ import SearchResultsPage from "./pages/SearchResultsPage";
 import AboutUsPage from "./pages/products/AboutUsPage";
 import TermsAndConditionsPage from "./pages/TermsAndConditionsPage";
 import PlaceBid from "./pages/bid/PlaceBid.jsx";
+// import WatchListPage from "./pages/WatchListPage";
 
 
 const Layout = ({ children }) => {
@@ -52,6 +53,7 @@ function App() {
         <Route path="/approved/:auctionId" element={<BidApprovalForm />} />
         <Route path="/aboutUs" element={<AboutUsPage />} />
         <Route path="/terms" element={<TermsAndConditionsPage />} />
+        {/* <Route path="/watch" element={<WatchListPage />} /> */}
 
         {/* Admin-protected routes */}
         <Route
@@ -71,11 +73,14 @@ function App() {
           }
         />
         <Route path="/product/:id" element={<ViewProduct />} />
-        <Route path="/bids/place/:id" element={
-          <ProtectedUserRoute>
-            <PlaceBid />
-          </ProtectedUserRoute>
-          } />
+        <Route
+          path="/bids/place/:id"
+          element={
+            <ProtectedUserRoute>
+              <PlaceBid />
+            </ProtectedUserRoute>
+          }
+        />
         <Route path="/search-results" element={<SearchResultsPage />} />
       </Routes>
     </Layout>

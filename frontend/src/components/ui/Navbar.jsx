@@ -28,6 +28,7 @@ const Navbar = () => {
     localStorage.removeItem("token");
     setIsAuthenticated(false);
     setDropdownOpen(false);
+    navigate("/");
   };
 
   const handleLogin = () => navigate("/login");
@@ -45,6 +46,9 @@ const Navbar = () => {
       }
     }
   };
+  const toggleDropDown = () =>{
+    setDropdownOpen((prev) => !prev);
+  }
 
   if (isLoginPage || isRegisterPage) return null;
 
@@ -80,14 +84,14 @@ const Navbar = () => {
                   {/* Watch List */}
                   <div
                       className="flex flex-col items-center cursor-pointer"
-                      onClick={() => navigate("/watchlist")}
+                      onClick={() => navigate("/watch")}
                   >
                     <AiOutlineHeart size={20} />
                     <span>My Watch List</span>
                   </div>
 
                   {/* Activity Dropdown */}
-                  <div className="flex flex-col items-center cursor-pointer relative">
+                  <div className="flex flex-col items-center cursor-pointer relative "onClick={toggleDropDown}>
                     <AiOutlineUser
                         size={20}
 
