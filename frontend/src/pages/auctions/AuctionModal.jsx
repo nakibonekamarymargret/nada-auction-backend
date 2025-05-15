@@ -14,12 +14,15 @@ import { Input } from "@/components/ui/input";
 import AuctionService from "../../services/AuctionService";
 
 const AuctionModal = ({ onAuctionCreated }) => {
+  const [open, setOpen] = useState(false);
+
   const [auctionData, setAuctionData] = useState({
     title: "",
     startingPrice: "",
     startTime: "",
     endTime: "",
   });
+
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -78,13 +81,15 @@ const AuctionModal = ({ onAuctionCreated }) => {
 
       const res = await AuctionService.add(auctionData, token);
 
-      onAuctionCreated(res.data);
+      // onAuctionCreated(res.data);
+      onAuctionCreated(res.data); 
       setAuctionData({
         title: "",
         startingPrice: "",
         startTime: "",
         endTime: "",
       });
+      setOpen(false);
     } catch (err) {
       console.error("Auction creation failed", err);
       setError(
@@ -97,9 +102,9 @@ const AuctionModal = ({ onAuctionCreated }) => {
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default">Create Auction</Button>
+        <Button variant="default" onClick={() => setOpen(true)}>Create Auction</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <form onSubmit={handleSubmit}>
