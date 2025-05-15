@@ -322,9 +322,11 @@ const PlaceBid = () => {
                     <div className="flex justify-center items-center mb-4 text-sm text-gray-500">
                         <span className="mr-2">Waiting for more participants</span>
                         <div className="flex space-x-1">
-                            <span className="w-3 h-2 bg-red-400 rounded-full animate-bounce"></span>
-                            <span className="w-3 h-2 bg-green-400 rounded-full animate-bounce delay-150"></span>
-                            <span className="w-3 h-2 bg-bluee-400 rounded-full animate-bounce delay-300"></span>
+                            <span className="w-3 h-3 bg-red-400 rounded-full animate-bounce"></span>
+                            <span className="w-3 h-2 bg-black rounded-full animate-bounce delay-300"></span>
+                            <span className="w-3 h-3 bg-green-400 rounded-full animate-bounce delay-150"></span>
+                            <span className="w-3 h-2 bg-black rounded-full animate-bounce delay-300"></span>
+                            <span className="w-3 h-3 bg-blue-400 rounded-full animate-bounce delay-300"></span>
                         </div>
                     </div>
 
