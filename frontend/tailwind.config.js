@@ -1,14 +1,23 @@
-/** @type {import('tailwindcss').Config} */
+const colors = require('tailwindcss/colors')
+
 module.exports = {
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}", // Adjust to your project structure
+    "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
       colors: {
+        ...colors,
+        border: 'oklch(var(--border) / <alpha-value>)',
+        ring: 'oklch(var(--ring) / <alpha-value>)',
+        background: 'oklch(var(--background) / <alpha-value>)',
+        foreground: 'oklch(var(--foreground) / <alpha-value>)',
+        card: 'oklch(var(--card) / <alpha-value>)',
+        'card-foreground': 'oklch(var(--card-foreground) / <alpha-value>)',
         live: '#10b981',
         scheduled: '#3b82f6',
         closed: '#ef4444',
+        // Add any others you need...
       },
       fontFamily: {
         roboto: ['Roboto', 'sans-serif'],
@@ -34,6 +43,6 @@ module.exports = {
   plugins: [
     require('tailwindcss-animate'),
     require('@tailwindcss/forms'),
-    require('tailwindcss-motion'), // You referenced this
+    require('tailwindcss-motion'),
   ],
 }

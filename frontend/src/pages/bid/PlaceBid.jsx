@@ -319,14 +319,15 @@ const PlaceBid = () => {
                 {/* Participants */}
                 <div className="bg-gray-50 rounded-xl shadow-md p-6">
                     <h3 className="text-2xl font-semibold mb-1 text-center">Bidding Participants</h3>
-
-                    {!isAuctionOver && (
-                        <div className="relative overflow-hidden h-5 mb-4">
-                            <div className="absolute animate-marquee whitespace-nowrap text-gray-400 text-sm">
-                                {"<<<<<<<<<<<<<<".repeat(5)}
-                            </div>
+                    <div className="flex justify-center items-center mb-4 text-sm text-gray-500">
+                        <span className="mr-2">Waiting for more participants</span>
+                        <div className="flex space-x-1">
+                            <span className="w-3 h-2 bg-red-400 rounded-full animate-bounce"></span>
+                            <span className="w-3 h-2 bg-green-400 rounded-full animate-bounce delay-150"></span>
+                            <span className="w-3 h-2 bg-bluee-400 rounded-full animate-bounce delay-300"></span>
                         </div>
-                    )}
+                    </div>
+
                     {participants.length === 0 ? (
                         <p className="text-gray-500 text-center">No bids yet.</p>
                     ) : (
