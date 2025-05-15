@@ -105,7 +105,7 @@ const ViewProduct = () => {
 
   if (auction.status === "SCHEDULED") {
     actionButton = (
-      <button style={{fontFamily:"var(--font-manrope)"}}
+      <button style={{fontFamily:"var(--font-button)"}}
           className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 text-lg rounded mr-2 transition-colors duration-200">
         Get approved to bid
       </button>
@@ -267,7 +267,7 @@ Place Bid
                 </p>
                 {product.description && (
                   <div className="mt-4">
-                    <h3 className="font-semibold text-gray-800 mb-1" style={{ fontFamily: "var(--font-dm-serif)"}}>
+                    <h3 className="text-lg font-medium text-gray-800 mb-2" style={{ fontFamily: "var(--font-dm-serif)"}}>
                       Full Description:
                     </h3>
                     <p className="text-gray-700 text-sm">

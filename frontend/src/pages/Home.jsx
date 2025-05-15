@@ -77,7 +77,7 @@ const Home = () => {
 
     const renderProducts = (filteredProducts, status) => {
         if (loading) return <p>Loading...</p>;
-        if (!filteredProducts.length) return <p>No products found.</p>;
+        if (!filteredProducts.length) return <p style={{fontFamily:"var(--font-tenor)"}} className="text-md">No products found.</p>;
 
         const isExpanded = expandedSections[status];
         const displayedProducts = isExpanded
@@ -128,8 +128,8 @@ const Home = () => {
                                 </div>
                                 <CardContent className="p-4 space-y-2">
                                     <h3
-                                        style={{ fontFamily: "var(--font-tenor)" }}
-                                        className="text-xl font-semibold"
+                                        style={{fontFamily:"var(--font-playfair)",color:"var(--chart-2)"}}
+                                        className="text-xl font-semibold "
                                     >
                                         {product.name}
                                     </h3>
@@ -177,30 +177,30 @@ const Home = () => {
         <div className="container mx-auto px-4 pt-5">
             <AnimatedImage />
             <section className="p-6">
-                <h2
-                    className="text-gray-500 text-3xl font-semibold mb-4"
-                    style={{ fontFamily: "var(--font-roboto)" }}
-                >
-                    Upcoming Events
-                </h2>
-                {renderProducts(getProductsByStatus("SCHEDULED"), "SCHEDULED")}
+
+                    <h2
+                        className="text-dark text-2xl font-bold mb-4"
+                        style={{fontFamily: "var(--font-baskerville)"}}
+                    >
+                        UPCOMING EVENTS
+                    </h2>
+                    {renderProducts(getProductsByStatus("SCHEDULED"), "SCHEDULED")}
             </section>
             <section className="p-6">
                 <h2
-                    className="text-gray-500 text-3xl font-semibold mb-4"
-                    style={{ fontFamily: "var(--font-roboto)" }}
+                    className="text-dark text-2xl font-bold mb-4"
+                    style={{ fontFamily: "var(--font-baskerville)" }}
                 >
-                    Live Events
+                    LIVE EVENTS
                 </h2>
                 {renderProducts(getProductsByStatus("LIVE"), "LIVE")}
             </section>
             <section className="p-6">
                 <h2
-                    className="text-dark text-xl font-semibold mb-4"
-                    style={{ fontFamily: "var(--font-roboto)" }}
+                    className="text-red-800 text-xl font-semibold mb-4"
+                    style={{fontFamily: "var(--font-baskerville)"}}
                 >
-                    Closed Events
-                </h2>
+CLOSED EVENTS                </h2>
                 {renderProducts(getProductsByStatus("CLOSED"), "CLOSED")}
             </section>
         </div>

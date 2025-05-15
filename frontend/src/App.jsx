@@ -7,6 +7,7 @@ import AuctionForm from "./pages/products/AuctionForm";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ViewProduct from "./pages/products/ViewProduct";
 import ProtectedAdminRoute from "./pages/Auth/ProtectedAdminRoute";
+import ProtectedUserRoute from "./pages/Auth/ProtectedUserRoute";
 import Footer from "./pages/Footer";
 import BidApprovalForm from "./pages/bid/BidApprovalForm";
 import SearchResultsPage from "./pages/SearchResultsPage";
@@ -25,7 +26,6 @@ const Layout = ({ children }) => {
   ];
   const hideFooterOn = ["/login", "/register",  "/approved/:auctionId","/admin"];
 
-  // Use pathname matching for dynamic routes like /watch-auction/:id
   const shouldHideFooter = hideFooterOn.some((route) =>
     route.includes(":")
       ? location.pathname.startsWith(route.split(":")[0])
@@ -71,7 +71,11 @@ function App() {
           }
         />
         <Route path="/product/:id" element={<ViewProduct />} />
-        <Route path="/bids/place/:id" element={<PlaceBid />} />
+        <Route path="/bids/place/:id" element={
+          <ProtectedUserRoute>
+            <PlaceBid />
+          </ProtectedUserRoute>
+          } />
         <Route path="/search-results" element={<SearchResultsPage />} />
       </Routes>
     </Layout>
