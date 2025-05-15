@@ -8,7 +8,9 @@ import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false); // This state is not used in the provided logic, but kept
+  const [id, setId] = useState("");
+
+  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
@@ -35,16 +37,19 @@ const Login = () => {
       console.log("Backend response data:", data); // Keep this log to see the full response structure
 
       if (response.ok) {
-        // If your response is like { returnTimestamp: ..., returnCode: ..., ReturnObject: { token: '...', role: '...' } }
-        const { token, role } = data.ReturnObject;
-       
+        const { token, role ,email} = data.ReturnObject;
+
         console.log("Role variable value BEFORE if:", role); // DEBUG
         console.log("Type of role variable:", typeof role); // DEBUG
+        console.log("Type of email variable:", typeof email); // DEBUG
         console.log("Result of role === 'ADMIN' comparison:", role === "ADMIN"); // DEBUG
 
         // Save the token and role in localStorage
         localStorage.setItem("token", token);
         localStorage.setItem("role", role);
+        localStorage.setItem("email", id); //
+        console.log(email);
+
 
         // Navigate based on the role
         if (role === "ADMIN") {

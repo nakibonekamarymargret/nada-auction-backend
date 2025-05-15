@@ -1,5 +1,6 @@
 package com.kush.nada.controller;
-
+import com.kush.nada.dtos.BidDto;
+import com.stripe.model.checkout.Session;
 import com.kush.nada.models.Bid;
 import com.kush.nada.models.Product;
 import com.kush.nada.models.UserPrincipal;
@@ -15,11 +16,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import com.stripe.model.checkout.Session;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 @CrossOrigin
 @RestController
 @RequestMapping("/bids")
@@ -98,7 +100,7 @@ public class BidController {
                 .anyMatch(bid -> bid.getBidder().getId().equals(userId));
 
         if (!userPlacedBid) {
-            returnData.put("message", String.format("The winner of this product is %s at a price of $%.2f.", winnerName, winningAmount));
+            returnData.put("message", String.format("The winner for this product has been chosen. The winning price was: $%.2f.", winningAmount));
         } else if (highestBid.getBidder().getId().equals(userId)) {
             Session session = stripeService.createCheckoutSession(
                     winningAmount,
@@ -112,11 +114,65 @@ public class BidController {
             returnData.put("checkoutUrl", session.getUrl());
         } else {
             returnData.put("message", "Sorry, you did not win this time. Try next time!");
-            returnData.put("winnerInfo", String.format("The winner of this product is %s at a price of $%.2f.", winnerName, winningAmount));
+            returnData.put("winnerInfo", String.format("The winner for this product has been chosen. The winning price was: $%.2f.", winningAmount));
         }
 
         return responseService.createResponse(200, returnData, request, HttpStatus.OK);
     }
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')") // Only admins can view all bids
+    public ResponseEntity<Map<String, Object>> getAllBids(HttpServletRequest request) {
+        List<BidDto> bidDtos = bidService.getAllBids()
+                .stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+
+        Map<String, Object> returnData = new HashMap<>();
+        returnData.put("ReturnObject", bidDtos);
+        returnData.put("message", "All bids retrieved successfully.");
+
+        return responseService.createResponse(200, returnData, request, HttpStatus.OK);
+    }
+
+    //Fetch Bids for a Product
+    @GetMapping("/product/{productId}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> getBidsByProduct(
+            @PathVariable Long productId,
+            HttpServletRequest request
+    ) {
+        List<BidDto> bidDtos = bidService.getAllBidsForProduct(productId)
+                .stream()
+                .sorted((b1, b2) -> b2.getAmount().compareTo(b1.getAmount()))
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+
+        Map<String, Object> returnData = new HashMap<>();
+        returnData.put("ReturnObject", bidDtos);
+        returnData.put("message", "Bids retrieved successfully.");
+
+        return responseService.createResponse(200, returnData, request, HttpStatus.OK);
+    }
+    @GetMapping("/my-latest/{productId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Map<String, Object>> getMyLatestBid(
+            @PathVariable Long productId,
+            @AuthenticationPrincipal UserPrincipal principal,
+            HttpServletRequest request
+    ) {
+        Long userId = extractUserId(principal);
+        Bid myLatestBid = bidService.findLatestBidByUserAndProduct(userId, productId);
+
+        if (myLatestBid == null) {
+            return responseService.createResponse(404, "No bid found for this user on this product", request, HttpStatus.NOT_FOUND);
+        }
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("message", "User's latest bid fetched");
+        payload.put("bid", myLatestBid);
+
+        return responseService.createResponse(200, payload, request, HttpStatus.OK);    }
+
 
     // Helper Method
     private Long extractUserId(UserPrincipal principal) {
@@ -125,4 +181,13 @@ public class BidController {
         }
         return principal.getId();
     }
+    private BidDto mapToDto(Bid bid) {
+        BidDto dto = new BidDto();
+        dto.setId(bid.getId());
+        dto.setAmount(bid.getAmount());
+        dto.setBidderName(bid.getBidder().getName());
+        dto.setBidTime(bid.getBidTime());
+        return dto;
+    }
+
 }

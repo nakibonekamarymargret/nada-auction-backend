@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 const ViewProduct = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
-  const [showDetails, setShowDetails] = useState(true);
+  const [showDetails, setShowDetails] = useState(false);
   const [isWatchlisted, setIsWatchlisted] = useState(false);
   const navigate = useNavigate();
 
@@ -17,6 +17,7 @@ const ViewProduct = () => {
     try {
       const res = await axios.get(`http://localhost:7107/product/${id}`);
       const productData = res.data.ReturnObject;
+      console.log(id);
       setProduct(productData);
     } catch (err) {
       console.error("Failed to fetch product data:", err);
@@ -66,13 +67,13 @@ const ViewProduct = () => {
 
     switch (status) {
       case "LIVE":
-        return { text: "LIVE NOW", className: "bg-green-600" };
+        return { text: "LIVE NOW", className: "bg-green-600 text-md font-bold" };
       case "CLOSED":
-        return { text: "CLOSED", className: "bg-red-600" };
+        return { text: "CLOSED", className: "bg-red-600 text-md font-bold" };
       case "SCHEDULED":
-        return { text: "SCHEDULED", className: "bg-blue-500" };
+        return { text: "SCHEDULED", className: "bg-blue-500 text-md font-bold" };
       default:
-        return { text: "Status N/A", className: "bg-gray-500" };
+        return { text: "Status N/A", className: "bg-gray-500 text-md font-bold" };
     }
   };
 
@@ -80,14 +81,10 @@ const ViewProduct = () => {
 
   const toggleDetails = () => setShowDetails((prev) => !prev);
   const toggleWatchlist = () => setIsWatchlisted((prev) => !prev);
-// const handleWatchLiveAuction = () => {
-//   const auctionId = auction.id;
-//   const watchWindow = window.open(`/watch-auction/${auctionId}`, "_blank");
-//   if (!watchWindow) {
-//     alert("Please allow pop-ups to watch the auction.");
-//   }
-// };
 
+  const handlePlaceBid = (id) => {
+    navigate(`/bids/place/${id}`);
+  };
   if (!product) {
     return (
       <div className="container mx-auto px-4 py-6 text-center">
@@ -108,32 +105,33 @@ const ViewProduct = () => {
 
   if (auction.status === "SCHEDULED") {
     actionButton = (
-      <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mr-2 transition-colors duration-200">
+      <button style={{fontFamily:"var(--font-button)"}}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 text-lg rounded mr-2 transition-colors duration-200">
         Get approved to bid
       </button>
     );
   } else if (auction.status === "LIVE") {
     actionButton = (
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2">
+      <div className="">
         <button
-          onClick={() => navigate(`/live-auction/${auction.id}`)}
-          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+          onClick={() => navigate(`/approved/${auction.id}`)}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
         >
-          View Live Auction
+          Get approved to Bid
         </button>
 
-        <button
-          onClick={() => window.open(`/watch-auction/${auction.id}`, "_blank")}
-          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+        <p
+          style={{ fontFamily: "sans-serif" }}
+          onClick={() => handlePlaceBid(product.id)}
+          className=" cursor-pointer text-end text-blue-700 font-bold py-2 px-4  duration-200"
         >
-          Watch Auction
-        </button>
+Place Bid
+        </p>
       </div>
-
     );
   } else if (auction.status === "CLOSED") {
     actionButton = (
-      <p className="text-red-600 font-semibold text-right">
+      <p className="text-red-600 medium text-right">
         Bidding is closed for this item.
       </p>
     );
@@ -149,11 +147,14 @@ const ViewProduct = () => {
     <div className="container mx-auto px-4 py-6 bg-white shadow-md rounded-lg">
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
-        <div className="flex items-center gap-3">
-          <Badge className={auctionStatusDisplay.className}>
-            {auctionStatusDisplay.text}
-          </Badge>
-          <h2 className="text-xl font-semibold text-gray-800">
+        <div className="flex items-center gap-3 ">
+
+            <Badge className={auctionStatusDisplay.className}
+            style={{fontFamily:"var(-font-inter)"}}>
+              {auctionStatusDisplay.text}
+            </Badge>
+
+          <h2 style={{ fontFamily: "'var(--font-playfair)" }} className="text-2xl font-semibold text-red-800">
             {product.name || "Product Details"}
           </h2>
         </div>
@@ -182,21 +183,23 @@ const ViewProduct = () => {
 
         <div className="md:col-span-2 p-6 pt-0">
           <div className="mb-4">
-            <p className="text-gray-600 mt-1">{shortDescription}</p>
-            <p className="text-xl font-bold text-gray-800 mt-2">
+            <p style={{ fontFamily: "var(--font-roboto)" }}
+                className="text-gray-600 mt-1 text-lg">{shortDescription}</p>
+            <p className="text-xl font-bold text-gray-800 mt-2 " style={{ fontFamily: "var(--font-tenor)" }}>
               Current Highest Bid:{" "}
-              {product.highestPrice
-                ? `$${product.highestPrice.toFixed(2)}`
-                : "No bids yet"}
+              <span className="text-green-600  " > {product.highestPrice
+                  ? `$${product.highestPrice.toFixed(2)}`
+                  : "No bids yet"}</span>
+
             </p>
-            <p className="text-gray-700 text-sm mt-1">
-              Last Bid: {formatDateTime(product.lastBidTime)}
-            </p>
+            
             <button
               onClick={toggleDetails}
-              className="text-blue-600 hover:underline text-sm mt-1 block"
+              className="text-blue-600 hover:underline text-md mt-1 block"
             >
-              {showDetails ? "Hide full details" : "Show full details"}
+              <span style={{ fontFamily: "var(--font-tenor)" }}>
+                {showDetails ? "Hide full details" : "Show full details"}
+              </span>
             </button>
           </div>
 
@@ -206,36 +209,41 @@ const ViewProduct = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 border-t pt-6 border-gray-200">
               {/* Auction Timing */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                <h3 style={{ fontFamily: "var(--font-dm-serif)"}}
+                    className="text-lg font-medium text-gray-800 mb-2">
                   Auction Timing
                 </h3>
                 {auction.startTime && (
-                  <p className="text-gray-700 text-sm mb-1">
-                    <span className="font-semibold">Starts:</span>{" "}
-                    {formatDateTime(auction.startTime)}
-                  </p>
+                    <p className="text-gray-700 text-sm mb-1"
+                       style={{fontFamily: "var(--font-inter)"}}>
+                      <span className="font-semibold ">Starts:</span>{" "}
+                      <span className="text-green-600 ">{formatDateTime(auction.startTime)}</span>
+
+                    </p>
                 )}
                 {auction.endTime && (
-                  <p className="text-gray-700 text-sm mb-1">
-                    <span className="font-semibold">Ends:</span>{" "}
-                    {formatDateTime(auction.endTime)}
-                  </p>
+                    <p className="text-gray-700 text-sm mb-1">
+                      <span className="font-semibold">Ends:</span>{" "}
+                      <span className="text-red-600 ">{formatDateTime(auction.endTime)}</span>
+
+                    </p>
                 )}
               </div>
 
               {/* Viewing Dates */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2 mt-4">
+              <h3  style={{ fontFamily: "var(--font-dm-serif)"}}
+                  className="text-lg font-medium text-gray-800 mb-2 mt-4">
                   Viewing Dates
                 </h3>
                 {viewingDates.length > 0 ? (
                   viewingDates.map((date, index) => (
-                    <p key={index} className="text-gray-700 text-sm mb-1">
+                    <p  style={{ fontFamily: "var(--font-inter)" }} key={index} className="text-gray-700 text-sm mb-1">
                       {date}
                     </p>
                   ))
                 ) : (
-                  <p className="text-gray-500 text-sm">
+                  <p style={{ fontFamily: "var(--font-inter) "}} className="text-gray-500 text-sm">
                     No viewing dates available.
                   </p>
                 )}
@@ -243,23 +251,25 @@ const ViewProduct = () => {
 
               {/* Product Details */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                <h3 style={{ fontFamily: "var(--font-dm-serif)"}} className="text-lg font-medium text-gray-800 mb-2">
                   Product Details
                 </h3>
                 {product.category && (
-                  <p className="text-gray-700 text-sm mb-1">
-                    <span className="font-semibold">Category:</span>{" "}
-                    {product.category}
-                  </p>
+                  <p className="text-gray-700 text-sm mb-1 " style={{ fontFamily: "var(--font-roboto)"}}>
+                    <span  className="font-semibold">Category:</span>{" "}
+                    <span  className="font-bold text-blue-500" >
+                      {product.category}
+</span>
+                    </p>
                 )}
-                <p className="text-gray-700 text-sm mb-1">
-                  <span className="font-semibold">Currency:</span> USD
+                <p style={{ fontFamily: "var(--font-roboto)"}} className="text-gray-700 text-sm mb-1">
+                  <span className="font-semibold">Currency:</span> <span className="font-bold text-blue-500"> USD</span>
                 </p>
                 {product.description && (
                   <div className="mt-4">
-                    <h4 className="font-semibold text-gray-800 mb-1">
+                    <h3 className="text-lg font-medium text-gray-800 mb-2" style={{ fontFamily: "var(--font-dm-serif)"}}>
                       Full Description:
-                    </h4>
+                    </h3>
                     <p className="text-gray-700 text-sm">
                       {product.description}
                     </p>

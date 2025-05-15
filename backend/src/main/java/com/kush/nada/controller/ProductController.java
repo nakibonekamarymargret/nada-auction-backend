@@ -1,13 +1,17 @@
 package com.kush.nada.controller;
 
+import com.kush.nada.dtos.ProductUpdateDto;
 import com.kush.nada.models.Product;
 import com.kush.nada.dtos.ProductDto;
+import com.kush.nada.models.UserEntity;
 import com.kush.nada.models.UserPrincipal;
 import com.kush.nada.enums.ProductCategory;
 import com.kush.nada.services.ProductService;
 import com.kush.nada.services.ResponseService;
 import com.kush.nada.services.S3ServiceUpload;
+import com.kush.nada.services.WatchListService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -46,17 +50,19 @@ public class ProductController {
     private final ProductService productService;
     private final ResponseService responseService;
     private final S3ServiceUpload s3ServiceUpload;
+    private final WatchListService watchListService;
 
     @Autowired
-    public ProductController(ProductService productService, ResponseService responseService, S3ServiceUpload s3ServiceUpload) {
+    public ProductController(ProductService productService, ResponseService responseService, S3ServiceUpload s3ServiceUpload, WatchListService watchListService) {
         this.productService = productService;
         this.responseService = responseService;
         this.s3ServiceUpload = s3ServiceUpload;
+        this.watchListService = watchListService;
     }
 
     @PostMapping(value = "/add/{auctionId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-@PreAuthorize("hasRole('ADMIN')")
-public ResponseEntity<Map<String, Object>> createProduct(
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> createProduct(
         @RequestParam("name") String name,
         @RequestParam("description") String description,
         @RequestParam("highestPrice") BigDecimal highestPrice,
@@ -82,24 +88,17 @@ public ResponseEntity<Map<String, Object>> createProduct(
     return responseService.createResponse(200, createdProduct, request, HttpStatus.CREATED);
 }
 
-
-
-
 @GetMapping("/all")
 public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
     List<ProductDto> products = productService.getAllProducts();
     return responseService.createResponse(200, products, request, HttpStatus.OK);
-}   
-    @GetMapping("/all")
-    public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest request) {
-        List<Product> products = productService.getAllProducts();
-        return responseService.createResponse(200, products, request, HttpStatus.OK);
-    }
+}
 
     @GetMapping("/{id}")
 
      public ResponseEntity<Map<String, Object>> getProductById(@PathVariable Long id, HttpServletRequest request) {
         // Call the service method that returns the DTO
+        System.out.println("Received request for product ID: " + id);
         ProductDto productDto = productService.getProductDtoById(id);
          Map<String, Object> responseMap = new HashMap<>();
          responseMap.put("status", 200); 
@@ -108,16 +107,70 @@ public ResponseEntity<Map<String, Object>> getAllProducts(HttpServletRequest req
          return ResponseEntity.ok(responseMap); 
       }
 
-    // 
+    // Add or Remove a product from wish list
+    @PostMapping("/watchlist/{productId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, Object>> toggleWatchlist(
+            @PathVariable Long productId,
+            @AuthenticationPrincipal UserPrincipal principal,
+            HttpServletRequest request) {
 
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> updateProduct(@PathVariable Long id, @RequestBody Product productDetails, HttpServletRequest request) {
-        Product updatedProduct = productService.updateProduct(id, productDetails);
-        return responseService.createResponse(200, updatedProduct, request, HttpStatus.OK);
+        UserEntity user = principal.getUser();
+        boolean isAdded = watchListService.toggleWatchList(productId, user);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", 200);
+        response.put("message", isAdded ? "Product added to watchlist" : "Product removed from watchlist");
+
+        return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{id}")
+    // View All products in user's wish list
+    @GetMapping("/watchlist")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, Object>> getUserWatchlist(
+            @AuthenticationPrincipal UserPrincipal principal,
+            HttpServletRequest request) {
+
+        UserEntity user = principal.getUser();
+        List<ProductDto> watchlist = watchListService.getWatchListProducts(user);
+
+        return responseService.createResponse(200, watchlist, request, HttpStatus.OK);
+    }
+
+//    @PatchMapping("edit/{id}")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<Map<String, Object>> updateProduct(@PathVariable Long id, @RequestBody Product productDetails, HttpServletRequest request) {
+//        Product updatedProduct = productService.updateProduct(id, productDetails);
+//        return responseService.createResponse(200, updatedProduct, request, HttpStatus.OK);
+//    }
+@PatchMapping("edit/{id}") // Matches PATCH requests to /api/products/edit/{id}
+@PreAuthorize("hasRole('ADMIN')") // Security check
+public ResponseEntity<Map<String, Object>> updateProduct(
+        @PathVariable Long id, // <-- Gets the ID from the URL path
+        @RequestBody ProductUpdateDto productDetailsDto, // *** Gets the request body and converts it to ProductUpdateDto ***
+        HttpServletRequest request // Other parameters
+) {
+    // 1. Controller receives the HTTP request (PATCH /api/products/edit/{id})
+
+    // 2. Spring parses the request:
+    //    - It extracts the 'id' from the path and binds it to the 'id' Long parameter.
+    //    - It reads the HTTP request body (which should be JSON).
+    //    - Using its configured message converters (like Jackson), it attempts to **deserialize** the JSON body into an instance of `ProductUpdateDto`.
+    //    - ***Crucially, during this deserialization, Jackson automatically handles converting JSON fields like "category": "ELECTRONICS" into the corresponding Java Enum constant Product Category.ELECTRONICS, provided the string matches an enum value.***
+
+    // 3. Controller delegates the business logic to the Service layer:
+    Product updatedProduct = productService.updateProduct(id, productDetailsDto); // <-- Passes ID and the populated DTO to the service
+
+    // 4. Controller receives the result from the Service (the updated Product entity).
+
+    // 5. Controller prepares the HTTP response:
+    //    - It uses your ResponseService to create a response structure.
+    //    - Spring/Jackson automatically **serializes** the `updatedProduct` entity object back into JSON format.
+    return responseService.createResponse(200, updatedProduct, request, HttpStatus.OK); // <-- Sends the response back to the client
+}
+
+    @DeleteMapping("delete/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> deleteProduct(@PathVariable Long id, HttpServletRequest request) {
         productService.deleteProduct(id);
