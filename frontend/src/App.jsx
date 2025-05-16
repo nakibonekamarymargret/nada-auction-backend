@@ -14,7 +14,7 @@ import SearchResultsPage from "./pages/SearchResultsPage";
 import AboutUsPage from "./pages/products/AboutUsPage";
 import TermsAndConditionsPage from "./pages/TermsAndConditionsPage";
 import PlaceBid from "./pages/bid/PlaceBid.jsx";
-// import WatchListPage from "./pages/WatchListPage";
+ import WatchListPage from "./pages/WatchListPage";
 
 
 const Layout = ({ children }) => {
@@ -53,7 +53,7 @@ function App() {
         <Route path="/approved/:auctionId" element={<BidApprovalForm />} />
         <Route path="/aboutUs" element={<AboutUsPage />} />
         <Route path="/terms" element={<TermsAndConditionsPage />} />
-        {/* <Route path="/watch" element={<WatchListPage />} /> */}
+        <Route path="/watch" element={<WatchListPage />} />
 
         {/* Admin-protected routes */}
         <Route
