@@ -28,17 +28,20 @@ useEffect(() => {
   setAuthToken(token);
 }, []);
 
-  const fetchProduct = useCallback(async () => {
-    try {
-      const res = await axios.get(`http://localhost:7107/product/${id}`);
-      const productData = res.data.ReturnObject;
-      console.log(id);
-      setProduct(productData);
-    } catch (err) {
-      console.error("Failed to fetch product data:", err);
-      if (err.response?.status === 404) navigate("/404");
-    }
-  }, [id, navigate]);
+  
+
+ const fetchProductDetails = useCallback(async () => {
+   if (!id) return;
+   try {
+     const res = await axios.get(`http://localhost:7107/product/${id}`);
+     const productData = res.data.ReturnObject;
+     console.log(id);
+     setProduct(productData);
+   } catch (err) {
+     console.error("Failed to fetch product data:", err);
+     if (err.response?.status === 404) navigate("/404");
+   }
+ }, [id, navigate]);
 
   // Fetch initial watchlist status for this product
   const checkWatchlistStatus = useCallback(async () => {
@@ -145,7 +148,6 @@ useEffect(() => {
   const auctionStatusDisplay = getAuctionStatusDisplay();
 
   const toggleDetails = () => setShowDetails((prev) => !prev);
-  const toggleWatchlist = () => setIsWatchlisted((prev) => !prev);
 
   const handlePlaceBid = (id) => {
     navigate(`/bids/place/${id}`);
@@ -179,7 +181,7 @@ useEffect(() => {
     actionButton = (
       <div className="">
         <button
-          onClick={() => navigate(`/approved/${auction.id}`)}
+          onClick={() => navigate(`/approve/${product.id}`)}
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
         >
           Get approved to Bid
@@ -190,7 +192,7 @@ useEffect(() => {
           onClick={() => handlePlaceBid(product.id)}
           className=" cursor-pointer text-end text-blue-700 font-bold py-2 px-4  duration-200"
         >
-Place Bid
+          Place Bid
         </p>
       </div>
     );
