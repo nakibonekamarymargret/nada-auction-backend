@@ -1,17 +1,32 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "axios"; // ProductService will handle axios calls
+import ProductService from "../../services/ProductService.js";
 import { format, eachDayOfInterval, parseISO } from "date-fns";
 import { CiHeart } from "react-icons/ci";
 import { FaHeart } from "react-icons/fa";
 import { Badge } from "@/components/ui/badge";
 
+// Assume you have a way to get the auth token, e.g., from context or local storage
+const getAuthToken = () => {
+  // Replace with your actual token retrieval logic
+  return localStorage.getItem("token");
+};
+
 const ViewProduct = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // Product ID
   const [product, setProduct] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [isWatchlisted, setIsWatchlisted] = useState(false);
+  const [isLoadingWatchlist, setIsLoadingWatchlist] = useState(false); // To prevent multiple clicks
   const navigate = useNavigate();
+  const [authToken, setAuthToken] = useState(getAuthToken());
+// Get the token
+
+useEffect(() => {
+  const token = getAuthToken();
+  setAuthToken(token);
+}, []);
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -25,9 +40,59 @@ const ViewProduct = () => {
     }
   }, [id, navigate]);
 
+  // Fetch initial watchlist status for this product
+  const checkWatchlistStatus = useCallback(async () => {
+    if (!id || !authToken) return;
+    try {
+      const response = await ProductService.getUserWatchlist(authToken);
+      const watchlist = response.data.ReturnObject; // Assuming ReturnObject contains the list
+      if (watchlist && Array.isArray(watchlist)) {
+        const isInWatchlist = watchlist.some(
+          (item) => item.id === parseInt(id)
+        );
+        setIsWatchlisted(isInWatchlist);
+      }
+    } catch (error) {
+      console.error("Failed to fetch watchlist status:", error);
+      // Handle error, e.g., if token is invalid or server error
+    }
+  }, [id, authToken]);
+
   useEffect(() => {
-    fetchProduct();
-  }, [fetchProduct]);
+    fetchProductDetails();
+    checkWatchlistStatus();
+  }, [fetchProductDetails, checkWatchlistStatus]);
+
+  const handleToggleWatchlist = async () => {
+    if (!authToken) {
+      console.error("No auth token found. Please log in.");
+      // Optionally redirect to login or show a message
+      return;
+    }
+    if (isLoadingWatchlist) return; // Prevent multiple rapid clicks
+
+    setIsLoadingWatchlist(true);
+    try {
+      const response = await ProductService.toggleWatchlist(
+        product.id,
+        authToken
+      );
+      // Update the state based on the backend's response message or a new state
+      // The backend returns whether it was added or removed.
+      if (response.data.message.includes("added")) {
+        setIsWatchlisted(true);
+      } else {
+        setIsWatchlisted(false);
+      }
+      console.log("Watchlist toggle response:", response.data.message);
+    } catch (error) {
+      console.error("Failed to toggle watchlist:", error);
+      // Optionally revert UI change or show error message to user
+      // setIsWatchlisted(!isWatchlisted); // Revert optimistic update if it failed
+    } finally {
+      setIsLoadingWatchlist(false);
+    }
+  };
 
   // Format date-time safely
   const formatDateTime = (dateTime) => {
@@ -67,22 +132,13 @@ const ViewProduct = () => {
 
     switch (status) {
       case "LIVE":
-        return {
-          text: "LIVE NOW",
-          className: "bg-green-600 text-md font-bold",
-        };
+        return { text: "LIVE NOW", className: "bg-green-600 text-md font-bold" };
       case "CLOSED":
         return { text: "CLOSED", className: "bg-red-600 text-md font-bold" };
       case "SCHEDULED":
-        return {
-          text: "SCHEDULED",
-          className: "bg-blue-500 text-md font-bold",
-        };
+        return { text: "SCHEDULED", className: "bg-blue-500 text-md font-bold" };
       default:
-        return {
-          text: "Status N/A",
-          className: "bg-gray-500 text-md font-bold",
-        };
+        return { text: "Status N/A", className: "bg-gray-500 text-md font-bold" };
     }
   };
 
@@ -114,10 +170,8 @@ const ViewProduct = () => {
 
   if (auction.status === "SCHEDULED") {
     actionButton = (
-      <button
-        style={{ fontFamily: "var(--font-button)" }}
-        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 text-lg rounded mr-2 transition-colors duration-200"
-      >
+      <button style={{fontFamily:"var(--font-button)"}}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 text-lg rounded mr-2 transition-colors duration-200">
         Get approved to bid
       </button>
     );
@@ -125,7 +179,7 @@ const ViewProduct = () => {
     actionButton = (
       <div className="">
         <button
-          onClick={() => navigate(`/approve/${product.id}`)}
+          onClick={() => navigate(`/approved/${auction.id}`)}
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
         >
           Get approved to Bid
@@ -136,7 +190,7 @@ const ViewProduct = () => {
           onClick={() => handlePlaceBid(product.id)}
           className=" cursor-pointer text-end text-blue-700 font-bold py-2 px-4  duration-200"
         >
-          Place Bid
+Place Bid
         </p>
       </div>
     );
@@ -161,11 +215,10 @@ const ViewProduct = () => {
         <div className="flex items-center gap-3 ">
           <Badge
             className={auctionStatusDisplay.className}
-            style={{ fontFamily: "var(-font-inter)" }}
+            style={{ fontFamily: "var(--font-inter)" }}
           >
             {auctionStatusDisplay.text}
           </Badge>
-
           <h2
             style={{ fontFamily: "'var(--font-playfair)" }}
             className="text-2xl font-semibold text-red-800"
@@ -174,7 +227,8 @@ const ViewProduct = () => {
           </h2>
         </div>
         <button
-          onClick={toggleWatchlist}
+          onClick={handleToggleWatchlist} // Use the new handler
+          disabled={isLoadingWatchlist} // Disable button while request is in progress
           className={`flex items-center gap-1 px-3 py-1 rounded-full border ${
             isWatchlisted
               ? "bg-red-100 text-red-600 border-red-300"
@@ -195,7 +249,6 @@ const ViewProduct = () => {
             className="w-full h-auto object-cover rounded-lg"
           />
         </div>
-
         <div className="md:col-span-2 p-6 pt-0">
           <div className="mb-4">
             <p
@@ -209,14 +262,13 @@ const ViewProduct = () => {
               style={{ fontFamily: "var(--font-tenor)" }}
             >
               Current Highest Bid:{" "}
-              <span className="text-green-600  ">
-                {" "}
+              <span className="text-green-600">
                 {product.highestPrice
                   ? `$${product.highestPrice.toFixed(2)}`
                   : "No bids yet"}
               </span>
             </p>
-
+            
             <button
               onClick={toggleDetails}
               className="text-blue-600 hover:underline text-md mt-1 block"
@@ -233,56 +285,41 @@ const ViewProduct = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 border-t pt-6 border-gray-200">
               {/* Auction Timing */}
               <div>
-                <h3
-                  style={{ fontFamily: "var(--font-dm-serif)" }}
-                  className="text-lg font-medium text-gray-800 mb-2"
-                >
+                <h3 style={{ fontFamily: "var(--font-dm-serif)"}}
+                    className="text-lg font-medium text-gray-800 mb-2">
                   Auction Timing
                 </h3>
                 {auction.startTime && (
-                  <p
-                    className="text-gray-700 text-sm mb-1"
-                    style={{ fontFamily: "var(--font-inter)" }}
-                  >
-                    <span className="font-semibold ">Starts:</span>{" "}
-                    <span className="text-green-600 ">
-                      {formatDateTime(auction.startTime)}
-                    </span>
-                  </p>
+                    <p className="text-gray-700 text-sm mb-1"
+                       style={{fontFamily: "var(--font-inter)"}}>
+                      <span className="font-semibold ">Starts:</span>{" "}
+                      <span className="text-green-600 ">{formatDateTime(auction.startTime)}</span>
+
+                    </p>
                 )}
                 {auction.endTime && (
-                  <p className="text-gray-700 text-sm mb-1">
-                    <span className="font-semibold">Ends:</span>{" "}
-                    <span className="text-red-600 ">
-                      {formatDateTime(auction.endTime)}
-                    </span>
-                  </p>
+                    <p className="text-gray-700 text-sm mb-1">
+                      <span className="font-semibold">Ends:</span>{" "}
+                      <span className="text-red-600 ">{formatDateTime(auction.endTime)}</span>
+
+                    </p>
                 )}
               </div>
 
               {/* Viewing Dates */}
               <div>
-                <h3
-                  style={{ fontFamily: "var(--font-dm-serif)" }}
-                  className="text-lg font-medium text-gray-800 mb-2 mt-4"
-                >
+              <h3  style={{ fontFamily: "var(--font-dm-serif)"}}
+                  className="text-lg font-medium text-gray-800 mb-2 mt-4">
                   Viewing Dates
                 </h3>
                 {viewingDates.length > 0 ? (
                   viewingDates.map((date, index) => (
-                    <p
-                      style={{ fontFamily: "var(--font-inter)" }}
-                      key={index}
-                      className="text-gray-700 text-sm mb-1"
-                    >
+                    <p  style={{ fontFamily: "var(--font-inter)" }} key={index} className="text-gray-700 text-sm mb-1">
                       {date}
                     </p>
                   ))
                 ) : (
-                  <p
-                    style={{ fontFamily: "var(--font-inter) " }}
-                    className="text-gray-500 text-sm"
-                  >
+                  <p style={{ fontFamily: "var(--font-inter) "}} className="text-gray-500 text-sm">
                     No viewing dates available.
                   </p>
                 )}
@@ -290,36 +327,23 @@ const ViewProduct = () => {
 
               {/* Product Details */}
               <div>
-                <h3
-                  style={{ fontFamily: "var(--font-dm-serif)" }}
-                  className="text-lg font-medium text-gray-800 mb-2"
-                >
+                <h3 style={{ fontFamily: "var(--font-dm-serif)"}} className="text-lg font-medium text-gray-800 mb-2">
                   Product Details
                 </h3>
                 {product.category && (
-                  <p
-                    className="text-gray-700 text-sm mb-1 "
-                    style={{ fontFamily: "var(--font-roboto)" }}
-                  >
-                    <span className="font-semibold">Category:</span>{" "}
-                    <span className="font-bold text-blue-500">
+                  <p className="text-gray-700 text-sm mb-1 " style={{ fontFamily: "var(--font-roboto)"}}>
+                    <span  className="font-semibold">Category:</span>{" "}
+                    <span  className="font-bold text-blue-500" >
                       {product.category}
-                    </span>
-                  </p>
+</span>
+                    </p>
                 )}
-                <p
-                  style={{ fontFamily: "var(--font-roboto)" }}
-                  className="text-gray-700 text-sm mb-1"
-                >
-                  <span className="font-semibold">Currency:</span>{" "}
-                  <span className="font-bold text-blue-500"> USD</span>
+                <p style={{ fontFamily: "var(--font-roboto)"}} className="text-gray-700 text-sm mb-1">
+                  <span className="font-semibold">Currency:</span> <span className="font-bold text-blue-500"> USD</span>
                 </p>
                 {product.description && (
                   <div className="mt-4">
-                    <h3
-                      className="text-lg font-medium text-gray-800 mb-2"
-                      style={{ fontFamily: "var(--font-dm-serif)" }}
-                    >
+                    <h3 className="text-lg font-medium text-gray-800 mb-2" style={{ fontFamily: "var(--font-dm-serif)"}}>
                       Full Description:
                     </h3>
                     <p className="text-gray-700 text-sm">

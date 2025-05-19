@@ -1,4 +1,4 @@
-import { useLocation, Routes, Route} from "react-router-dom";
+import { useLocation, Routes, Route } from "react-router-dom";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import Navbar from "./components/ui/Navbar";
@@ -14,7 +14,7 @@ import SearchResultsPage from "./pages/SearchResultsPage";
 import AboutUsPage from "./pages/products/AboutUsPage";
 import TermsAndConditionsPage from "./pages/TermsAndConditionsPage";
 import PlaceBid from "./pages/bid/PlaceBid.jsx";
-import Relodexample from "./pages/Relodexample.jsx";
+ import WatchListPage from "./pages/WatchListPage";
 
 // Layout component that hides Navbar/Footer on specific paths
 const Layout = ({ children }) => {
@@ -50,6 +50,7 @@ const Layout = ({ children }) => {
   );
 };
 
+
 function App() {
   return (
     <Layout>
@@ -60,6 +61,7 @@ function App() {
         <Route path="/approve/:id" element={<BidApprovalForm />} />
         <Route path="/aboutUs" element={<AboutUsPage />} />
         <Route path="/terms" element={<TermsAndConditionsPage />} />
+        <Route path="/watch" element={<WatchListPage />} />
 
         {/* Admin-protected routes */}
         <Route
@@ -88,7 +90,6 @@ function App() {
           }
         />
         <Route path="/search-results" element={<SearchResultsPage />} />
-        <Route path="/counter" element={<Relodexample />} />
       </Routes>
     </Layout>
   );

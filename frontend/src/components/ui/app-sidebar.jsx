@@ -57,9 +57,17 @@ function AppSidebar() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const navigate = useNavigate();
 
+  // const handleAuthToggle = () => {
+  //   if (isLoggedIn) {
+  //     setIsLoggedIn(false); // Log out and stay on dashboard
+  //   } else {
+  //     navigate("/login"); // Redirect to login page
+  //   }
+  // };
   const handleAuthToggle = () => {
     if (isLoggedIn) {
-      setIsLoggedIn(false); // Log out and stay on dashboard
+      setIsLoggedIn(false); // Log out
+      navigate("/"); // Redirect to home page after logout
     } else {
       navigate("/login"); // Redirect to login page
     }
