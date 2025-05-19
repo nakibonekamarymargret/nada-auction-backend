@@ -7,7 +7,6 @@ import Stomp from "stompjs";
 
 const PlaceBid = () => {
   const { id: productId } = useParams();
-  const [amount, setAmount] = useState(0);
   const [product, setProduct] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -15,6 +14,7 @@ const PlaceBid = () => {
   const currentUserRef = useRef(null);
   const [showAmountInput, setShowAmountInput] = useState(false);
   const [hasPlacedBid, setHasPlacedBid] = useState(false);
+const [amount, setAmount] = useState(null);
 
   const token = localStorage.getItem("token");
   const stompClient = useRef(null);
@@ -32,10 +32,9 @@ const PlaceBid = () => {
   }, [token, productId]);
 
   const getMinBid = (product) => {
-    const lastBid = product?.lastBidAmount;
-    const startPrice = product?.auction?.startingPrice || 0.01;
-    return lastBid ?? startPrice;
+    return product?.highestPrice ?? product?.auction?.startingPrice ?? 0.01;
   };
+
 
   const fetchProductDetails = async () => {
     try {
@@ -72,28 +71,36 @@ const PlaceBid = () => {
     return Array.from(latestBids.values()).sort((a, b) => b.amount - a.amount);
   };
 
-  const fetchMyLatestBid = async () => {
-    try {
-      const res = await axios.get(
-        `http://localhost:7107/bids/my-latest/${productId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const myBid = res.data.ReturnObject;
-      const amountValue = parseFloat(myBid?.bid?.amount);
-      if (!isNaN(amountValue)) {
-        setAmount(amountValue);
-        setHasPlacedBid(true);
-      } else {
-        setAmount(getMinBid(product));
-      }
-    } catch {
-      setAmount(getMinBid(product));
-    }
-  };
+ const fetchMyLatestBid = async () => {
+   try {
+     const res = await axios.get(
+       `http://localhost:7107/bids/my-latest/${productId}`,
+       { headers: { Authorization: `Bearer ${token}` } }
+     );
+     const myBid = res.data.ReturnObject;
+     const amountValue = parseFloat(myBid?.bid?.amount);
+     if (!isNaN(amountValue)) {
+       setAmount(amountValue);
+       setHasPlacedBid(true);
+     } else if (product) {
+       setAmount(getMinBid(product));
+     }
+   } catch {
+     if (product) {
+       setAmount(getMinBid(product));
+     }
+   }
+ };
 
-  useEffect(() => {
-    fetchProductDetails();
-  }, [productId]);
+ useEffect(() => {
+   const init = async () => {
+     await fetchProductDetails(); // setProduct + productId is needed before bid fetch
+     if (token) {
+       await fetchMyLatestBid(); // sets actual user bid
+     }
+   };
+   init();
+ }, [productId, token]);
 
   useEffect(() => {
     if (product && token) {
@@ -162,15 +169,17 @@ const PlaceBid = () => {
     e.preventDefault();
     const bidValue = Number(amount);
     const minBid = getMinBid(product);
+if (isNaN(bidValue) || bidValue <= minBid) {
+  Swal.fire({
+    icon: "warning",
+    title: "Invalid Bid",
+    text: `Your bid must be greater than the current highest price ($${minBid.toFixed(
+      2
+    )}).`,
+  });
+  return;
+}
 
-    if (isNaN(bidValue) || bidValue < minBid) {
-      Swal.fire({
-        icon: "warning",
-        title: "Invalid Bid",
-        text: `Your bid must be at least $${minBid.toFixed(2)}.`,
-      });
-      return;
-    }
 
     try {
       const res = await axios.post(
@@ -187,7 +196,7 @@ const PlaceBid = () => {
       Swal.fire({
         icon: "success",
         title: "Bid Placed",
-        text: res.data.ReturnObject?.message || "Bid placed successfully!",
+        text: res.data.ReturnObject?.message ,
       });
 
       setHasPlacedBid(true);
@@ -207,11 +216,13 @@ const PlaceBid = () => {
         highestPrice: bidValue,
         lastBidAmount: bidValue,
       }));
-    } catch {
+    }
+    catch (error) {
+      const message = error.response?.data?.ReturnObject;
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Failed to place bid.",
+        text: message,
       });
     }
   };
@@ -265,10 +276,16 @@ const PlaceBid = () => {
               <>
                 <p className="text-md font-bold text-black">
                   My Bid Price:
-                  <span className="text-md font-bold text-green-700 ml-1">
-                    ${amount.toFixed(2)}
-                  </span>
+                  {hasPlacedBid && amount !== null ? (
+  <span className="text-md font-bold text-green-700 ml-1">
+    ${amount.toFixed(2)}
+  </span>
+) : (
+  <span className="text-md text-gray-500 ml-1">0.00</span>
+)}
+
                 </p>
+
                 {!isAuctionOver && (
                   <button
                     onClick={() => setShowAmountInput(true)}
