@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom"; 
@@ -19,6 +19,37 @@ const BidApprovalForm = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          "http://localhost:7107/api/user/profile",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data.returnCode === 200) {
+          const user = response.data.ReturnObject;
+          setFormData((prev) => ({
+            ...prev,
+            title: user.title || "",
+            name: user.name || "",
+            phoneNumber: user.phoneNumber || "",
+            email: user.email || "",
+            address: user.address || "",
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to fetch user profile:", error);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
