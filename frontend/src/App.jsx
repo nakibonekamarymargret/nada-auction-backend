@@ -1,4 +1,4 @@
-import { useLocation, Routes, Route } from "react-router-dom";
+import { useLocation, Routes, Route} from "react-router-dom";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import Navbar from "./components/ui/Navbar";
@@ -14,33 +14,41 @@ import SearchResultsPage from "./pages/SearchResultsPage";
 import AboutUsPage from "./pages/products/AboutUsPage";
 import TermsAndConditionsPage from "./pages/TermsAndConditionsPage";
 import PlaceBid from "./pages/bid/PlaceBid.jsx";
+import Relodexample from "./pages/Relodexample.jsx";
 
-
+// Layout component that hides Navbar/Footer on specific paths
 const Layout = ({ children }) => {
   const location = useLocation();
-  const hideNavbarOn = [
-    "/admin",
+
+  // Strip the basename (/nada) from the path
+  const internalPath = location.pathname.replace(/^\/nada/, "");
+
+  const hideNavbarOn = ["/admin", "/login", "/register", "/add", "/counter"];
+
+  const hideFooterOn = [
     "/login",
     "/register",
-    "/add",
+    "/approved/:auctionId",
+    "/admin",
+    "/counter",
   ];
-  const hideFooterOn = ["/login", "/register",  "/approved/:auctionId","/admin"];
+
+  const shouldHideNavbar = hideNavbarOn.includes(internalPath);
 
   const shouldHideFooter = hideFooterOn.some((route) =>
     route.includes(":")
-      ? location.pathname.startsWith(route.split(":")[0])
-      : location.pathname === route
+      ? internalPath.startsWith(route.split(":")[0])
+      : internalPath === route
   );
 
   return (
     <>
-      {!hideNavbarOn.includes(location.pathname) && <Navbar />}
+      {!shouldHideNavbar && <Navbar />}
       {children}
       {!shouldHideFooter && <Footer />}
     </>
   );
 };
-
 
 function App() {
   return (
@@ -80,6 +88,7 @@ function App() {
           }
         />
         <Route path="/search-results" element={<SearchResultsPage />} />
+        <Route path="/counter" element={<Relodexample />} />
       </Routes>
     </Layout>
   );
