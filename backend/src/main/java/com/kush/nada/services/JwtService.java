@@ -7,6 +7,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.security.Key;
 import java.util.Date;
@@ -65,4 +66,9 @@ public class JwtService {
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration); // Extract expiration date
     }
+    public String extractTokenFromRequest(HttpServletRequest request) {
+    String authHeader = request.getHeader("Authorization");
+    return authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
+}
+
 }

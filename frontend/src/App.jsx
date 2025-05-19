@@ -49,7 +49,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Home />} />
-        <Route path="/approved/:auctionId" element={<BidApprovalForm />} />
+        <Route path="/approve/:auctionId" element={<BidApprovalForm />} />
         <Route path="/aboutUs" element={<AboutUsPage />} />
         <Route path="/terms" element={<TermsAndConditionsPage />} />
 
