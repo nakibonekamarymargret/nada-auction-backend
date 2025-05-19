@@ -57,7 +57,6 @@ public class AuthController {
     }
 
     @PostMapping("/auth/login")
-    //** http://localhost:8080/api/auth/login
     public ResponseEntity<Map<String, Object>> userLogin(@RequestBody UserEntity user, HttpServletRequest request) throws BadCredentialsException {
         // Authenticate the user
         Authentication authentication = authenticationManager.authenticate(
@@ -111,6 +110,8 @@ public ResponseEntity<Map<String, Object>> validateUserDetails(
 
     String name = userDetails.get("name");
     String phoneNumber = userDetails.get("phoneNumber");
+     String email = userDetails.get("email");
+
     String address = userDetails.get("address");
 
     boolean isMatch = user.getName().equalsIgnoreCase(name.trim()) &&

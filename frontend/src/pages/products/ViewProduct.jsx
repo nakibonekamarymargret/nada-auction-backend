@@ -125,7 +125,7 @@ const ViewProduct = () => {
     actionButton = (
       <div className="">
         <button
-          onClick={() => navigate(`/approve/${auction.id}`)}
+          onClick={() => navigate(`/approve/${product.id}`)}
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
         >
           Get approved to Bid

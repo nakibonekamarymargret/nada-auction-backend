@@ -49,7 +49,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Home />} />
-        <Route path="/approve/:auctionId" element={<BidApprovalForm />} />
+        <Route path="/approve/:id" element={<BidApprovalForm />} />
         <Route path="/aboutUs" element={<AboutUsPage />} />
         <Route path="/terms" element={<TermsAndConditionsPage />} />
 
@@ -71,11 +71,14 @@ function App() {
           }
         />
         <Route path="/product/:id" element={<ViewProduct />} />
-        <Route path="/bids/place/:id" element={
-          <ProtectedUserRoute>
-            <PlaceBid />
-          </ProtectedUserRoute>
-          } />
+        <Route
+          path="/bids/place/:id"
+          element={
+            <ProtectedUserRoute>
+              <PlaceBid />
+            </ProtectedUserRoute>
+          }
+        />
         <Route path="/search-results" element={<SearchResultsPage />} />
       </Routes>
     </Layout>

@@ -8,7 +8,6 @@ import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [id, setId] = useState("");
 
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -47,7 +46,7 @@ const Login = () => {
         // Save the token and role in localStorage
         localStorage.setItem("token", token);
         localStorage.setItem("role", role);
-        localStorage.setItem("email", id); //
+        localStorage.setItem("email", email); //
         console.log(email);
 
 
@@ -68,6 +67,9 @@ const Login = () => {
     }
   };
 
+  const handleRegister = () => {
+    navigate("/register");
+  };
   return (
     <div className="flex flex-col md:flex-row items-start gap-[5vw] max-w-5xl mx-auto">
       <div className="hidden md:block w-1/2 p-4">
@@ -177,6 +179,14 @@ const Login = () => {
               <a href="#" className="text-blue-500 mb-2 mx-3  sm:mb-0">
                 Forgot password?
               </a>
+            </div>
+            <div className="flex items-center gap-2 mt-3">
+              <span className="text-black/70">New to NADA ?</span>
+              <button type="button" onClick={handleRegister}>
+                <span className="text-green-600 hover:text-green/50">
+                  Create account
+                </span>
+              </button>
             </div>
           </form>
         </div>
