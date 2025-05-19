@@ -237,6 +237,45 @@ if (isNaN(bidValue) || bidValue <= minBid) {
     setShowForm(true);
     setShowAmountInput(false);
   };
+  //determine winner who has won the auction
+  useEffect(() => {
+    if (!product?.auction?.endTime || !participants.length) return;
+
+    const checkAuctionEnd = setInterval(() => {
+      const now = new Date();
+      const endTime = new Date(product.auction.endTime);
+
+      if (now >= endTime) {
+        clearInterval(checkAuctionEnd); // Stop checking
+
+        const winner = participants[0]; // First one = highest bidder
+        const isWinner = winner?.bidderName === currentUser;
+
+        if (isWinner) {
+          Swal.fire({
+            icon: "success",
+            title: "🎉 Congratulations!",
+            text: "You have won the auction. Proceed to payment.",
+            confirmButtonText: "Go to Payment",
+            showCancelButton: true,
+            cancelButtonText: "Later",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              window.location.href = `/payment/${productId}`; // Adjust if your payment route differs
+            }
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Oops! You lost.",
+            text: "Better luck in the next auction!",
+          });
+        }
+      }
+    }, 1000); 
+
+    return () => clearInterval(checkAuctionEnd);
+  }, [product?.auction?.endTime, participants, currentUser]);
 
   if (!product) return <div className="p-4">Loading product details...</div>;
 

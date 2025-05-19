@@ -14,7 +14,8 @@ import SearchResultsPage from "./pages/SearchResultsPage";
 import AboutUsPage from "./pages/products/AboutUsPage";
 import TermsAndConditionsPage from "./pages/TermsAndConditionsPage";
 import PlaceBid from "./pages/bid/PlaceBid.jsx";
- import WatchListPage from "./pages/WatchListPage";
+import WatchListPage from "./pages/WatchListPage";
+import PaymentPage from "./pages/payment/PaymentPage";
 
 // Layout component that hides Navbar/Footer on specific paths
 const Layout = ({ children }) => {
@@ -90,6 +91,7 @@ function App() {
           }
         />
         <Route path="/search-results" element={<SearchResultsPage />} />
+        <Route path="/pay/:productId" element={<PaymentPage />} />
       </Routes>
     </Layout>
   );
