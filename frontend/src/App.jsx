@@ -14,27 +14,37 @@ import SearchResultsPage from "./pages/SearchResultsPage";
 import AboutUsPage from "./pages/products/AboutUsPage";
 import TermsAndConditionsPage from "./pages/TermsAndConditionsPage";
 import PlaceBid from "./pages/bid/PlaceBid.jsx";
+import WatchListPage from "./pages/WatchListPage";
+import PaymentPage from "./pages/payment/PaymentPage";
 
-
+// Layout component that hides Navbar/Footer on specific paths
 const Layout = ({ children }) => {
   const location = useLocation();
-  const hideNavbarOn = [
-    "/admin",
+
+  // Strip the basename (/nada) from the path
+  const internalPath = location.pathname.replace(/^\/nada/, "");
+
+  const hideNavbarOn = ["/admin", "/login", "/register", "/add", "/counter"];
+
+  const hideFooterOn = [
     "/login",
     "/register",
-    "/add",
+    "/approved/:auctionId",
+    "/admin",
+    "/counter",
   ];
-  const hideFooterOn = ["/login", "/register",  "/approved/:auctionId","/admin"];
+
+  const shouldHideNavbar = hideNavbarOn.includes(internalPath);
 
   const shouldHideFooter = hideFooterOn.some((route) =>
     route.includes(":")
-      ? location.pathname.startsWith(route.split(":")[0])
-      : location.pathname === route
+      ? internalPath.startsWith(route.split(":")[0])
+      : internalPath === route
   );
 
   return (
     <>
-      {!hideNavbarOn.includes(location.pathname) && <Navbar />}
+      {!shouldHideNavbar && <Navbar />}
       {children}
       {!shouldHideFooter && <Footer />}
     </>
@@ -49,9 +59,10 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Home />} />
-        <Route path="/approved/:auctionId" element={<BidApprovalForm />} />
+        <Route path="/approve/:id" element={<BidApprovalForm />} />
         <Route path="/aboutUs" element={<AboutUsPage />} />
         <Route path="/terms" element={<TermsAndConditionsPage />} />
+        <Route path="/watch" element={<WatchListPage />} />
 
         {/* Admin-protected routes */}
         <Route
@@ -71,12 +82,16 @@ function App() {
           }
         />
         <Route path="/product/:id" element={<ViewProduct />} />
-        <Route path="/bids/place/:id" element={
-          <ProtectedUserRoute>
-            <PlaceBid />
-          </ProtectedUserRoute>
-          } />
+        <Route
+          path="/bids/place/:id"
+          element={
+            <ProtectedUserRoute>
+              <PlaceBid />
+            </ProtectedUserRoute>
+          }
+        />
         <Route path="/search-results" element={<SearchResultsPage />} />
+        <Route path="/pay/:productId" element={<PaymentPage />} />
       </Routes>
     </Layout>
   );

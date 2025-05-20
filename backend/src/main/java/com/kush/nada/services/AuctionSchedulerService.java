@@ -60,7 +60,7 @@ public class AuctionSchedulerService {
         for (Product product : openProducts) {
             // Check if last bid was more than 30 seconds ago
             if (product.getLastBidTime() != null &&
-                    product.getLastBidTime().plusSeconds(259200).isBefore(now)) {
+                    product.getLastBidTime().plusSeconds(180000).isBefore(now)) {
 
                 product.setClosed(true);
                 productRepository.save(product);

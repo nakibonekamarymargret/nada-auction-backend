@@ -19,11 +19,10 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select.jsx";
-import AuctionModal from "../auctions/AuctionModal.jsx";
-import AuctionService from "../../services/AuctionService.js";
-import ProductService from "../../services/ProductService.js";
+// No longer importing AuctionModal here
 
-const AddProductModal = () => {
+// Receive auctions as a prop
+const AddProductModal = ({ auctions, onProductCreated }) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -36,34 +35,8 @@ const AddProductModal = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
-  const [auctions, setAuctions] = useState([]);
-  const [isAuctionModalOpen, setAuctionModalOpen] = useState(false);
 
-  const token = localStorage.getItem("token");
 
-  // Fetch active auctions on mount
-  React.useEffect(() => {
-    const fetchAuctions = async () => {
-      try {
-        const response = await AuctionService.getAll(token);
-        const fetchedAuctions = Array.isArray(response.data.ReturnObject)
-            ? response.data.ReturnObject
-            : [];
-
-        // Filter auctions to only include scheduled ones
-        const scheduledAuctions = fetchedAuctions.filter(
-            (auction) => auction.status === "SCHEDULED" // Adjust this based on the actual status for scheduled auctions
-        );
-
-        setAuctions(scheduledAuctions);
-      } catch (err) {
-        console.error("Error fetching auctions:", err);
-        setError("Failed to load available auctions.");
-      }
-    };
-
-    fetchAuctions();
-  }, [token]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -142,8 +115,8 @@ const AddProductModal = () => {
       );
       console.log("Product creation response:", response.data);
 
-      // Show success message after product is created
       setSuccess(true);
+      onProductCreated(response.data.ReturnObject); // Pass the new product data back to the parent
       setTimeout(() => {
         setSuccess(false);
         setFormData({
@@ -213,7 +186,9 @@ const AddProductModal = () => {
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem disabled>No auctions available</SelectItem>
+                  <SelectItem disabled>
+                    No scheduled auctions available
+                  </SelectItem>
                 )}
               </SelectContent>
             </Select>
@@ -312,21 +287,6 @@ const AddProductModal = () => {
               {loading ? "Creating..." : "Create Product"}
             </Button>
           </DialogFooter>
-
-          {/* Hidden Trigger for Auction Modal */}
-          <div className="hidden">
-            <AuctionModal
-              isOpen={isAuctionModalOpen}
-              onClose={() => setAuctionModalOpen(false)}
-              onAuctionCreated={(auction) => {
-                setFormData((prev) => ({
-                  ...prev,
-                  auctionId: auction.id,
-                }));
-                setAuctionModalOpen(false);
-              }}
-            />
-          </div>
         </form>
       </DialogContent>
     </Dialog>

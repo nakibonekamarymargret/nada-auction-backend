@@ -1,33 +1,101 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "axios"; // ProductService will handle axios calls
+import ProductService from "../../services/ProductService.js";
 import { format, eachDayOfInterval, parseISO } from "date-fns";
 import { CiHeart } from "react-icons/ci";
 import { FaHeart } from "react-icons/fa";
 import { Badge } from "@/components/ui/badge";
 
+// Assume you have a way to get the auth token, e.g., from context or local storage
+const getAuthToken = () => {
+  // Replace with your actual token retrieval logic
+  return localStorage.getItem("token");
+};
+
 const ViewProduct = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // Product ID
   const [product, setProduct] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [isWatchlisted, setIsWatchlisted] = useState(false);
+  const [isLoadingWatchlist, setIsLoadingWatchlist] = useState(false); // To prevent multiple clicks
   const navigate = useNavigate();
+  const [authToken, setAuthToken] = useState(getAuthToken());
+// Get the token
 
-  const fetchProduct = useCallback(async () => {
+useEffect(() => {
+  const token = getAuthToken();
+  setAuthToken(token);
+}, []);
+
+  
+
+ const fetchProductDetails = useCallback(async () => {
+   if (!id) return;
+   try {
+     const res = await axios.get(`http://localhost:7107/product/${id}`);
+     const productData = res.data.ReturnObject;
+     console.log(id);
+     setProduct(productData);
+   } catch (err) {
+     console.error("Failed to fetch product data:", err);
+     if (err.response?.status === 404) navigate("/404");
+   }
+ }, [id, navigate]);
+
+  // Fetch initial watchlist status for this product
+  const checkWatchlistStatus = useCallback(async () => {
+    if (!id || !authToken) return;
     try {
-      const res = await axios.get(`http://localhost:7107/product/${id}`);
-      const productData = res.data.ReturnObject;
-      console.log(id);
-      setProduct(productData);
-    } catch (err) {
-      console.error("Failed to fetch product data:", err);
-      if (err.response?.status === 404) navigate("/404");
+      const response = await ProductService.getUserWatchlist(authToken);
+      const watchlist = response.data.ReturnObject; // Assuming ReturnObject contains the list
+      if (watchlist && Array.isArray(watchlist)) {
+        const isInWatchlist = watchlist.some(
+          (item) => item.id === parseInt(id)
+        );
+        setIsWatchlisted(isInWatchlist);
+      }
+    } catch (error) {
+      console.error("Failed to fetch watchlist status:", error);
+      // Handle error, e.g., if token is invalid or server error
     }
-  }, [id, navigate]);
+  }, [id, authToken]);
 
   useEffect(() => {
-    fetchProduct();
-  }, [fetchProduct]);
+    fetchProductDetails();
+    checkWatchlistStatus();
+  }, [fetchProductDetails, checkWatchlistStatus]);
+
+  const handleToggleWatchlist = async () => {
+    if (!authToken) {
+      console.error("No auth token found. Please log in.");
+      // Optionally redirect to login or show a message
+      return;
+    }
+    if (isLoadingWatchlist) return; // Prevent multiple rapid clicks
+
+    setIsLoadingWatchlist(true);
+    try {
+      const response = await ProductService.toggleWatchlist(
+        product.id,
+        authToken
+      );
+      // Update the state based on the backend's response message or a new state
+      // The backend returns whether it was added or removed.
+      if (response.data.message.includes("added")) {
+        setIsWatchlisted(true);
+      } else {
+        setIsWatchlisted(false);
+      }
+      console.log("Watchlist toggle response:", response.data.message);
+    } catch (error) {
+      console.error("Failed to toggle watchlist:", error);
+      // Optionally revert UI change or show error message to user
+      // setIsWatchlisted(!isWatchlisted); // Revert optimistic update if it failed
+    } finally {
+      setIsLoadingWatchlist(false);
+    }
+  };
 
   // Format date-time safely
   const formatDateTime = (dateTime) => {
@@ -80,7 +148,6 @@ const ViewProduct = () => {
   const auctionStatusDisplay = getAuctionStatusDisplay();
 
   const toggleDetails = () => setShowDetails((prev) => !prev);
-  const toggleWatchlist = () => setIsWatchlisted((prev) => !prev);
 
   const handlePlaceBid = (id) => {
     navigate(`/bids/place/${id}`);
@@ -114,7 +181,7 @@ const ViewProduct = () => {
     actionButton = (
       <div className="">
         <button
-          onClick={() => navigate(`/approved/${auction.id}`)}
+          onClick={() => navigate(`/approve/${product.id}`)}
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
         >
           Get approved to Bid
@@ -125,7 +192,7 @@ const ViewProduct = () => {
           onClick={() => handlePlaceBid(product.id)}
           className=" cursor-pointer text-end text-blue-700 font-bold py-2 px-4  duration-200"
         >
-Place Bid
+          Place Bid
         </p>
       </div>
     );
@@ -148,18 +215,22 @@ Place Bid
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center gap-3 ">
-
-            <Badge className={auctionStatusDisplay.className}
-            style={{fontFamily:"var(-font-inter)"}}>
-              {auctionStatusDisplay.text}
-            </Badge>
-
-          <h2 style={{ fontFamily: "'var(--font-playfair)" }} className="text-2xl font-semibold text-red-800">
+          <Badge
+            className={auctionStatusDisplay.className}
+            style={{ fontFamily: "var(--font-inter)" }}
+          >
+            {auctionStatusDisplay.text}
+          </Badge>
+          <h2
+            style={{ fontFamily: "'var(--font-playfair)" }}
+            className="text-2xl font-semibold text-red-800"
+          >
             {product.name || "Product Details"}
           </h2>
         </div>
         <button
-          onClick={toggleWatchlist}
+          onClick={handleToggleWatchlist} // Use the new handler
+          disabled={isLoadingWatchlist} // Disable button while request is in progress
           className={`flex items-center gap-1 px-3 py-1 rounded-full border ${
             isWatchlisted
               ? "bg-red-100 text-red-600 border-red-300"
@@ -180,17 +251,24 @@ Place Bid
             className="w-full h-auto object-cover rounded-lg"
           />
         </div>
-
         <div className="md:col-span-2 p-6 pt-0">
           <div className="mb-4">
-            <p style={{ fontFamily: "var(--font-roboto)" }}
-                className="text-gray-600 mt-1 text-lg">{shortDescription}</p>
-            <p className="text-xl font-bold text-gray-800 mt-2 " style={{ fontFamily: "var(--font-tenor)" }}>
+            <p
+              style={{ fontFamily: "var(--font-roboto)" }}
+              className="text-gray-600 mt-1 text-lg"
+            >
+              {shortDescription}
+            </p>
+            <p
+              className="text-xl font-bold text-gray-800 mt-2 "
+              style={{ fontFamily: "var(--font-tenor)" }}
+            >
               Current Highest Bid:{" "}
-              <span className="text-green-600  " > {product.highestPrice
+              <span className="text-green-600">
+                {product.highestPrice
                   ? `$${product.highestPrice.toFixed(2)}`
-                  : "No bids yet"}</span>
-
+                  : "No bids yet"}
+              </span>
             </p>
             
             <button
