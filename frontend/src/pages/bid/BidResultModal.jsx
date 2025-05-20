@@ -1,49 +1,62 @@
 import React from "react";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "../../components/ui/button";
+import { Button } from "@/components/ui/button";
 import { DialogDescription } from "@radix-ui/react-dialog";
 
 const BidResultModal = ({
   isOpen, // control open state from parent
   onOpenChange, // callback to close/open modal
-  isWinner, // boolean: did user win?
-  winningBidAmount, // number/string: winning bid price
-  onPay, // callback when clicking "Continue to Pay"
+  bidApiMessage, // The message from the backend API (e.g., "Congratulations..." or "Sorry...")
+  bidApiWinningAmount, // The winning amount from the backend API
+  bidApiCheckoutUrl, // The checkout URL from the backend API (if user won)
 }) => {
+  // Check if the user won the bid based on the message
+  const userWon = bidApiMessage.includes("Congratulations, you are the winner");
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      {/* Optional: you can remove trigger if controlled externally */}
-      {/* <DialogTrigger><Button variant="outline" size="sm">Bid Result</Button></DialogTrigger> */}
-
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Bid Results</DialogTitle>
           <DialogDescription>
-            Thank you for choosing Nada, please view the auction results
+            Thank you for choosing Nada, please view the auction results.
           </DialogDescription>
         </DialogHeader>
-
-        <div className="my-4">
-          {isWinner ? (
+        <div className="my-4 space-y-2">
+          {bidApiMessage ? ( // Check if the message is available)
             <>
-              <p>🎉 Congratulations! You have won the auction.</p>
               <p>
-                Winning Bid Amount: <strong>${winningBidAmount}</strong>
+                {userWon ? "🎉 " : ""}
+                {bidApiMessage}
               </p>
-              <Button onClick={onPay}>Continue to Pay</Button>
+              {userWon && bidApiWinningAmount !== null && (
+                <p>
+                  Winning Bid Amount:{" "}
+                  <strong>${bidApiWinningAmount.toFixed(2)}</strong>
+                </p>
+              )}
+              {userWon && bidApiCheckoutUrl && (
+                <Button
+                  onClick={() => {
+                    window.location.href = bidApiCheckoutUrl;
+                  }}
+                  className="mt-4 bg-green-500 hover:bg-green-600 text-white"
+                >
+                  Continue to Pay
+                </Button>
+              )}
             </>
           ) : (
-            <p>Sorry, you did not win this auction. Better luck next time!</p>
+            // Display a loading message while waiting for the API response
+            <p>Loading bid results...</p>
           )}
         </div>
-
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close

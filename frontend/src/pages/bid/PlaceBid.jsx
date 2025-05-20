@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -21,11 +21,13 @@ const PlaceBid = () => {
   const stompClient = useRef(null);
   const timerRef = useRef(null);
   const connectedRef = useRef(false);
+  const [biddingClosed, setBiddingClosed] = useState(false); // This can represent inactivity closing the auction
 
-  // Modal-related states
+  // Modal-related states (will be populated by the API call)
   const [showModal, setShowModal] = useState(false);
-  const [isWinner, setIsWinner] = useState(false);
-  const [winningBidAmount, setWinningBidAmount] = useState(null);
+  const [bidApiMessage, setBidApiMessage] = useState("");
+  const [bidApiWinningAmount, setBidApiWinningAmount] = useState(null);
+  const [bidApiCheckoutUrl, setBidApiCheckoutUrl] = useState(null);
 
   useEffect(() => {
     if (token) {
@@ -33,26 +35,39 @@ const PlaceBid = () => {
       setCurrentUser(payload?.sub);
       currentUserRef.current = payload?.sub;
     }
-    const placed = localStorage.getItem(`bid_${productId}`);
-    if (placed) setHasPlacedBid(true);
   }, [token, productId]);
 
   const getMinBid = (product) => {
     return product?.highestPrice ?? product?.auction?.startingPrice ?? 0.01;
   };
 
-  const fetchProductDetails = async () => {
+  const fetchProductDetails = useCallback(async () => {
     try {
       const res = await axios.get(`http://localhost:7107/product/${productId}`);
       const productData = res.data.ReturnObject;
       setProduct(productData);
       setAmount(getMinBid(productData));
+      // Set biddingClosed if the backend reports the auction is already closed
+      if (productData?.auction?.status === "CLOSED" || productData?.isClosed) {
+        setBiddingClosed(true);
+      }
     } catch (err) {
       console.error("Failed to fetch product:", err);
     }
-  };
+  }, [productId]);
 
-  const fetchParticipantsHttp = async () => {
+  const deduplicateAndSort = useCallback((bids) => {
+    const latestBids = new Map();
+    bids.forEach((bid) => {
+      const existing = latestBids.get(bid.bidderName);
+      if (!existing || bid.amount > existing.amount) {
+        latestBids.set(bid.bidderName, bid);
+      }
+    });
+    return Array.from(latestBids.values()).sort((a, b) => b.amount - a.amount);
+  }, []);
+
+  const fetchParticipantsHttp = useCallback(async () => {
     try {
       const res = await axios.get(
         `http://localhost:7107/bids/product/${productId}`,
@@ -63,54 +78,42 @@ const PlaceBid = () => {
     } catch (err) {
       console.error("Failed to fetch participants:", err);
     }
-  };
+  }, [productId, token, deduplicateAndSort]);
 
-  const deduplicateAndSort = (bids) => {
-    const latestBids = new Map();
-    bids.forEach((bid) => {
-      const existing = latestBids.get(bid.bidderName);
-      if (!existing || bid.amount > existing.amount) {
-        latestBids.set(bid.bidderName, bid);
-      }
-    });
-    return Array.from(latestBids.values()).sort((a, b) => b.amount - a.amount);
-  };
+ const fetchMyLatestBid = useCallback(
+   async (basePrice) => {
+     try {
+       const res = await axios.get(
+         `http://localhost:7107/bids/my-latest/${productId}`,
+         { headers: { Authorization: `Bearer ${token}` } }
+       );
+       const myBid = res.data.ReturnObject;
+       const amountValue = parseFloat(myBid?.bid?.amount);
+       if (!isNaN(amountValue)) {
+         setAmount(amountValue);
+         setHasPlacedBid(true);
+       } else {
+         setAmount(basePrice);
+         setHasPlacedBid(false);
+       }
+     } catch {
+       setAmount(basePrice);
+       setHasPlacedBid(false);
+     }
+   },
+   [productId, token]
+ );
 
-  const fetchMyLatestBid = async () => {
-    try {
-      const res = await axios.get(
-        `http://localhost:7107/bids/my-latest/${productId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const myBid = res.data.ReturnObject;
-      const amountValue = parseFloat(myBid?.bid?.amount);
-      if (!isNaN(amountValue)) {
-        setAmount(amountValue);
-        setHasPlacedBid(true);
-      } else if (product) {
-        setAmount(getMinBid(product));
-      }
-    } catch {
-      if (product) {
-        setAmount(getMinBid(product));
-      }
-    }
-  };
-
+  // Initial data fetch
   useEffect(() => {
     const init = async () => {
       await fetchProductDetails();
       if (token) await fetchMyLatestBid();
     };
     init();
-  }, [productId, token]);
+  }, [productId, token, fetchProductDetails, fetchMyLatestBid]); // Add dependencies
 
-  useEffect(() => {
-    if (product && token) {
-      fetchMyLatestBid();
-    }
-  }, [product, token]);
-
+  // WebSocket connection
   useEffect(() => {
     if (!productId || !token || !currentUserRef.current) return;
 
@@ -123,33 +126,37 @@ const PlaceBid = () => {
         () => {
           connectedRef.current = true;
           stompClient.current = client;
-          // In PlaceBid.js, inside the client.subscribe(`/topic/bids/${productId}` callback:
+
           client.subscribe(`/topic/bids/${productId}`, (message) => {
             try {
               const newBidOrBids = JSON.parse(message.body);
-
-              // Ensure incomingBids is an array, even if a single bid is sent
               const incomingBids = Array.isArray(newBidOrBids)
                 ? newBidOrBids
                 : [newBidOrBids];
 
-              // Update product state (this part is good, no change needed here for this issue)
               setProduct((prev) => {
-                // ... your existing product update logic ...
+                if (!prev) return null;
+                let newHighestPrice = prev.highestPrice;
+                if (incomingBids.length > 0) {
+                  const highestIncomingBid = incomingBids.reduce(
+                    (maxBid, currentBid) =>
+                      currentBid.amount > maxBid.amount ? currentBid : maxBid
+                  );
+                  if (highestIncomingBid.amount > newHighestPrice) {
+                    newHighestPrice = highestIncomingBid.amount;
+                  }
+                }
                 return {
                   ...prev,
-                  // ...
+                  highestPrice: newHighestPrice,
+                  lastBidAmount: newHighestPrice,
                 };
               });
 
-              // --- FIX STARTS HERE ---
               setParticipants((prevParticipants) => {
-                // Combine previous participants with incoming bids
                 const combinedBids = [...prevParticipants, ...incomingBids];
-                // Deduplicate and sort the combined list
                 const latestAndDeduplicated = deduplicateAndSort(combinedBids);
 
-                // Find your bid in the updated list and update 'amount' and 'hasPlacedBid'
                 const myBid = latestAndDeduplicated.find(
                   (b) => b.bidderName === currentUserRef.current
                 );
@@ -157,14 +164,14 @@ const PlaceBid = () => {
                   setAmount(myBid.amount);
                   setHasPlacedBid(true);
                 }
-                // Reset timer (if you have BidTimer component setup to reset on any new bid)
+
                 if (timerRef.current) {
                   timerRef.current.resetTimer();
+                  setBiddingClosed(false); // Reset inactivity flag on new bid
                 }
 
-                return latestAndDeduplicated; // Return the fully processed list
+                return latestAndDeduplicated;
               });
-              // --- FIX ENDS HERE ---
             } catch (e) {
               console.error(
                 "Error parsing WebSocket message:",
@@ -189,16 +196,16 @@ const PlaceBid = () => {
         stompClient.current.disconnect();
       }
     };
-  }, [productId, token]);
+  }, [productId, token, fetchParticipantsHttp, deduplicateAndSort]);
 
+  // Determine if auction is officially over (either by backend status or frontend inactivity)
   const isAuctionOver =
-    product?.auction?.status === "CLOSED" || product?.isClosed;
-  
+    product?.auction?.status === "CLOSED" || product?.isClosed || biddingClosed;
+
   const handleSubmitBid = async (e) => {
     e.preventDefault();
     const bidValue = Number(amount);
     const minBid = getMinBid(product);
-
 
     if (isNaN(bidValue) || bidValue <= minBid) {
       Swal.fire({
@@ -231,6 +238,7 @@ const PlaceBid = () => {
 
       if (timerRef.current) {
         timerRef.current.resetTimer();
+        setBiddingClosed(false); // Reset inactivity flag on new bid
       }
       setHasPlacedBid(true);
       setShowForm(false);
@@ -253,7 +261,7 @@ const PlaceBid = () => {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: message,
+        text: message || "Failed to place bid.",
       });
     }
   };
@@ -265,43 +273,82 @@ const PlaceBid = () => {
   };
 
   const handleUpdateBid = () => {
-    if (timerRef.current) {
-      timerRef.current.resetTimer();
-    }
-
     setShowForm(true);
     setShowAmountInput(false);
   };
 
-useEffect(() => {
-  if (!product?.auction?.endTime || !participants.length) return;
+  // NEW: Function to fetch bid results from backend and populate modal states
+  const handleViewBidResults = async () => {
+    try {
+      const res = await axios.get(
+        `http://localhost:7107/bids/check-result/${productId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const result = res.data.ReturnObject;
 
-  const checkAuctionEnd = setInterval(() => {
-    const now = new Date();
-    const endTime = new Date(product.auction.endTime);
-    const isClosed = product.auction.status === "CLOSED" || product.isClosed;
+      setBidApiMessage(result.message);
+      setBidApiWinningAmount(result.winningAmount || null);
+      setBidApiCheckoutUrl(result.checkoutUrl || null);
 
-    if (now >= endTime || isClosed) {
-      // This part is fine.
-      clearInterval(checkAuctionEnd);
-
-      const winner = participants[0];
-      const userIsWinner = winner?.bidderName === currentUser;
-
-      setIsWinner(userIsWinner);
-      setWinningBidAmount(winner?.amount ?? null);
-      setShowModal(true); // Open modal
+      setShowModal(true); // Open the modal after getting results
+    } catch (error) {
+      console.error("Failed to fetch bid results:", error);
+      const errorMessage =
+        error.response?.data?.ReturnObject || "Could not fetch bid results.";
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: errorMessage,
+      });
     }
-  }, 1000);
+  };
 
-  return () => clearInterval(checkAuctionEnd);
-}, [
-  product?.auction?.endTime,
-  product?.auction?.status,
-  product?.isClosed,
-  participants,
-  currentUser,
-]);
+  // REMOVE THIS useEffect. It was the cause of the incorrect message.
+  // The correct message comes from the backend API.
+  /*
+  useEffect(() => {
+    if (!product?.auction?.endTime || !participants.length) return;
+    const checkAuctionEnd = setInterval(() => {
+      const now = new Date();
+      const endTime = new Date(product.auction.endTime);
+      const isClosed = product.auction.status === "CLOSED" || product.isClosed;
+      if (now >= endTime || isClosed) {
+        clearInterval(checkAuctionEnd);
+        const winner = participants[0];
+        const userIsWinner = winner?.bidderName === currentUser;
+        setIsWinner(userIsWinner); // This was setting the frontend state incorrectly
+        setWinningBidAmount(winner?.amount ?? null); // This was setting the frontend state incorrectly
+        setShowModal(true); // Open modal
+      }
+    }, 1000);
+    return () => clearInterval(checkAuctionEnd);
+  }, [
+    product?.auction?.endTime,
+    product?.auction?.status,
+    product?.isClosed,
+    participants,
+    currentUser,
+  ]);
+  */
+
+  // Keep the inactivity check, but ensure it sets biddingClosed, which is part of isAuctionOver
+  useEffect(() => {
+    if (!product || !product.lastBidTime) return;
+    const checkInactivity = () => {
+      const lastBidTime = new Date(product.lastBidTime);
+      const now = new Date();
+      const diffSeconds = Math.floor((now - lastBidTime) / 1000);
+      if (diffSeconds >= 30 && !biddingClosed) {
+        setBiddingClosed(true); // Close bidding due to inactivity
+      }
+    };
+    checkInactivity(); // Run immediately once
+    const interval = setInterval(checkInactivity, 5000); // Check every 5s
+    return () => clearInterval(interval);
+  }, [product?.lastBidTime, biddingClosed, product]);
+
   if (!product) return <div className="p-4">Loading product details...</div>;
 
   return (
@@ -385,54 +432,70 @@ useEffect(() => {
               ? new Date(product.auction.endTime).toLocaleString()
               : "N/A"}
           </p>
-          {!isAuctionOver && !showForm && !hasPlacedBid && (
-            <button
-              onClick={() => setShowForm(true)}
-              className="mt-4 text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 font-bold"
-            >
-              Place Bid
-            </button>
-          )}
-          {isAuctionOver && (
-            <p className="text-red-600 font-bold mt-6">
-              Auction has ended. Bidding is closed.
-            </p>
-          )}
-          {!isAuctionOver && showForm && (
-            <form onSubmit={handleSubmitBid} className="mt-6">
-              <div className="mb-4">
-                <label
-                  htmlFor="amount"
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                >
-                  Your Bid Amount ($):
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  id="amount"
-                  value={amount}
-                  onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-                  className="border rounded w-full py-2 px-3"
-                  required
-                />
-              </div>
-              <div className="flex justify-end space-x-3">
+
+          {/* Conditional rendering for bidding section */}
+          {isAuctionOver ? (
+            <div className="mt-6 text-center">
+              <p style={{fontFamily:"var(--font-tenor)"}}
+                className=" text-lg text-red-600 font-semibold mb-4">
+                Bidding is closed for this product.
+              </p>
+              <button
+                onClick={handleViewBidResults} 
+                className="bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              >
+                View Bid Results
+              </button>
+            </div>
+          ) : (
+            <>
+              {!showForm && !hasPlacedBid && (
                 <button
-                  type="submit"
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                  onClick={() => setShowForm(true)}
+                  className="mt-4 text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 font-bold"
                 >
-                  Place
+                  Place Bid
                 </button>
-                <button
-                  type="button"
-                  onClick={handleCancelBid}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+              )}
+              {showForm && (
+                <form onSubmit={handleSubmitBid} className="mt-6">
+                  <div className="mb-4">
+                    <label
+                      htmlFor="amount"
+                      className="block text-gray-700 text-sm font-bold mb-2"
+                    >
+                      Your Bid Amount ($):
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      id="amount"
+                      value={amount}
+                      onChange={(e) =>
+                        setAmount(parseFloat(e.target.value) || 0)
+                      }
+                      className="border rounded w-full py-2 px-3"
+                      required
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      type="submit"
+                      className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                    >
+                      Place
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelBid}
+                      className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
+            </>
           )}
         </div>
 
@@ -441,7 +504,11 @@ useEffect(() => {
           <h3 className="text-2xl font-semibold mb-1 text-center">
             Bidding Participants
           </h3>
-          <BidTimer ref={timerRef} auctionStart="Auction" />
+          <BidTimer
+            ref={timerRef}
+            auctionEndTime={product?.auction?.endTime}
+            onTimerEnd={() => setBiddingClosed(true)} // Set biddingClosed on timer end
+          />
           <div className="flex justify-center items-center mt-4 text-sm text-gray-500">
             <span className="mr-2">Waiting for more participants</span>
             <div className="flex space-x-1">
@@ -460,10 +527,12 @@ useEffect(() => {
                 {participants.map((bid, index) => {
                   const isMe = bid.bidderName === currentUser;
                   const isHighest = index === 0;
-                  let textColorClass = "text-red-600";
-                  if (isMe) textColorClass = "text-blue-600";
-                  if (isHighest && !isMe) textColorClass = "text-green-600";
-                  if (isHighest && isMe) textColorClass = "text-purple-600";
+                  let textColorClass = "text-gray-800";
+                  if (isMe) textColorClass = "text-blue-600 font-semibold";
+                  if (isHighest && !isMe)
+                    textColorClass = "text-green-600 font-semibold";
+                  if (isHighest && isMe)
+                    textColorClass = "text-purple-600 font-bold";
                   return (
                     <li
                       key={index}
@@ -495,11 +564,10 @@ useEffect(() => {
       <BidResultModal
         isOpen={showModal}
         onOpenChange={(open) => setShowModal(open)}
-        isWinner={isWinner}
-        winningBidAmount={winningBidAmount}
-        onPay={() => {
-          window.location.href = `/payment/${productId}`;
-        }}
+        // Pass the data received from the check-result API
+        bidApiMessage={bidApiMessage}
+        bidApiWinningAmount={bidApiWinningAmount}
+        bidApiCheckoutUrl={bidApiCheckoutUrl}
       />
     </div>
   );

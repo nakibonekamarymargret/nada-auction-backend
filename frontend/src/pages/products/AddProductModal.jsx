@@ -20,7 +20,6 @@ import {
   SelectItem,
 } from "@/components/ui/select.jsx";
 // No longer importing AuctionModal here
-import ProductService from "../../services/ProductService.js";
 
 // Receive auctions as a prop
 const AddProductModal = ({ auctions, onProductCreated }) => {
