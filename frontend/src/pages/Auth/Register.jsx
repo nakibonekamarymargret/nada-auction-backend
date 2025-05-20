@@ -73,15 +73,15 @@ const Register = () => {
     navigate("/login");
   };
   return (
-    <div className="flex flex-col md:flex-row items-start items-stretch gap-[5vw] max-w-5xl mx-auto">
+    <div className="flex flex-col md:flex-row items-stretch gap-[5vw] max-w-5xl mx-auto">
       {/* Left image */}
       <div className="hidden md:block w-1/2 p-4">
-        <img src="/bg1.jpg" alt="Register visual" className="rounded-lg" />
+        <img src={`${import.meta.env.BASE_URL}bg1.jpg`} alt="auction" className="rounded-lg"/>
       </div>
 
       {/* Right form section */}
       <div className="w-full md:w-1/2 p-4">
-        <p className="text-xl font-semi-bold text-center mt-7">
+      <p className="text-xl font-semi-bold text-center mt-7">
           Welcome to <b className="text-dark font-bold">NADA</b>{" "}
         </p>
         <h2
