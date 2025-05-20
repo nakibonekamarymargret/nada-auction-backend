@@ -75,33 +75,39 @@ function AboutUsPage() {
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
             <div className="bg-gray-100 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
               <img
-                src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                src="/public/images/mary.jpeg"
                 alt="Team Member 1"
                 className="w-24 h-24 object-cover rounded-full mb-4"
               ></img>
               <h3 className="text-lg  font-bold">Mary Nakiboneka</h3>
               <p className="text-sm text-muted-foreground">Lead Developer</p>
-              <p className="text-sm text-muted-foreground">jane@nada.co.ug</p>
+              <p className="text-sm text-muted-foreground">
+                nakibonekamarymargret@gmail.com
+              </p>
             </div>
             <div className="bg-gray-100 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
               <img
-                src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                src="/public/images/hakim.jpg"
                 alt="Team Member 1"
                 className="w-24 h-24 object-cover rounded-full mb-4"
               ></img>
               <h3 className="text-lg  font-bold">Akim Bakaluba</h3>
               <p className="text-sm text-muted-foreground">Lead Developer</p>
-              <p className="text-sm text-muted-foreground">jane@nada.co.ug</p>
+              <p className="text-sm text-muted-foreground">
+                kimbakaluba@gmail.com
+              </p>
             </div>
             <div className="bg-gray-100 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
               <img
-                src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                src="/public/images/kush.jpg"
                 alt="Team Member 1"
                 className="w-24 h-24 object-cover rounded-full mb-4"
               ></img>
               <h3 className="text-lg  font-bold">kush Muhamed</h3>
               <p className="text-sm text-muted-foreground">Lead Developer</p>
-              <p className="text-sm text-muted-foreground">jane@nada.co.ug</p>
+              <p className="text-sm text-muted-foreground">
+                kushmuhamed27@gmail.com
+              </p>
             </div>
           </div>
         </section>
