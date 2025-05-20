@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/ui/app-sidebar";
 import AuctionModal from "../auctions/AuctionModal";
@@ -30,32 +30,52 @@ const AdminDashboard = () => {
     CLOSED: 0,
   });
 
+  const [auctions, setAuctions] = useState([]); // State for auctions
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState([]);
 
   const token = localStorage.getItem("token");
 
+  // Function to fetch auctions
+  const fetchAuctions = useCallback(async () => {
+    try {
+      const response = await AuctionService.getAll(token);
+      const fetchedAuctions = Array.isArray(response.data.ReturnObject)
+        ? response.data.ReturnObject
+        : [];
+      setAuctions(
+        fetchedAuctions.filter((auction) => auction.status === "SCHEDULED")
+      ); // Only scheduled auctions for product creation
+    } catch (err) {
+      console.error("Error fetching auctions:", err);
+      // You might want to set an error state here as well
+    }
+  }, [token]);
+
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
+        await fetchAuctions(); // Fetch auctions initially
+
         const [auctionRes, userRes, productRes, bidRes] = await Promise.all([
-          AuctionService.getAll(token),
+          AuctionService.getAll(token), // Fetch all auctions for dashboard stats
           UserService.getAll(token),
           ProductService.getAll(token),
           BidService.getAll(token),
         ]);
 
-        const auctions = auctionRes.data.ReturnObject || [];
+        const allAuctions = auctionRes.data.ReturnObject || [];
         const users = userRes.data.ReturnObject || [];
         const products = productRes.data.ReturnObject || [];
         const bids = bidRes.data.ReturnObject || [];
 
-        const activeAuctions = auctions.filter(
+        const activeAuctions = allAuctions.filter(
           (a) => a.status === "LIVE"
         ).length;
 
         const newStatusCounts = { LIVE: 0, SCHEDULED: 0, CLOSED: 0 };
-        auctions.forEach((a) => {
+        allAuctions.forEach((a) => {
           if (newStatusCounts[a.status] !== undefined) {
             newStatusCounts[a.status]++;
           }
@@ -65,8 +85,10 @@ const AdminDashboard = () => {
         const formattedProducts = products.map((product) => ({
           id: product.id,
           name: product.name,
+          description: product.description, // Include description for editing
+          highestPrice: product.highestPrice,
           category: product.category,
-          price: product.highestPrice,
+          auctionId: product.auctionId, // Include auctionId for editing
           status: product.auction?.status || "N/A",
           createdAt: product.auction?.startTime || new Date().toISOString(),
         }));
@@ -87,7 +109,7 @@ const AdminDashboard = () => {
         });
 
         const monthCounts = {};
-        auctions.forEach((a) => {
+        allAuctions.forEach((a) => {
           const date = new Date(a.createdAt);
           const month = date.toLocaleString("default", { month: "long" });
           monthCounts[month] = (monthCounts[month] || 0) + 1;
@@ -131,7 +153,28 @@ const AdminDashboard = () => {
     };
 
     fetchData();
-  }, [token]);
+  }, [token, fetchAuctions]); // Add fetchAuctions to dependency array
+
+  const handleProductCreated = (newProduct) => {
+    // You might want to re-fetch all products or just add the new one to the list
+    // For simplicity, let's re-fetch the entire products list to ensure consistency
+    // However, if you only want to add the new one, you can do:
+    // setRecentProducts(prev => [newProduct, ...prev.slice(0, 4)]);
+    // For now, we'll rely on the useEffect's initial fetch to populate the table.
+    // If you need real-time updates without a full re-fetch of all products,
+    // you'd need to manually add/update the product in the recentProducts state.
+    console.log("New Product created:", newProduct);
+    // Potentially refetch all dashboard data to update counts if needed
+    // fetchData(); // Be careful with this, it might cause too many re-fetches
+  };
+
+  const handleAuctionCreated = async (newAuction) => {
+    console.log("New Auction created:", newAuction);
+    // Re-fetch auctions to update the list in AddProductModal
+    await fetchAuctions();
+    // Also update dashboard counts and charts if necessary
+    // This will trigger a re-render of the components consuming the 'auctions' state
+  };
 
   const handleDeleteProduct = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?"))
@@ -143,6 +186,8 @@ const AdminDashboard = () => {
         response?.data?.ReturnObject || "Product deleted successfully.";
       alert(message);
       setRecentProducts(recentProducts.filter((p) => p.id !== id));
+      // Optionally re-fetch all data to update counts
+      // fetchData();
     } catch (error) {
       const errorMessage =
         error?.response?.data?.ReturnObject ||
@@ -248,14 +293,11 @@ const AdminDashboard = () => {
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <AddProductModal
-                  onProductCreated={(product) =>
-                    console.log("New Product:", product)
-                  }
+                  auctions={auctions} // Pass auctions to AddProductModal
+                  onProductCreated={handleProductCreated}
                 />
                 <AuctionModal
-                  onAuctionCreated={(auction) =>
-                    console.log("New Auction:", auction)
-                  }
+                  onAuctionCreated={handleAuctionCreated} // Pass callback for new auction
                 />
               </div>
             </section>
@@ -286,7 +328,7 @@ const AdminDashboard = () => {
                           <td className="px-4 py-3">{product.name}</td>
                           <td className="px-4 py-3">{product.category}</td>
                           <td className="px-4 py-3">
-                            ${product.price.toFixed(2)}
+                            ${product.highestPrice.toFixed(2)}
                           </td>
                           <td className="px-4 py-3">
                             <span

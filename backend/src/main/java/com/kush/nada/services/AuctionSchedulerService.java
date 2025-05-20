@@ -51,21 +51,31 @@ public class AuctionSchedulerService {
     // Runs every 10 seconds to manage per-product bidding timeouts
     @Transactional
     @Scheduled(fixedRate = 10000) // Run every 10 seconds
-    public void closeInactiveProductBids() {
-        LocalDateTime now = LocalDateTime.now();
+    @Transactional
+@Scheduled(fixedRate = 10000)
+public void closeInactiveProductBids() {
+    LocalDateTime now = LocalDateTime.now();
 
-        // Find products still open to bidding
-        List<Product> openProducts = productRepository.findByIsClosedFalse();
+    List<Product> openProducts = productRepository.findByIsClosedFalse();
 
-        for (Product product : openProducts) {
-            // Check if last bid was more than 30 seconds ago
-            if (product.getLastBidTime() != null &&
-                    product.getLastBidTime().plusSeconds(259200).isBefore(now)) {
+    for (Product product : openProducts) {
+        if (product.getLastBidTime() != null &&
+            product.getLastBidTime().plusSeconds(18000000).isBefore(now)) {
 
-                product.setClosed(true);
-                productRepository.save(product);
-                System.out.println("Product " + product.getId() + " bidding is now CLOSED due to inactivity."); // Add logging
+            // Fetch highest bid using a repository query (recommended)
+            Bid highestBid = bidRepository.findTopByProductOrderByAmountDesc(product);
+
+            product.setClosed(true);
+            productRepository.save(product);
+
+            System.out.println("Product " + product.getId() + " bidding CLOSED due to inactivity.");
+            if (highestBid != null) {
+                System.out.println("Winner is: " + highestBid.getBidder().getUsername() +
+                                   " with bid: " + highestBid.getAmount());
+            } else {
+                System.out.println("No bids were placed on this product.");
             }
         }
     }
+}
 }

@@ -13,8 +13,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import AuctionService from "../../services/AuctionService";
 
+// Receive onAuctionCreated prop
 const AuctionModal = ({ onAuctionCreated }) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // Internal state for the dialog open/close
 
   const [auctionData, setAuctionData] = useState({
     title: "",
@@ -22,7 +23,6 @@ const AuctionModal = ({ onAuctionCreated }) => {
     startTime: "",
     endTime: "",
   });
-
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -71,7 +71,6 @@ const AuctionModal = ({ onAuctionCreated }) => {
     try {
       const token = localStorage.getItem("token");
 
-      // Debugging: Log token and data
       console.log("Token:", token);
       console.log("Auction Data:", auctionData);
 
@@ -81,15 +80,18 @@ const AuctionModal = ({ onAuctionCreated }) => {
 
       const res = await AuctionService.add(auctionData, token);
 
-      // onAuctionCreated(res.data);
-      onAuctionCreated(res.data); 
+      // Call the onAuctionCreated callback passed from the parent
+      if (onAuctionCreated) {
+        onAuctionCreated(res.data.ReturnObject); // Pass the newly created auction data
+      }
+
       setAuctionData({
         title: "",
         startingPrice: "",
         startTime: "",
         endTime: "",
       });
-      setOpen(false);
+      setOpen(false); // Close the modal on success
     } catch (err) {
       console.error("Auction creation failed", err);
       setError(
@@ -104,7 +106,9 @@ const AuctionModal = ({ onAuctionCreated }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default" onClick={() => setOpen(true)}>Create Auction</Button>
+        <Button variant="default" onClick={() => setOpen(true)}>
+          Create Auction
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <form onSubmit={handleSubmit}>
