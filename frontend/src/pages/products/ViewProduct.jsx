@@ -66,20 +66,20 @@ useEffect(() => {
   setAuthToken(token);
 }, []);
 
+  
 
-  const fetchProductDetails = useCallback(async () => {
-    if (!id) return;
-    try {
-      // Assuming you have a ProductService.getById or adapt getAll
-      // For now, directly using the URL, but better to use ProductService
-      const res = await axios.get(`http://localhost:7107/product/${id}`);
-      const productData = res.data.ReturnObject;
-      setProduct(productData);
-    } catch (err) {
-      console.error("Failed to fetch product data:", err);
-      if (err.response?.status === 404) navigate("/404");
-    }
-  }, [id, navigate]);
+ const fetchProductDetails = useCallback(async () => {
+   if (!id) return;
+   try {
+     const res = await axios.get(`http://localhost:7107/product/${id}`);
+     const productData = res.data.ReturnObject;
+     console.log(id);
+     setProduct(productData);
+   } catch (err) {
+     console.error("Failed to fetch product data:", err);
+     if (err.response?.status === 404) navigate("/404");
+   }
+ }, [id, navigate]);
 
   // Fetch initial watchlist status for this product
   const checkWatchlistStatus = useCallback(async () => {
@@ -141,7 +141,7 @@ useEffect(() => {
     try {
       const date = typeof dateTime === "string" ? parseISO(dateTime) : dateTime;
       if (isNaN(date.getTime())) throw new Error("Invalid date value");
-      return format(date, "dd MMM yyyy HH:mm z"); // Corrected date format token
+      return format(date, "dd MMM yyyy HH:mm z");
     } catch (error) {
       console.error("Error formatting date:", error);
       return "Invalid Date";
@@ -151,12 +151,15 @@ useEffect(() => {
   // Generate viewing dates between auction start and end time
   const getViewingDates = (startTime, endTime) => {
     if (!startTime || !endTime) return [];
+
     try {
       const start = parseISO(startTime);
       const end = parseISO(endTime);
+
       if (isNaN(start.getTime()) || isNaN(end.getTime())) return [];
-      return eachDayOfInterval({ start, end }).map(
-        (date) => format(date, "dd MMM yyyy '10:00 BST - 14:00 BST'") // Corrected date format token
+
+      return eachDayOfInterval({ start, end }).map((date) =>
+        format(date, "dd MMM yyyy '10:00 BST - 14:00 BST'")
       );
     } catch (e) {
       console.error("Error generating viewing dates:", e);
@@ -164,37 +167,29 @@ useEffect(() => {
     }
   };
 
+  // Get auction status with display text and class name
   const getAuctionStatusDisplay = () => {
     const status = product?.auction?.status;
+
     switch (status) {
       case "LIVE":
-        return {
-          text: "LIVE NOW",
-          className: "bg-green-600 text-md font-bold",
-        };
+        return { text: "LIVE NOW", className: "bg-green-600 text-md font-bold" };
       case "CLOSED":
         return { text: "CLOSED", className: "bg-red-600 text-md font-bold" };
       case "SCHEDULED":
-        return {
-          text: "SCHEDULED",
-          className: "bg-blue-500 text-md font-bold",
-        };
+        return { text: "SCHEDULED", className: "bg-blue-500 text-md font-bold" };
       default:
-        return {
-          text: "Status N/A",
-          className: "bg-gray-500 text-md font-bold",
-        };
+        return { text: "Status N/A", className: "bg-gray-500 text-md font-bold" };
     }
   };
 
   const auctionStatusDisplay = getAuctionStatusDisplay();
+
   const toggleDetails = () => setShowDetails((prev) => !prev);
 
-  const handlePlaceBid = (productId) => {
-    // Renamed id to productId for clarity
-    navigate(`/bids/place/${productId}`);
+  const handlePlaceBid = (id) => {
+    navigate(`/bids/place/${id}`);
   };
-
   if (!product) {
     return (
       <div className="container mx-auto px-4 py-6 text-center">
@@ -212,12 +207,11 @@ useEffect(() => {
   const viewingDates = getViewingDates(auction.startTime, auction.endTime);
 
   let actionButton = null;
+
   if (auction.status === "SCHEDULED") {
     actionButton = (
-      <button
-        style={{ fontFamily: "var(--font-button)" }}
-        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 text-lg rounded mr-2 transition-colors duration-200"
-      >
+      <button style={{fontFamily:"var(--font-button)"}}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 text-lg rounded mr-2 transition-colors duration-200">
         Get approved to bid
       </button>
     );
@@ -225,15 +219,16 @@ useEffect(() => {
     actionButton = (
       <div className="">
         <button
-          onClick={() => navigate(`/approved/${auction.id}`)}
+          onClick={() => navigate(`/approve/${product.id}`)}
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
         >
           Get approved to Bid
         </button>
+
         <p
           style={{ fontFamily: "sans-serif" }}
           onClick={() => handlePlaceBid(product.id)}
-          className=" cursor-pointer text-end text-blue-700 font-bold py-2 px-4 duration-200"
+          className=" cursor-pointer text-end text-blue-700 font-bold py-2 px-4  duration-200"
         >
           Place Bid
         </p>
@@ -255,6 +250,7 @@ useEffect(() => {
 
   return (
     <div className="container mx-auto px-4 py-6 bg-white shadow-md rounded-lg">
+      {/* Header */}
       <div className="flex justify-between items-start mb-4">
         {/* Left: Status + Name + Timer */}
         <div className="flex flex-col gap-1">
@@ -333,6 +329,7 @@ useEffect(() => {
                   : "No bids yet"}
               </span>
             </p>
+            
             <button
               onClick={toggleDetails}
               className="text-blue-600 hover:underline text-md mt-1 block"
@@ -342,93 +339,72 @@ useEffect(() => {
               </span>
             </button>
           </div>
+
           <div className="mb-6 text-right">{actionButton}</div>
+
           {showDetails && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 border-t pt-6 border-gray-200">
+              {/* Auction Timing */}
               <div>
-                <h3
-                  style={{ fontFamily: "var(--font-dm-serif)" }}
-                  className="text-lg font-medium text-gray-800 mb-2"
-                >
+                <h3 style={{ fontFamily: "var(--font-dm-serif)"}}
+                    className="text-lg font-medium text-gray-800 mb-2">
                   Auction Timing
                 </h3>
                 {auction.startTime && (
-                  <p
-                    className="text-gray-700 text-sm mb-1"
-                    style={{ fontFamily: "var(--font-inter)" }}
-                  >
-                    <span className="font-semibold">Starts:</span>{" "}
-                    <span className="text-green-600">
-                      {formatDateTime(auction.startTime)}
-                    </span>
-                  </p>
+                    <p className="text-gray-700 text-sm mb-1"
+                       style={{fontFamily: "var(--font-inter)"}}>
+                      <span className="font-semibold ">Starts:</span>{" "}
+                      <span className="text-green-600 ">{formatDateTime(auction.startTime)}</span>
+
+                    </p>
                 )}
                 {auction.endTime && (
-                  <p className="text-gray-700 text-sm mb-1">
-                    <span className="font-semibold">Ends:</span>{" "}
-                    <span className="text-red-600">
-                      {formatDateTime(auction.endTime)}
-                    </span>
-                  </p>
+                    <p className="text-gray-700 text-sm mb-1">
+                      <span className="font-semibold">Ends:</span>{" "}
+                      <span className="text-red-600 ">{formatDateTime(auction.endTime)}</span>
+
+                    </p>
                 )}
               </div>
+
+              {/* Viewing Dates */}
               <div>
-                <h3
-                  style={{ fontFamily: "var(--font-dm-serif)" }}
-                  className="text-lg font-medium text-gray-800 mb-2 mt-4 md:mt-0"
-                >
+              <h3  style={{ fontFamily: "var(--font-dm-serif)"}}
+                  className="text-lg font-medium text-gray-800 mb-2 mt-4">
                   Viewing Dates
                 </h3>
                 {viewingDates.length > 0 ? (
                   viewingDates.map((date, index) => (
-                    <p
-                      style={{ fontFamily: "var(--font-inter)" }}
-                      key={index}
-                      className="text-gray-700 text-sm mb-1"
-                    >
+                    <p  style={{ fontFamily: "var(--font-inter)" }} key={index} className="text-gray-700 text-sm mb-1">
                       {date}
                     </p>
                   ))
                 ) : (
-                  <p
-                    style={{ fontFamily: "var(--font-inter)" }}
-                    className="text-gray-500 text-sm"
-                  >
+                  <p style={{ fontFamily: "var(--font-inter) "}} className="text-gray-500 text-sm">
                     No viewing dates available.
                   </p>
                 )}
               </div>
+
+              {/* Product Details */}
               <div>
-                <h3
-                  style={{ fontFamily: "var(--font-dm-serif)" }}
-                  className="text-lg font-medium text-gray-800 mb-2"
-                >
+                <h3 style={{ fontFamily: "var(--font-dm-serif)"}} className="text-lg font-medium text-gray-800 mb-2">
                   Product Details
                 </h3>
                 {product.category && (
-                  <p
-                    className="text-gray-700 text-sm mb-1 "
-                    style={{ fontFamily: "var(--font-roboto)" }}
-                  >
-                    <span className="font-semibold">Category:</span>{" "}
-                    <span className="font-bold text-blue-500">
+                  <p className="text-gray-700 text-sm mb-1 " style={{ fontFamily: "var(--font-roboto)"}}>
+                    <span  className="font-semibold">Category:</span>{" "}
+                    <span  className="font-bold text-blue-500" >
                       {product.category}
-                    </span>
-                  </p>
+</span>
+                    </p>
                 )}
-                <p
-                  style={{ fontFamily: "var(--font-roboto)" }}
-                  className="text-gray-700 text-sm mb-1"
-                >
-                  <span className="font-semibold">Currency:</span>{" "}
-                  <span className="font-bold text-blue-500">USD</span>
+                <p style={{ fontFamily: "var(--font-roboto)"}} className="text-gray-700 text-sm mb-1">
+                  <span className="font-semibold">Currency:</span> <span className="font-bold text-blue-500"> USD</span>
                 </p>
                 {product.description && (
                   <div className="mt-4">
-                    <h3
-                      className="text-lg font-medium text-gray-800 mb-2"
-                      style={{ fontFamily: "var(--font-dm-serif)" }}
-                    >
+                    <h3 className="text-lg font-medium text-gray-800 mb-2" style={{ fontFamily: "var(--font-dm-serif)"}}>
                       Full Description:
                     </h3>
                     <p className="text-gray-700 text-sm">

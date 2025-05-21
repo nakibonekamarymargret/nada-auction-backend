@@ -57,7 +57,6 @@ public class AuthController {
     }
 
     @PostMapping("/auth/login")
-    //** http://localhost:8080/api/auth/login
     public ResponseEntity<Map<String, Object>> userLogin(@RequestBody UserEntity user, HttpServletRequest request) throws BadCredentialsException {
         // Authenticate the user
         Authentication authentication = authenticationManager.authenticate(
@@ -92,6 +91,39 @@ public class AuthController {
     }
 
 
+//  Validation Api
+    @PostMapping("/auth/validate-user-details")
+public ResponseEntity<Map<String, Object>> validateUserDetails(
+        @RequestBody Map<String, String> userDetails,
+        HttpServletRequest request
+) {
+    String jwt = jwtService.extractTokenFromRequest(request);
+    String userEmail = jwtService.extractUserName(jwt);
+
+    Optional<UserEntity> optionalUser = userRepository.findByEmail(userEmail);
+
+    if (optionalUser.isEmpty()) {
+        return responseService.createResponse(404, "User not found", request, HttpStatus.NOT_FOUND);
+    }
+
+    UserEntity user = optionalUser.get();
+
+    String name = userDetails.get("name");
+    String phoneNumber = userDetails.get("phoneNumber");
+     String email = userDetails.get("email");
+
+    String address = userDetails.get("address");
+
+    boolean isMatch = user.getName().equalsIgnoreCase(name.trim()) &&
+                      user.getPhoneNumber().equalsIgnoreCase(phoneNumber.trim()) &&
+                      user.getAddress().equalsIgnoreCase(address.trim());
+
+    if (isMatch) {
+        return responseService.createResponse(200, "Details match", request, HttpStatus.OK);
+    } else {
+        return responseService.createResponse(400, "Details do not match", request, HttpStatus.BAD_REQUEST);
+    }
+}
 
 
 
