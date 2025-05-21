@@ -145,6 +145,8 @@ To customize the animation parameters, use the following classes:
 | [`collapsible-up`][Docs_Collapsible]   | Collapsible up animation. Requires `--radix-collapsible-content-height`, `--bits-collapsible-content-height` or `--reka-collapsible-content-height` to be set to the content's height.   |
 | [`caret-blink`][Docs_Caret]            | Blinking animation for caret/cursor.                                                                                                                                                     |
 
+By the way, if you don't use some of the above animations, they will not be included in the final CSS file. This is because Tailwind CSS kind of does tree-shaking for you. So, if you don't use `accordion-down`, it won't be included in the final CSS file.
+
 ## Examples
 
 **Basic usage:**
