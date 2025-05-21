@@ -75,8 +75,8 @@ function AboutUsPage() {
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
             <div className="bg-gray-100 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
               <img
-                src="/public/images/mary.jpeg"
-                alt="Team Member 1"
+                src="/images/mary.jpeg"
+                alt="Mary"
                 className="w-24 h-24 object-cover rounded-full mb-4"
               ></img>
               <h3 className="text-lg  font-bold">Mary Nakiboneka</h3>
@@ -87,8 +87,8 @@ function AboutUsPage() {
             </div>
             <div className="bg-gray-100 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
               <img
-                src="/public/images/hakim.jpg"
-                alt="Team Member 1"
+                src="/images/hakim.jpg"
+                alt="Akim"
                 className="w-24 h-24 object-cover rounded-full mb-4"
               ></img>
               <h3 className="text-lg  font-bold">Akim Bakaluba</h3>
@@ -99,8 +99,8 @@ function AboutUsPage() {
             </div>
             <div className="bg-gray-100 rounded-lg shadow-md p-6 flex flex-col items-center text-center">
               <img
-                src="/public/images/kush.jpg"
-                alt="Team Member 1"
+                src="/images/kush.jpg"
+                alt="kush"
                 className="w-24 h-24 object-cover rounded-full mb-4"
               ></img>
               <h3 className="text-lg  font-bold">kush Muhamed</h3>

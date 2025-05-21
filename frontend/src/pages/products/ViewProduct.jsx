@@ -21,7 +21,45 @@ const ViewProduct = () => {
   const [isLoadingWatchlist, setIsLoadingWatchlist] = useState(false); // To prevent multiple clicks
   const navigate = useNavigate();
   const [authToken, setAuthToken] = useState(getAuthToken());
+  const [timeRemaining, setTimeRemaining] = useState("");
 // Get the token
+const calculateCountdown = (targetTime) => {
+  const now = new Date().getTime();
+  const target = new Date(targetTime).getTime();
+  const diff = target - now;
+
+  if (diff <= 0) return "00:00:00";
+
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+    2,
+    "0"
+  )}:${String(seconds).padStart(2, "0")}`;
+};
+useEffect(() => {
+  let intervalId;
+
+  if (product?.auction) {
+    const targetTime =
+      product.auction.status === "SCHEDULED"
+        ? product.auction.startTime
+        : product.auction.status === "LIVE"
+        ? product.auction.endTime
+        : null;
+
+    if (targetTime) {
+      intervalId = setInterval(() => {
+        setTimeRemaining(calculateCountdown(targetTime));
+      }, 1000);
+    }
+  }
+
+  return () => clearInterval(intervalId);
+}, [product]);
+
 
 useEffect(() => {
   const token = getAuthToken();
@@ -218,23 +256,44 @@ useEffect(() => {
   return (
     <div className="container mx-auto px-4 py-6 bg-white shadow-md rounded-lg">
       <div className="flex justify-between items-start mb-4">
-        <div className="flex items-center gap-3 ">
-          <Badge
-            className={auctionStatusDisplay.className}
-            style={{ fontFamily: "var(--font-inter)" }}
-          >
-            {auctionStatusDisplay.text}
-          </Badge>
-          <h2
-            style={{ fontFamily: "'var(--font-playfair)" }}
-            className="text-2xl font-semibold text-red-800"
-          >
-            {product.name || "Product Details"}
-          </h2>
+        {/* Left: Status + Name + Timer */}
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <Badge
+              className={auctionStatusDisplay.className}
+              style={{ fontFamily: "var(--font-inter)" }}
+            >
+              {auctionStatusDisplay.text}
+            </Badge>
+            <h2
+              style={{ fontFamily: "var(--font-playfair)" }}
+              className="text-2xl font-semibold text-red-800"
+            >
+              {product.name || "Product Details"}
+            </h2>
+          </div>
+          {(auction.status === "SCHEDULED" || auction.status === "LIVE") && (
+            <div className="text-sm text-gray-700 font-semibold pl-1">
+              {auction.status === "SCHEDULED" && (
+                <span>
+                  Auction starts in:{" "}
+                  <span className="text-blue-600">{timeRemaining}</span>
+                </span>
+              )}
+              {auction.status === "LIVE" && (
+                <span>
+                  Time remaining:{" "}
+                  <span className="text-red-600">{timeRemaining}</span>
+                </span>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* Right: Save/Watchlist Button */}
         <button
-          onClick={handleToggleWatchlist} // Use the new handler
-          disabled={isLoadingWatchlist} // Disable button while request is in progress
+          onClick={handleToggleWatchlist}
+          disabled={isLoadingWatchlist}
           className={`flex items-center gap-1 px-3 py-1 rounded-full border ${
             isWatchlisted
               ? "bg-red-100 text-red-600 border-red-300"
