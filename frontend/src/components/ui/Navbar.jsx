@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { AiOutlineHeart, AiOutlineUser, AiOutlineBell } from "react-icons/ai";
+import { AiOutlineHeart, AiOutlineUser, AiOutlineBell, AiOutlineSearch } from "react-icons/ai"; // Import AiOutlineSearch
 import { CiLogin } from "react-icons/ci";
 import { FaUserPlus } from "react-icons/fa6";
 import SearchService from "@/services/SearchService";
@@ -14,6 +14,7 @@ const Navbar = () => {
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [auctions, setAuctions] = useState([]);
+  const [isSearchIconVisible, setIsSearchIconVisible] = useState(false); // New state to control search icon visibility
 
   const isLoginPage = location.pathname === "/login";
   const isRegisterPage = location.pathname === "/register";
@@ -23,6 +24,20 @@ const Navbar = () => {
     const token = localStorage.getItem("token");
     setIsAuthenticated(!!token);
   }, [location]);
+
+  // Handle outside clicks to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownOpen && event.target.closest(".relative") === null) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownOpen]);
+
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -41,14 +56,23 @@ const Navbar = () => {
         setAuctions(results);
         navigate("/search-results", { state: { auctions: results } });
         setSearchTerm("");
+        setIsSearchIconVisible(false); // Hide search input after search
       } catch (err) {
         console.error("Search failed", err);
       }
     }
   };
+
   const toggleDropDown = () =>{
     setDropdownOpen((prev) => !prev);
   }
+
+  const toggleSearchInput = () => {
+    setIsSearchIconVisible((prev) => !prev);
+    if (isSearchIconVisible) { // If it's about to hide, clear search term
+      setSearchTerm('');
+    }
+  };
 
   if (isLoginPage || isRegisterPage) return null;
 
@@ -63,17 +87,45 @@ const Navbar = () => {
             NADA
           </h2>
 
-          {/* Centered Search Bar: Only show on home page */}
+          {/* Centered Search Bar & Icon: Only show on home page */}
           {location.pathname === "/" && (
-              <div className="absolute left-1/2 transform -translate-x-1/2 w-[40%]">
-                <input
-                    type="text"
-                    placeholder="Search for items"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyDown={handleSearch}
-                    className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none text-black"
-                />
+              <div className="flex-grow flex justify-center items-center relative">
+                {/* Search Bar for larger screens */}
+                <div className="hidden lg:block w-[40%]"> {/* Hidden on small/medium, block on large */}
+                  <input
+                      type="text"
+                      placeholder="Search for items"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyDown={handleSearch}
+                      className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none text-black"
+                  />
+                </div>
+
+                {/* Search Icon for small/medium screens */}
+                <div className="lg:hidden flex items-center justify-center"> {/* Visible on small/medium, hidden on large */}
+                  <button
+                      onClick={toggleSearchInput}
+                      className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                  >
+                    <AiOutlineSearch size={24} />
+                  </button>
+                </div>
+
+                {/* Collapsible Search Input for small/medium screens */}
+                {isSearchIconVisible && (
+                    <div className="absolute top-full left-0 right-0 mt-2 lg:hidden w-full px-4">
+                      <input
+                          type="text"
+                          placeholder="Search for items"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          onKeyDown={handleSearch}
+                          className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none text-black"
+                          autoFocus // Automatically focus when visible
+                      />
+                    </div>
+                )}
               </div>
           )}
 
@@ -91,11 +143,8 @@ const Navbar = () => {
                   </div>
 
                   {/* Activity Dropdown */}
-                  <div className="flex flex-col items-center cursor-pointer relative "onClick={toggleDropDown}>
-                    <AiOutlineUser
-                        size={20}
-
-                    />
+                  <div className="flex flex-col items-center cursor-pointer relative" onClick={toggleDropDown}>
+                    <AiOutlineUser size={20} />
                     <span>My Activity</span>
 
                     {dropdownOpen && (
@@ -125,14 +174,14 @@ const Navbar = () => {
                 <div className="flex gap-6 items-center">
                   <button
                       onClick={handleLogin}
-                      className="px-4 py-2 text-sm font-medium text-black rounded hover:text-blue-700 transition"
+                      className="px-4 py-2 text-sm font-medium text-black rounded hover:text-blue-700 transition flex items-center gap-1"
                   >
                     <CiLogin />
                     Login
                   </button>
                   <button
                       onClick={handleRegister}
-                      className="px-4 py-2 text-sm font-medium text-black rounded hover:text-green-700 transition"
+                      className="px-4 py-2 text-sm font-medium text-black rounded hover:text-green-700 transition flex items-center gap-1"
                   >
                     <FaUserPlus />
                     Register
