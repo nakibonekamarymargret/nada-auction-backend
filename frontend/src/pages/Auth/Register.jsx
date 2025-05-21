@@ -33,26 +33,43 @@ const Register = () => {
     setError({});
     setMessage("");
 
+    // Client-side validation: check required fields
+    const newErrors = {};
+    if (!user.name) newErrors.name = "Name is required.";
+    if (!user.email) newErrors.email = "Email is required.";
+    if (!user.phoneNumber) newErrors.phoneNumber = "Phone number is required.";
+    if (!user.address) newErrors.address = "Address is required.";
+    if (!user.password) newErrors.password = "Password is required.";
+    if (!confirmPassword) newErrors.confirmPassword = "Confirm your password.";
+
+    // Check if passwords match
+    if (user.password !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match.";
+    }
+
+    // If errors exist, stop submission and show them
+    if (Object.keys(newErrors).length > 0) {
+      setError(newErrors);
+      return;
+    }
+
     try {
       const response = await AuthService.register(user);
-
-      // Check if passwords match
-      if (password !== confirmPassword) {
-        setError("Passwords do not match.");
-        return;
-      }
       console.log("Registration response:", response.data);
-      setMessage("Registration successful. Redirecting to Home page...");
 
+      //  Store token in localStorage to reflect login state
+      localStorage.setItem('token', response.token);
+
+      setMessage("Registration successful. Redirecting to Home page...");
       setTimeout(() => {
         navigate("/");
       }, 2000);
     } catch (err) {
       const message =
-        err.response?.data?.returnMessage || "An unexpected error occurred.";
+          err.response?.data?.returnMessage || "An unexpected error occurred.";
       console.log("Error:", message);
 
-      // Map backend messages to specific fields
+      // Map backend errors to fields
       if (message.toLowerCase().includes("name")) {
         setError({ name: message });
       } else if (message.toLowerCase().includes("email")) {
@@ -124,13 +141,13 @@ const Register = () => {
             ].map(({ label, name, type, placeholder }) => (
               <div key={name} className="mb-4">
                 <label
-                  htmlFor={name}
-                  className="block text-sm font-medium text-gray-700"
+                    htmlFor={name}
+                    className="block text-sm font-medium text-gray-700"
                 >
-                  {label}
+                  {label} <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type={type}
+                    type={type}
                   name={name}
                   id={name}
                   value={user[name]}
@@ -145,10 +162,10 @@ const Register = () => {
             {/* Password */}
             <div className="mb-4 relative">
               <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700"
               >
-                Password
+                Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <IoKeySharp
@@ -185,7 +202,7 @@ const Register = () => {
                 htmlFor="confirmPassword"
                 className="block text-sm font-medium text-gray-700"
               >
-                Confirm Password
+                Confirm Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <IoKeySharp
@@ -200,6 +217,10 @@ const Register = () => {
                   className="mt-1 block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Confirm your password"
                 />
+                {error.confirmPassword && (
+                    <p className="text-red-500 text-xs mt-1">{error.confirmPassword}</p>
+                )}
+
                 <div
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 cursor-pointer"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
