@@ -15,6 +15,7 @@ const Home = () => {
         CLOSED: false,
     });
 
+    // Fetch products every minute
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -32,7 +33,8 @@ const Home = () => {
         };
 
         fetchProducts();
-        const intervalId = setInterval(fetchProducts, 60000);
+
+        const intervalId = setInterval(fetchProducts, 60000); // Poll every minute
         return () => clearInterval(intervalId);
     }, []);
 
@@ -43,7 +45,8 @@ const Home = () => {
     const getProductsByStatus = (status) => {
         let filtered = products
             .filter((product) => {
-                const auctionStatusMatches = product.auction && product.auction.status === status;
+                const auctionStatusMatches =
+                    product.auction && product.auction.status === status;
 
                 if (status === "LIVE") {
                     return auctionStatusMatches && !product.closed;
@@ -77,7 +80,13 @@ const Home = () => {
 
     const renderProducts = (filteredProducts, status) => {
         if (loading) return <p>Loading...</p>;
-        if (!filteredProducts.length) return <p style={{fontFamily:"var(--font-tenor)"}} className="text-md">No products found.</p>;
+        if (!filteredProducts.length) {
+            return (
+                <p style={{ fontFamily: "var(--font-tenor)" }} className="text-md">
+                    No products found.
+                </p>
+            );
+        }
 
         const isExpanded = expandedSections[status];
         const displayedProducts = isExpanded
@@ -85,9 +94,15 @@ const Home = () => {
             : filteredProducts.slice(0, 6);
         const showButton = filteredProducts.length > 6;
 
+        // Determine grid columns based on displayedProducts length
+        let gridColsClass = "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"; // Default multi-column
+        if (displayedProducts.length === 1) {
+            gridColsClass = "grid-cols-1"; // Force single column if only one product
+        }
+
         return (
             <div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className={`grid ${gridColsClass} gap-6`}>
                     {displayedProducts.map((product) => {
                         const now = new Date();
                         const startTime = product?.auction?.startTime
@@ -115,20 +130,21 @@ const Home = () => {
                         return (
                             <Card
                                 key={product.id || product.name}
-                                className="shadow-lg cursor-pointer hover:shadow-xl transition duration-300 border rounded-lg overflow-hidden"
+                                className=" shadow-lg cursor-pointer hover:shadow-xl transition duration-300 border rounded-lg overflow-hidden"
                                 onClick={() => handleViewProduct(product.id)}
                             >
-                                <div className="w-full h-56 relative">
+
+                                <div className="w-full h-80 relative">
                                     <img
-                                        src={product.imageUrl}
-                                        alt={product.name}
-                                        className="w-full h-full object-cover rounded-t-md"
+                                        src={product.imageUrl || "/placeholder-image.jpg"}
+                                        alt={product.name || "Product Image"}
+                                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                                     />
-                                    <div className="absolute inset-0"></div>
                                 </div>
+
                                 <CardContent className="p-4 space-y-2">
                                     <h3
-                                        style={{fontFamily:"var(--font-playfair)",color:"var(--chart-2)"}}
+                                        style={{fontFamily: "var(--font-playfair)", color: "var(--chart-2)"}}
                                         className="text-xl font-semibold "
                                     >
                                         {product.name}
@@ -136,14 +152,14 @@ const Home = () => {
                                     {label && (
                                         <p
                                             className="text-sm text-gray-600"
-                                            style={{ fontFamily: "var(--font-roboto)" }}
+                                            style={{fontFamily: "var(--font-roboto)"}}
                                         >
                                             {label}
                                         </p>
                                     )}
                                     <p
                                         className="text-base text-gray-700 line-clamp-2"
-                                        style={{ fontFamily: "var(--font-roboto)" }}
+                                        style={{fontFamily: "var(--font-roboto)"}}
                                     >
                                         {product.description.split(".")[0]}...
                                     </p>
@@ -158,9 +174,7 @@ const Home = () => {
                             onClick={() => toggleSection(status)}
                             className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-300 px-4 py-2 rounded-md transition"
                         >
-              <span className="text-white">
-                {isExpanded ? "Show Less" : "Show More"}
-              </span>
+                            <span className="text-white">{isExpanded ? "Show Less" : "Show More"}</span>
                             {isExpanded ? (
                                 <FaAngleUp className="text-white" />
                             ) : (
@@ -176,16 +190,17 @@ const Home = () => {
     return (
         <div className="container mx-auto px-4 pt-5">
             <AnimatedImage />
-            <section className="p-6">
 
-                    <h2
-                        className="text-dark text-2xl font-bold mb-4"
-                        style={{fontFamily: "var(--font-baskerville)"}}
-                    >
-                        UPCOMING EVENTS
-                    </h2>
-                    {renderProducts(getProductsByStatus("SCHEDULED"), "SCHEDULED")}
+            <section className="p-6">
+                <h2
+                    className="text-dark text-2xl font-bold mb-4"
+                    style={{ fontFamily: "var(--font-baskerville)" }}
+                >
+                    UPCOMING EVENTS
+                </h2>
+                {renderProducts(getProductsByStatus("SCHEDULED"), "SCHEDULED")}
             </section>
+
             <section className="p-6">
                 <h2
                     className="text-dark text-2xl font-bold mb-4"
@@ -195,12 +210,14 @@ const Home = () => {
                 </h2>
                 {renderProducts(getProductsByStatus("LIVE"), "LIVE")}
             </section>
+
             <section className="p-6">
                 <h2
                     className="text-red-800 text-xl font-semibold mb-4"
-                    style={{fontFamily: "var(--font-baskerville)"}}
+                    style={{ fontFamily: "var(--font-baskerville)" }}
                 >
-CLOSED EVENTS                </h2>
+                    CLOSED EVENTS
+                </h2>
                 {renderProducts(getProductsByStatus("CLOSED"), "CLOSED")}
             </section>
         </div>

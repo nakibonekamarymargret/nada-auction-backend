@@ -24,54 +24,86 @@ const AdminDashboard = () => {
   });
 
   const [recentProducts, setRecentProducts] = useState([]);
+  const [wonBids, setWonBids] = useState([]); // State for won bids
   const [statusCounts, setStatusCounts] = useState({
     LIVE: 0,
     SCHEDULED: 0,
     CLOSED: 0,
   });
 
-  const [auctions, setAuctions] = useState([]); // State for auctions
+  const [auctions, setAuctions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState([]);
 
   const token = localStorage.getItem("token");
 
-  // Function to fetch auctions
   const fetchAuctions = useCallback(async () => {
     try {
       const response = await AuctionService.getAll(token);
       const fetchedAuctions = Array.isArray(response.data.ReturnObject)
-        ? response.data.ReturnObject
-        : [];
+          ? response.data.ReturnObject
+          : [];
       setAuctions(
-        fetchedAuctions.filter((auction) => auction.status === "SCHEDULED")
-      ); // Only scheduled auctions for product creation
+          fetchedAuctions.filter((auction) => auction.status === "SCHEDULED")
+      );
     } catch (err) {
       console.error("Error fetching auctions:", err);
-      // You might want to set an error state here as well
     }
   }, [token]);
 
+  // Combined fetch function to get all necessary data at once
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        await fetchAuctions(); // Fetch auctions initially
+        await fetchAuctions(); // Ensure auctions are fetched for product creation
 
         const [auctionRes, userRes, productRes, bidRes] = await Promise.all([
-          AuctionService.getAll(token), // Fetch all auctions for dashboard stats
+          AuctionService.getAll(token), // All auctions for dashboard stats
           UserService.getAll(token),
-          ProductService.getAll(token),
-          BidService.getAll(token),
+          ProductService.getAll(token), // All products (needed for winning bid logic)
+          BidService.getAll(token), // All bids (needed for winning bid logic)
         ]);
 
         const allAuctions = auctionRes.data.ReturnObject || [];
         const users = userRes.data.ReturnObject || [];
-        const products = productRes.data.ReturnObject || [];
-        const bids = bidRes.data.ReturnObject || [];
+        const allProducts = productRes.data.ReturnObject || []; // Renamed to allProducts for clarity
+        const allBids = bidRes.data.ReturnObject || []; // Renamed to allBids for clarity
+
+        // --- Calculate Won Bids ---
+        const calculatedWonBids = [];
+        allProducts.forEach(product => {
+          // Check if the product's auction is closed and has a highest bid
+          // Ensure product.highestPrice is the actual highest price recorded after auction close
+          if (product.auction && product.auction.status === "CLOSED" && product.highestPrice > 0) {
+            // Find the bid that matches this highest price and is for this product
+            // We assume bid.amount is a number and product.highestPrice is also a number for comparison
+            const winningBid = allBids.find(bid =>
+                bid.amount === product.highestPrice &&
+                bid.productName === product.name && // Assuming productName comes from backend DTO now
+                bid.auctionId === product.auction.id // Assuming auctionId is present on bid DTO for robust check
+            );
+
+            if (winningBid) {
+              calculatedWonBids.push({
+                id: winningBid.id,
+                bidderName: winningBid.bidderName,
+                productName: winningBid.productName,
+                bidAmount: winningBid.amount,
+                // Use bidTime if available, otherwise auction end time for date won
+                date: winningBid.bidTime || product.auction.endTime || new Date().toISOString(),
+              });
+            }
+          }
+        });
+        // Sort by date, most recent first
+        calculatedWonBids.sort((a, b) => new Date(b.date) - new Date(a.date));
+        setWonBids(calculatedWonBids.slice(0, 5));
+        // --- End Won Bids Calculation ---
+
 
         const activeAuctions = allAuctions.filter(
-          (a) => a.status === "LIVE"
+            (a) => a.status === "LIVE"
         ).length;
 
         const newStatusCounts = { LIVE: 0, SCHEDULED: 0, CLOSED: 0 };
@@ -82,13 +114,13 @@ const AdminDashboard = () => {
         });
         setStatusCounts(newStatusCounts);
 
-        const formattedProducts = products.map((product) => ({
+        const formattedProducts = allProducts.map((product) => ({
           id: product.id,
           name: product.name,
-          description: product.description, // Include description for editing
+          description: product.description,
           highestPrice: product.highestPrice,
           category: product.category,
-          auctionId: product.auctionId, // Include auctionId for editing
+          auctionId: product.auctionId,
           status: product.auction?.status || "N/A",
           createdAt: product.auction?.startTime || new Date().toISOString(),
         }));
@@ -104,8 +136,8 @@ const AdminDashboard = () => {
         setCounts({
           totalUsers: users.length,
           activeAuctions,
-          productsListed: products.length,
-          pendingBids: bids.length,
+          productsListed: allProducts.length, // Initial count from API
+          pendingBids: allBids.length, // This is the total number of bids fetched, rename stat for clarity
         });
 
         const monthCounts = {};
@@ -153,27 +185,102 @@ const AdminDashboard = () => {
     };
 
     fetchData();
-  }, [token, fetchAuctions]); // Add fetchAuctions to dependency array
+  }, [token, fetchAuctions]); // Dependencies for useEffect
 
   const handleProductCreated = (newProduct) => {
-    // You might want to re-fetch all products or just add the new one to the list
-    // For simplicity, let's re-fetch the entire products list to ensure consistency
-    // However, if you only want to add the new one, you can do:
-    // setRecentProducts(prev => [newProduct, ...prev.slice(0, 4)]);
-    // For now, we'll rely on the useEffect's initial fetch to populate the table.
-    // If you need real-time updates without a full re-fetch of all products,
-    // you'd need to manually add/update the product in the recentProducts state.
-    console.log("New Product created:", newProduct);
-    // Potentially refetch all dashboard data to update counts if needed
-    // fetchData(); // Be careful with this, it might cause too many re-fetches
+    console.log("New Product created received:", newProduct);
+
+    // Format new product to match recentProducts structure
+    const formattedNewProduct = {
+      id: newProduct.id,
+      name: newProduct.name,
+      description: newProduct.description,
+      highestPrice: newProduct.highestPrice,
+      category: newProduct.category,
+      auctionId: newProduct.auctionId,
+      status: newProduct.auction?.status || "SCHEDULED", // Ensure status is set
+      createdAt: newProduct.auction?.startTime || new Date().toISOString(),
+    };
+
+    // Update recentProducts table immediately
+    setRecentProducts((prevProducts) =>
+        [formattedNewProduct, ...prevProducts].slice(0, 5)
+    );
+
+    // Update productsListed count immediately
+    setCounts((prevCounts) => ({
+      ...prevCounts,
+      productsListed: prevCounts.productsListed + 1,
+    }));
   };
 
   const handleAuctionCreated = async (newAuction) => {
     console.log("New Auction created:", newAuction);
-    // Re-fetch auctions to update the list in AddProductModal
-    await fetchAuctions();
-    // Also update dashboard counts and charts if necessary
-    // This will trigger a re-render of the components consuming the 'auctions' state
+    // Re-fetch all data to update dashboard stats and product lists
+    // This is a comprehensive re-fetch, ensuring everything is in sync
+    setLoading(true);
+    try {
+      const [auctionRes, productRes, bidRes] = await Promise.all([
+        AuctionService.getAll(token),
+        ProductService.getAll(token),
+        BidService.getAll(token),
+      ]);
+
+      const allAuctions = auctionRes.data.ReturnObject || [];
+      const allProducts = productRes.data.ReturnObject || [];
+      const allBids = bidRes.data.ReturnObject || [];
+
+      // Re-calculate counts and lists
+      const activeAuctions = allAuctions.filter(a => a.status === "LIVE").length;
+      const newStatusCounts = { LIVE: 0, SCHEDULED: 0, CLOSED: 0 };
+      allAuctions.forEach(a => { if (newStatusCounts[a.status] !== undefined) newStatusCounts[a.status]++; });
+      setStatusCounts(newStatusCounts);
+
+      setCounts(prev => ({
+        ...prev,
+        activeAuctions,
+        productsListed: allProducts.length,
+        pendingBids: allBids.length, // Re-evaluate pending bids if necessary
+      }));
+
+      const formattedProducts = allProducts.map(product => ({
+        id: product.id, name: product.name, description: product.description,
+        highestPrice: product.highestPrice, category: product.category,
+        auctionId: product.auctionId, status: product.auction?.status || "N/A",
+        createdAt: product.auction?.startTime || new Date().toISOString(),
+      }));
+      formattedProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setRecentProducts(formattedProducts.slice(0, 5));
+
+      // Re-calculate won bids (crucial if new auction closes with a winner)
+      const calculatedWonBids = [];
+      allProducts.forEach(product => {
+        if (product.auction && product.auction.status === "CLOSED" && product.highestPrice > 0) {
+          const winningBid = allBids.find(bid =>
+              bid.amount === product.highestPrice &&
+              bid.productName === product.name &&
+              bid.auctionId === product.auction.id
+          );
+          if (winningBid) {
+            calculatedWonBids.push({
+              id: winningBid.id, bidderName: winningBid.bidderName,
+              productName: winningBid.productName, bidAmount: winningBid.amount,
+              date: winningBid.bidTime || product.auction.endTime || new Date().toISOString(),
+            });
+          }
+        }
+      });
+      calculatedWonBids.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setWonBids(calculatedWonBids.slice(0, 5));
+
+      // Re-fetch only scheduled auctions for the AddProductModal
+      await fetchAuctions();
+
+    } catch (error) {
+      console.error("Error refreshing data after auction creation:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDeleteProduct = async (id) => {
@@ -183,27 +290,110 @@ const AdminDashboard = () => {
     try {
       const response = await ProductService.deleteProduct(id, token);
       const message =
-        response?.data?.ReturnObject || "Product deleted successfully.";
+          response?.data?.ReturnObject || "Product deleted successfully.";
       alert(message);
       setRecentProducts(recentProducts.filter((p) => p.id !== id));
-      // Optionally re-fetch all data to update counts
-      // fetchData();
+      setCounts((prevCounts) => ({
+        ...prevCounts,
+        productsListed: prevCounts.productsListed - 1,
+      }));
+      // If deleting a product could affect won bids, re-fetch relevant data
+      // For simplicity, we'll re-run a partial fetch to update counts
+      setLoading(true);
+      try {
+        const [productRes, bidRes] = await Promise.all([
+          ProductService.getAll(token),
+          BidService.getAll(token),
+        ]);
+        const allProducts = productRes.data.ReturnObject || [];
+        const allBids = bidRes.data.ReturnObject || [];
+
+        // Re-calculate won bids after deletion
+        const calculatedWonBids = [];
+        allProducts.forEach(product => {
+          if (product.auction && product.auction.status === "CLOSED" && product.highestPrice > 0) {
+            const winningBid = allBids.find(bid =>
+                bid.amount === product.highestPrice &&
+                bid.productName === product.name &&
+                bid.auctionId === product.auction.id
+            );
+            if (winningBid) {
+              calculatedWonBids.push({
+                id: winningBid.id, bidderName: winningBid.bidderName,
+                productName: winningBid.productName, bidAmount: winningBid.amount,
+                date: winningBid.bidTime || product.auction.endTime || new Date().toISOString(),
+              });
+            }
+          }
+        });
+        calculatedWonBids.sort((a, b) => new Date(b.date) - new Date(a.date));
+        setWonBids(calculatedWonBids.slice(0, 5));
+
+      } catch (err) {
+        console.error("Error refreshing data after product deletion:", err);
+      } finally {
+        setLoading(false);
+      }
+
     } catch (error) {
       const errorMessage =
-        error?.response?.data?.ReturnObject ||
-        error.message ||
-        "Failed to delete product.";
+          error?.response?.data?.ReturnObject ||
+          error.message ||
+          "Failed to delete product.";
       alert(errorMessage);
     }
   };
 
   const handleUpdateProduct = (updatedProduct) => {
     setRecentProducts(
-      recentProducts.map((p) =>
-        p.id === updatedProduct.id ? updatedProduct : p
-      )
+        recentProducts.map((p) =>
+            p.id === updatedProduct.id ? updatedProduct : p
+        )
     );
+    // If updating a product could affect a won bid (e.g., highestPrice changes for a closed auction)
+    // you might need to trigger a won bids re-calculation.
+    // For simplicity, a full dashboard re-fetch on product update might be overkill,
+    // but consider if the updatedProduct's auction status is 'CLOSED'
+    // and if its highestPrice has changed relevant to a winning bid.
+    // Re-calculating won bids
+    setLoading(true);
+    try {
+      // Fetch fresh product and bid data to ensure accuracy
+      Promise.all([
+        ProductService.getAll(token),
+        BidService.getAll(token)
+      ]).then(([productRes, bidRes]) => {
+        const allProducts = productRes.data.ReturnObject || [];
+        const allBids = bidRes.data.ReturnObject || [];
+
+        const calculatedWonBids = [];
+        allProducts.forEach(product => {
+          if (product.auction && product.auction.status === "CLOSED" && product.highestPrice > 0) {
+            const winningBid = allBids.find(bid =>
+                bid.amount === product.highestPrice &&
+                bid.productName === product.name &&
+                bid.auctionId === product.auction.id
+            );
+            if (winningBid) {
+              calculatedWonBids.push({
+                id: winningBid.id, bidderName: winningBid.bidderName,
+                productName: winningBid.productName, bidAmount: winningBid.amount,
+                date: winningBid.bidTime || product.auction.endTime || new Date().toISOString(),
+              });
+            }
+          }
+        });
+        calculatedWonBids.sort((a, b) => new Date(b.date) - new Date(a.date));
+        setWonBids(calculatedWonBids.slice(0, 5));
+      });
+    } catch (error) {
+      console.error("Error re-calculating won bids after product update:", error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+
   if (loading) {
     return <div>Loading dashboard...</div>;
   }
@@ -228,88 +418,79 @@ const AdminDashboard = () => {
       color: "bg-green-100",
     },
     {
-      title: "Pending Bids",
-      value: counts.pendingBids,
+      title: "All Bids Recorded", // Renamed for clarity since it's now all bids from /bids/all
+      value: counts.pendingBids, // This still represents the total number of bids
       icon: <Timer />,
       color: "bg-yellow-100",
     },
   ];
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen  w-full">
-        <AppSidebar />
-        <main className="flex-1 overflow-y-auto">
-          <div className="nav flex items-center justify-between p-4 rounded-lg mb-6  shadow w-full">
-            <SidebarTrigger />
-            <div className="user-icon flex items-center">
-              <img
-                src="https://ui-avatars.com/api/?name=Admin&background=random&size=40"
-                alt="User Avatar"
-                className="rounded-full"
-              />
-              <span className="text-white ml-2">Admin</span>
-            </div>
-          </div>
-          <div className="p-8">
-            <header className="mb-10">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                Dashboard
-              </h1>
-              <p className="text-gray-600">General Report</p>
-            </header>
-
-            {/* Stats Cards */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-              {stats.map(({ title, value, icon, color }) => (
-                <div
-                  key={title}
-                  className="bg-white rounded-lg shadow p-4 flex items-center space-x-4"
-                >
-                  <div
-                    className={`p-3 rounded-full ${color}`}
-                    aria-hidden="true"
-                  >
-                    <span className="text-gray-800">{icon}</span>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">{title}</p>
-                    <p className="text-2xl font-bold text-gray-900">{value}</p>
-                  </div>
-                </div>
-              ))}
-            </section>
-
-            {/* Charts */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-              <Bargraph chartData={chartData} />
-              <PieChartStatus statusCounts={statusCounts} />
-            </div>
-
-            {/* Quick Actions */}
-            <section className="mb-10">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-                Quick Actions
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <AddProductModal
-                  auctions={auctions} // Pass auctions to AddProductModal
-                  onProductCreated={handleProductCreated}
+      <SidebarProvider>
+        <div className="flex min-h-screen w-full">
+          <AppSidebar />
+          <main className="flex-1 overflow-y-auto">
+            <div className="nav flex items-center justify-between p-4 rounded-lg mb-6 shadow w-full">
+              <SidebarTrigger />
+              <div className="user-icon flex items-center">
+                <img
+                    src="https://ui-avatars.com/api/?name=Admin&background=random&size=40"
+                    alt="User Avatar"
+                    className="rounded-full"
                 />
-                <AuctionModal
-                  onAuctionCreated={handleAuctionCreated} // Pass callback for new auction
-                />
+                <span className="text-white ml-2">Admin</span>
               </div>
-            </section>
+            </div>
+            <div className="p-8">
+              <header className="mb-10">
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                  Dashboard
+                </h1>
+                <p className="text-gray-600">General Report</p>
+              </header>
 
-            {/* Recent Products Table */}
-            <section className="bg-white rounded-lg shadow p-6 mb-10">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6">
-                Recent Products
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm text-left text-gray-800">
-                  <thead className="bg-gray-100 text-xs uppercase font-semibold text-gray-600">
+              <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                {stats.map(({ title, value, icon, color }) => (
+                    <div
+                        key={title}
+                        className="bg-white rounded-lg shadow p-4 flex items-center space-x-4"
+                    >
+                      <div className={`p-3 rounded-full ${color}`} aria-hidden="true">
+                        <span className="text-gray-800">{icon}</span>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">{title}</p>
+                        <p className="text-2xl font-bold text-gray-900">{value}</p>
+                      </div>
+                    </div>
+                ))}
+              </section>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                <Bargraph chartData={chartData} />
+                <PieChartStatus statusCounts={statusCounts} />
+              </div>
+
+              <section className="mb-10">
+                <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+                  Quick Actions
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <AddProductModal
+                      auctions={auctions}
+                      onProductCreated={handleProductCreated}
+                  />
+                  <AuctionModal onAuctionCreated={handleAuctionCreated} />
+                </div>
+              </section>
+
+              <section className="bg-white rounded-lg shadow p-6 mb-10">
+                <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                  Recent Products
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm text-left text-gray-800">
+                    <thead className="bg-gray-100 text-xs uppercase font-semibold text-gray-600">
                     <tr>
                       <th className="px-4 py-3">Product Name</th>
                       <th className="px-4 py-3">Category</th>
@@ -317,91 +498,106 @@ const AdminDashboard = () => {
                       <th className="px-4 py-3">Status</th>
                       <th className="px-4 py-3">Actions</th>
                     </tr>
-                  </thead>
-                  <tbody>
+                    </thead>
+                    <tbody>
                     {recentProducts.length > 0 ? (
-                      recentProducts.map((product) => (
-                        <tr
-                          key={product.id}
-                          className="border-b hover:bg-gray-50"
-                        >
-                          <td className="px-4 py-3">{product.name}</td>
-                          <td className="px-4 py-3">{product.category}</td>
-                          <td className="px-4 py-3">
-                            ${product.highestPrice.toFixed(2)}
-                          </td>
-                          <td className="px-4 py-3">
+                        recentProducts.map((product) => (
+                            <tr
+                                key={product.id}
+                                className="border-b hover:bg-gray-50"
+                            >
+                              <td className="px-4 py-3">{product.name}</td>
+                              <td className="px-4 py-3">{product.category}</td>
+                              <td className="px-4 py-3">
+                                ${product.highestPrice.toFixed(2)}
+                              </td>
+                              <td className="px-4 py-3">
                             <span
-                              className={`inline-block px-2 py-1 text-xs font-semibold rounded ${
-                                product.status === "LIVE"
-                                  ? "bg-green-100 text-green-800"
-                                  : product.status === "SCHEDULED"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
+                                className={`inline-block px-2 py-1 text-xs font-semibold rounded ${
+                                    product.status === "LIVE"
+                                        ? "bg-green-100 text-green-800"
+                                        : product.status === "SCHEDULED"
+                                            ? "bg-yellow-100 text-yellow-800"
+                                            : "bg-red-100 text-red-800"
+                                }`}
                             >
                               {product.status}
                             </span>
-                          </td>
-                          <td className="px-4 py-3 text-blue-600 flex items-center space-x-2">
-                            <EditProductModal
-                              product={product}
-                              onProductUpdated={handleUpdateProduct}
-                            />
-                            <button
-                              onClick={() => handleDeleteProduct(product.id)}
-                              className="text-red-600 hover:text-red-800 focus:outline-none"
-                            >
-                              <RiDeleteBin6Line size={18} />
-                            </button>
+                              </td>
+                              <td className="px-4 py-3 text-blue-600 flex items-center space-x-2">
+                                <EditProductModal
+                                    product={product}
+                                    onProductUpdated={handleUpdateProduct}
+                                />
+                                <button
+                                    onClick={() => handleDeleteProduct(product.id)}
+                                    className="text-red-600 hover:text-red-800 focus:outline-none"
+                                >
+                                  <RiDeleteBin6Line size={18} />
+                                </button>
+                              </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                          <td
+                              colSpan="5"
+                              className="px-4 py-6 text-center text-gray-500"
+                          >
+                            No products found
                           </td>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan="5"
-                          className="px-4 py-6 text-center text-gray-500"
-                        >
-                          No products found
-                        </td>
-                      </tr>
                     )}
-                  </tbody>
-                </table>
-              </div>
-            </section>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
 
-            {/* Recent Bids Table */}
-            <section className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6">
-                Recent Bids
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm text-left text-gray-800">
-                  <thead className="bg-gray-100 text-xs uppercase font-semibold text-gray-600">
+              {/* Won Bids Table */}
+              <section className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                  Won Bids
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm text-left text-gray-800">
+                    <thead className="bg-gray-100 text-xs uppercase font-semibold text-gray-600">
                     <tr>
                       <th className="px-4 py-3">User</th>
                       <th className="px-4 py-3">Product</th>
-                      <th className="px-4 py-3">Bid Amount</th>
-                      <th className="px-4 py-3">Date</th>
+                      <th className="px-4 py-3">Won Amount</th>
+                      <th className="px-4 py-3">Date Won</th>
                     </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b hover:bg-gray-50">
-                      <td className="px-4 py-3">John Doe</td>
-                      <td className="px-4 py-3">iPhone 14</td>
-                      <td className="px-4 py-3">$1,200</td>
-                      <td className="px-4 py-3">May 2, 2025</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          </div>
-        </main>
-      </div>
-    </SidebarProvider>
+                    </thead>
+                    <tbody>
+                    {wonBids.length > 0 ? (
+                        wonBids.map((bid) => (
+                            <tr key={bid.id} className="border-b hover:bg-gray-50">
+                              <td className="px-4 py-3">{bid.bidderName}</td>
+                              <td className="px-4 py-3">{bid.productName}</td>
+                              <td className="px-4 py-3">${bid.bidAmount.toFixed(2)}</td>
+                              <td className="px-4 py-3">
+                                {new Date(bid.date).toLocaleDateString()}
+                              </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                          <td
+                              colSpan="4"
+                              className="px-4 py-6 text-center text-gray-500"
+                          >
+                            No won bids found
+                          </td>
+                        </tr>
+                    )}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+          </main>
+        </div>
+      </SidebarProvider>
   );
 };
 

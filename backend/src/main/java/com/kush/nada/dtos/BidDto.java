@@ -8,6 +8,8 @@ public class BidDto {
     private BigDecimal amount;
     private String bidderName;
     private LocalDateTime bidTime;
+    private String productName; // ADD THIS FIELD
+
     // getters/setters
 
     public Long getId() {
@@ -40,5 +42,14 @@ public class BidDto {
 
     public void setBidTime(LocalDateTime bidTime) {
         this.bidTime = bidTime;
+    }
+
+    // ADD GETTER AND SETTER FOR productName
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 }

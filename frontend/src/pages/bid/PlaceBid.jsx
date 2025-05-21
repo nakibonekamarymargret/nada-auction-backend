@@ -128,6 +128,8 @@ const PlaceBid = () => {
           stompClient.current = client;
 
           client.subscribe(`/topic/bids/${productId}`, (message) => {
+            console.log("🟢 Received WebSocket message:", message.body);
+
             try {
               const newBidOrBids = JSON.parse(message.body);
               const incomingBids = Array.isArray(newBidOrBids)

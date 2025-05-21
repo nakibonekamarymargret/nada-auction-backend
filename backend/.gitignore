@@ -12,6 +12,8 @@ target/
 .settings
 .springBeans
 .sts4-cache
+myssh
+myssh.pub
 
 ### IntelliJ IDEA ###
 .idea

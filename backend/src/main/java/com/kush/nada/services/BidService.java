@@ -55,7 +55,7 @@ private final SimpMessagingTemplate messagingTemplate;
         }
 //Revert back to 30 seconds after successfull completion
         if (product.getLastBidTime() != null &&
-                product.getLastBidTime().plusSeconds(30).isBefore(LocalDateTime.now())) {
+                product.getLastBidTime().plusSeconds(180000).isBefore(LocalDateTime.now())) {
             product.setClosed(true);
             productRepository.save(product);
             throw new IllegalStateException("Bidding timed out for this product.");
