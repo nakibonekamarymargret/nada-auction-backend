@@ -336,20 +336,23 @@ const PlaceBid = () => {
   */
 
   // Keep the inactivity check, but ensure it sets biddingClosed, which is part of isAuctionOver
+// Only update biddingClosed if backend says product is closed or inactivity has passed
   useEffect(() => {
     if (!product || !product.lastBidTime) return;
+
     const checkInactivity = () => {
       const lastBidTime = new Date(product.lastBidTime);
       const now = new Date();
       const diffSeconds = Math.floor((now - lastBidTime) / 1000);
-      if (diffSeconds >= 30 && !biddingClosed) {
-        setBiddingClosed(true); // Close bidding due to inactivity
+      if (diffSeconds >= 3000 && !biddingClosed) {
+        setBiddingClosed(true);
       }
     };
-    checkInactivity(); // Run immediately once
-    const interval = setInterval(checkInactivity, 5000); // Check every 5s
+
+    checkInactivity();
+    const interval = setInterval(checkInactivity, 5000);
     return () => clearInterval(interval);
-  }, [product?.lastBidTime, biddingClosed, product]);
+  }, [product?.lastBidTime, biddingClosed]);
 
   if (!product) return <div className="p-4">Loading product details...</div>;
 
@@ -507,9 +510,8 @@ const PlaceBid = () => {
             Bidding Participants
           </h3>
           <BidTimer
-            ref={timerRef}
-            auctionEndTime={product?.auction?.endTime}
-            onTimerEnd={() => setBiddingClosed(true)} // Set biddingClosed on timer end
+              ref={timerRef}
+              lastBidTime={product?.lastBidTime} // 👈 Pass backend timestamp
           />
           <div className="flex justify-center items-center mt-4 text-sm text-gray-500">
             <span className="mr-2">Waiting for more participants</span>
