@@ -44,7 +44,6 @@ public class BidDto {
         this.bidTime = bidTime;
     }
 
-    // ADD GETTER AND SETTER FOR productName
     public String getProductName() {
         return productName;
     }
