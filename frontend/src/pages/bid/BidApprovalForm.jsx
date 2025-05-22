@@ -10,7 +10,7 @@ const BidApprovalForm = () => {
   const [step, setStep] = useState(1);
 
   const [formData, setFormData] = useState({
-    title: "", // Keep title in formData for frontend UI
+    title: "", 
     name: "",
     phoneNumber: "",
     email: "",
@@ -56,7 +56,6 @@ const BidApprovalForm = () => {
   };
 
   const validateStep1 = () => {
-    // Check all fields including title and email, as these are used in the form
     const { title, name, phoneNumber, email, address } = formData;
     if (!title || !name || !phoneNumber || !email || !address) {
       Swal.fire({
@@ -87,8 +86,7 @@ const BidApprovalForm = () => {
     try {
       const token = localStorage.getItem("token");
 
-      // Call the validation endpoint
-      // ONLY SEND THE FIELDS THE BACKEND EXPECTS!
+      
       const validationResponse = await axios.post(
           "http://localhost:7107/api/auth/validate-user-details",
           {
@@ -96,8 +94,7 @@ const BidApprovalForm = () => {
             phoneNumber: formData.phoneNumber,
             address: formData.address,
             email: formData.email,
-            // *** DO NOT SEND 'title' HERE IF BACKEND DOESN'T EXPECT IT ***
-            // title: formData.title, // <-- Remove or comment out this line
+         
           },
           {
             headers: {
@@ -107,7 +104,6 @@ const BidApprovalForm = () => {
           }
       );
 
-      // If validation is successful (backend returns 200)
       if (validationResponse.data.returnCode === 200) {
         console.log(
             "Validation successful:",
@@ -118,7 +114,7 @@ const BidApprovalForm = () => {
           icon: "success",
           title: "Approval Submitted!",
           text: "You are now approved to bid. Start bidding to win this product..",
-          timer: 2000, // Auto close after 2 seconds
+          timer: 2000,
           timerProgressBar: true,
           didClose: () => {
             if (productId) {
@@ -129,7 +125,6 @@ const BidApprovalForm = () => {
           },
         });
       } else {
-        // Handle cases where validation endpoint returns non-200 code (e.g., 400 on mismatch)
         const validationErrorMessage =
             validationResponse.data.ReturnObject ||
             validationResponse.data.message ||
@@ -143,7 +138,6 @@ const BidApprovalForm = () => {
     } catch (error) {
       console.error("Submission process failed:", error);
 
-      // Handle errors from the API call
       const errorMessage =
           error.response?.data?.ReturnObject ||
           error.response?.data?.message ||

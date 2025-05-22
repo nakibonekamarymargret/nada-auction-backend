@@ -1,49 +1,48 @@
-import React, { useEffect, useState, useImperativeHandle, forwardRef,useCallback } from "react";
+import React, { useEffect, useState } from "react";
 
-const BidTimer = forwardRef(({ lastBidTime }, ref) => {
-  const [secondsLeft, setSecondsLeft] = useState(0);
-
-  const resetTimer = useCallback((lastBidTime) => {
-    if (!lastBidTime) return;
-    const lastBid = new Date(lastBidTime);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - lastBid) / 1000);
-    const timeLeft = Math.max(30 - diffInSeconds, 0); // 30 seconds timeout
-    setSecondsLeft(timeLeft);
-  }, []);
+const BidTimer = ({ initialSecondsLeft }) => {
+  const [secondsLeft, setSecondsLeft] = useState(initialSecondsLeft || 0);
 
   useEffect(() => {
-    resetTimer(lastBidTime);
-  }, [lastBidTime, resetTimer]);
+    if (!initialSecondsLeft || initialSecondsLeft <= 0) {
+      setSecondsLeft(0);
+      return;
+    }
 
-  useEffect(() => {
-    if (secondsLeft <= 0) return;
+    setSecondsLeft(initialSecondsLeft); // Set initial time
 
     const interval = setInterval(() => {
       setSecondsLeft((prev) => {
-        if (prev <= 1) clearInterval(interval);
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [secondsLeft]);
+  }, [initialSecondsLeft]);
 
-  useImperativeHandle(ref, () => ({
-    resetTimer: () => resetTimer(lastBidTime),
-  }));
-
-  const formattedTime = `${String(Math.floor(secondsLeft / 60)).padStart(
-      2,
-      "0"
-  )}:${String(secondsLeft % 60).padStart(2, "0")}`;
+  const formatTime = (totalSeconds) => {
+    const hours = Math.floor(totalSeconds / 3600)
+      .toString()
+      .padStart(2, "0");
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
+      .toString()
+      .padStart(2, "0");
+    const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+    return `${hours}:${minutes}:${seconds}`;
+  };
 
   return (
-      <div className="text-center">
-        <p className="text-lg font-semibold text-red-500">Next Bid Due In:</p>
-        <div className="mt-2 text-xl font-mono text-gray-800">{formattedTime}</div>
+    <div className="flex flex-col items-center mt-4">
+      <div className="w-90 bg-gray-800 text-white rounded-full py-3 px-6 text-xl font-tenor flex items-center justify-center gap-1 mb-2">
+        <span>⏳ Last Chance to Bid:</span>
+        <span className="text-yellow-400">{formatTime(secondsLeft)}</span>
       </div>
+    </div>
   );
-});
+};
 
 export default BidTimer;

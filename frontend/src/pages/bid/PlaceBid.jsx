@@ -13,122 +13,302 @@ const PlaceBid = () => {
   const [participants, setParticipants] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [
+    normalizedCurrentUserForComparison,
+    setNormalizedCurrentUserForComparison,
+  ] = useState(null);
   const currentUserRef = useRef(null);
   const [showAmountInput, setShowAmountInput] = useState(false);
   const [hasPlacedBid, setHasPlacedBid] = useState(false);
-  const [amount, setAmount] = useState(null);
+  const [myLastPlacedBidAmount, setMyLastPlacedBidAmount] = useState(null);
+  const [inputBidAmount, setInputBidAmount] = useState(0.01);
+
   const token = localStorage.getItem("token");
   const stompClient = useRef(null);
-  const timerRef = useRef(null);
   const connectedRef = useRef(false);
-  const [biddingClosed, setBiddingClosed] = useState(false); // This can represent inactivity closing the auction
 
-  // Modal-related states (will be populated by the API call)
+  // New state to manage the auction's live status more explicitly
+  const [auctionStatus, setAuctionStatus] = useState("LOADING"); // "LOADING", "SCHEDULED", "LIVE", "CLOSED"
+
+  // States for the unified timer logic (from previous iteration)
+  const [inactivityDurationFromBackend, setInactivityDurationFromBackend] =
+    useState(1800); // Default to 30 mins
+  const [effectiveAuctionEndTime, setEffectiveAuctionEndTime] = useState(null);
+  const [, setTimerDisplayType] = useState("");
+
   const [showModal, setShowModal] = useState(false);
   const [bidApiMessage, setBidApiMessage] = useState("");
   const [bidApiWinningAmount, setBidApiWinningAmount] = useState(null);
   const [bidApiCheckoutUrl, setBidApiCheckoutUrl] = useState(null);
 
-  useEffect(() => {
-    if (token) {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      setCurrentUser(payload?.sub);
-      currentUserRef.current = payload?.sub;
+  const normalizeBidderName = useCallback((name) => {
+    if (!name) return "";
+    let normalized = name.trim().toLowerCase();
+    if (normalized.includes("@") && normalized.indexOf("@") > 0) {
+      normalized = normalized.split("@")[0];
     }
-  }, [token, productId]);
+    return normalized;
+  }, []);
 
-  const getMinBid = (product) => {
-    return product?.highestPrice ?? product?.auction?.startingPrice ?? 0.01;
-  };
+  const getMinBid = useCallback((productData) => {
+    return (
+      productData?.highestPrice ?? productData?.auction?.startingPrice ?? 0.01
+    );
+  }, []);
+
+  const deduplicateAndSort = useCallback(
+    (bids) => {
+      const latestBids = new Map();
+      bids.forEach((bid) => {
+        const normalizedBidderName = normalizeBidderName(bid.bidderName);
+        if (!normalizedBidderName) return;
+
+        const existing = latestBids.get(normalizedBidderName);
+        if (!existing || bid.amount > existing.amount) {
+          latestBids.set(normalizedBidderName, bid);
+        }
+      });
+      return Array.from(latestBids.values()).sort(
+        (a, b) => b.amount - a.amount
+      );
+    },
+    [normalizeBidderName]
+  );
 
   const fetchProductDetails = useCallback(async () => {
+    console.log(`DEBUG: Fetching product details for ID: ${productId}`);
     try {
       const res = await axios.get(`http://localhost:7107/product/${productId}`);
       const productData = res.data.ReturnObject;
       setProduct(productData);
-      setAmount(getMinBid(productData));
-      // Set biddingClosed if the backend reports the auction is already closed
-      if (productData?.auction?.status === "CLOSED" || productData?.isClosed) {
-        setBiddingClosed(true);
-      }
-    } catch (err) {
-      console.error("Failed to fetch product:", err);
-    }
-  }, [productId]);
+      setInputBidAmount(getMinBid(productData));
 
-  const deduplicateAndSort = useCallback((bids) => {
-    const latestBids = new Map();
-    bids.forEach((bid) => {
-      const existing = latestBids.get(bid.bidderName);
-      if (!existing || bid.amount > existing.amount) {
-        latestBids.set(bid.bidderName, bid);
+      // Determine auction status based on backend data
+      const now = new Date();
+      const auctionStart = productData?.auction?.startTime
+        ? new Date(productData.auction.startTime)
+        : null;
+     
+
+      if (productData?.auction?.status === "CLOSED" || productData?.isClosed) {
+        setAuctionStatus("CLOSED");
+        console.log("DEBUG: Auction status set to CLOSED on product fetch.");
+      } else if (auctionStart && auctionStart > now) {
+        setAuctionStatus("SCHEDULED");
+        console.log("DEBUG: Auction status set to SCHEDULED on product fetch.");
+      } else {
+        setAuctionStatus("LIVE"); // It's open if not closed and not scheduled for future
+        console.log("DEBUG: Auction status set to LIVE on product fetch.");
       }
-    });
-    return Array.from(latestBids.values()).sort((a, b) => b.amount - a.amount);
-  }, []);
+
+      if (productData?.auction?.inactivityDuration) {
+        setInactivityDurationFromBackend(
+          productData.auction.inactivityDuration
+        );
+        console.log(
+          "DEBUG: Inactivity duration from backend:",
+          productData.auction.inactivityDuration
+        );
+      } else {
+        console.log(
+          "DEBUG: Inactivity duration not provided by backend, using default."
+        );
+      }
+      console.log("DEBUG: Product details fetched successfully:", productData);
+    } catch (err) {
+      console.error("ERROR: Failed to fetch product:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Product Not Found",
+        text: "Could not load product details. It might not exist or the server is down.",
+      });
+    }
+  }, [productId, getMinBid]);
 
   const fetchParticipantsHttp = useCallback(async () => {
+    if (!token || normalizedCurrentUserForComparison === null) {
+      console.log(
+        "DEBUG: Skipping fetchParticipantsHttp, token or normalizedCurrentUserForComparison is missing."
+      );
+      return;
+    }
+
+    console.log(`DEBUG: Fetching participants for product ID: ${productId}`);
     try {
       const res = await axios.get(
         `http://localhost:7107/bids/product/${productId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      const bids = res.data.ReturnObject.ReturnObject;
-      setParticipants(deduplicateAndSort(bids));
+      const bids = res.data.ReturnObject?.ReturnObject || [];
+      const sortedParticipants = deduplicateAndSort(bids);
+      setParticipants(sortedParticipants);
+      console.log("DEBUG: Participants fetched via HTTP:", sortedParticipants);
+
+      const myBid = sortedParticipants.find(
+        (b) =>
+          normalizeBidderName(b.bidderName) ===
+          normalizedCurrentUserForComparison
+      );
+
+      if (myBid) {
+        setMyLastPlacedBidAmount(myBid.amount);
+        setHasPlacedBid(true);
+        setInputBidAmount((prevAmount) =>
+          Math.max(prevAmount, myBid.amount, getMinBid(product))
+        );
+        console.log(
+          `DEBUG: My bid found via HTTP: $${myBid.amount.toFixed(2)}`
+        );
+      } else {
+        setMyLastPlacedBidAmount(null);
+        setHasPlacedBid(false);
+        setInputBidAmount(getMinBid(product));
+      }
     } catch (err) {
-      console.error("Failed to fetch participants:", err);
+      console.error(
+        "ERROR: Failed to fetch participants:",
+        err.response?.data || err.message
+      );
+      setMyLastPlacedBidAmount(null);
+      setHasPlacedBid(false);
+      setInputBidAmount(getMinBid(product));
     }
-  }, [productId, token, deduplicateAndSort]);
+  }, [
+    productId,
+    token,
+    deduplicateAndSort,
+    normalizedCurrentUserForComparison,
+    product,
+    getMinBid,
+    normalizeBidderName,
+  ]);
 
- const fetchMyLatestBid = useCallback(
-   async (basePrice) => {
-     try {
-       const res = await axios.get(
-         `http://localhost:7107/bids/my-latest/${productId}`,
-         { headers: { Authorization: `Bearer ${token}` } }
-       );
-       const myBid = res.data.ReturnObject;
-       const amountValue = parseFloat(myBid?.bid?.amount);
-       if (!isNaN(amountValue)) {
-         setAmount(amountValue);
-         setHasPlacedBid(true);
-       } else {
-         setAmount(basePrice);
-         setHasPlacedBid(false);
-       }
-     } catch {
-       setAmount(basePrice);
-       setHasPlacedBid(false);
-     }
-   },
-   [productId, token]
- );
+  const fetchMyLatestBid = useCallback(async () => {
+    if (!token || !currentUser || !product) {
+      console.log(
+        "DEBUG: Skipping fetchMyLatestBid due to missing data (token/currentUser/product)."
+      );
+      return;
+    }
+    console.log(`DEBUG: Fetching my latest bid for product ID: ${productId}`);
+    try {
+      const res = await axios.get(
+        `http://localhost:7107/bids/my-latest/${productId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const myBidData = res.data.ReturnObject;
+      const amountValue = parseFloat(myBidData?.bid?.amount);
 
-  // Initial data fetch
+      if (!isNaN(amountValue)) {
+        setMyLastPlacedBidAmount(amountValue);
+        setInputBidAmount(Math.max(amountValue, getMinBid(product)));
+        setHasPlacedBid(true);
+        console.log(
+          `DEBUG: fetchMyLatestBid successful. My bid: $${amountValue.toFixed(
+            2
+          )}`
+        );
+      } else {
+        setMyLastPlacedBidAmount(null);
+        setInputBidAmount(getMinBid(product));
+        setHasPlacedBid(false);
+        console.log("DEBUG: fetchMyLatestBid returned no valid bid amount.");
+      }
+    } catch (err) {
+      console.error(
+        "ERROR: Failed to fetch my latest bid:",
+        err.response?.data || err.message
+      );
+      setMyLastPlacedBidAmount(null);
+      setInputBidAmount(getMinBid(product));
+      setHasPlacedBid(false);
+    }
+  }, [productId, token, currentUser, product, getMinBid]);
+
   useEffect(() => {
-    const init = async () => {
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const userSub = payload?.sub;
+        setCurrentUser(userSub);
+        const normalizedForComparison = normalizeBidderName(userSub);
+        setNormalizedCurrentUserForComparison(normalizedForComparison);
+        currentUserRef.current = userSub;
+      } catch (e) {
+        console.error("ERROR: Failed to parse JWT token.", e);
+        setCurrentUser(null);
+        setNormalizedCurrentUserForComparison(null);
+        currentUserRef.current = null;
+      }
+    } else {
+      console.log("DEBUG: No token found in localStorage.");
+      setCurrentUser(null);
+      setNormalizedCurrentUserForComparison(null);
+      currentUserRef.current = null;
+    }
+  }, [token, normalizeBidderName]);
+
+  useEffect(() => {
+    const initProduct = async () => {
       await fetchProductDetails();
-      if (token) await fetchMyLatestBid();
     };
-    init();
-  }, [productId, token, fetchProductDetails, fetchMyLatestBid]); // Add dependencies
+    initProduct();
+  }, [fetchProductDetails]);
+
+  useEffect(() => {
+    if (
+      product &&
+      currentUser &&
+      normalizedCurrentUserForComparison 
+    ) {
+      if (token) {
+        fetchMyLatestBid();
+      } else {
+        console.log("DEBUG: Skipping initial bid fetch, token is missing.");
+      }
+    }
+  }, [
+    token,
+    product,
+    fetchMyLatestBid,
+    currentUser,
+    normalizedCurrentUserForComparison,
+  ]);
 
   // WebSocket connection
   useEffect(() => {
-    if (!productId || !token || !currentUserRef.current) return;
+    if (
+      !productId ||
+      !token ||
+      !currentUserRef.current ||
+      !normalizedCurrentUserForComparison ||
+      auctionStatus === "SCHEDULED" // Do not connect WS if scheduled
+    ) {
+      console.log(
+        "DEBUG: WebSocket connection skipped. Missing data or auction is SCHEDULED."
+      );
+      return;
+    }
 
     const connect = () => {
+      console.log("DEBUG: Attempting WebSocket connection...");
       const socket = new SockJS(`http://localhost:7107/ws?authToken=${token}`);
       const client = Stomp.over(socket);
-      client.debug = () => {};
+      client.debug = (str) => {
+        if (str.startsWith("ERROR")) {
+          console.error("STOMP ERROR:", str);
+        }
+      };
+
       client.connect(
         {},
         () => {
           connectedRef.current = true;
           stompClient.current = client;
+          console.log("DEBUG: WebSocket connected.");
 
           client.subscribe(`/topic/bids/${productId}`, (message) => {
-            console.log("🟢 Received WebSocket message:", message.body);
+            console.log("🟢 WebSocket: Received message.");
 
             try {
               const newBidOrBids = JSON.parse(message.body);
@@ -138,54 +318,111 @@ const PlaceBid = () => {
 
               setProduct((prev) => {
                 if (!prev) return null;
-                let newHighestPrice = prev.highestPrice;
+                let newHighestPrice = prev.highestPrice ?? 0;
+                let newLastBidTime = prev.lastBidTime;
+                let isClosedFromWS =
+                  prev.isClosed || prev.auction?.status === "CLOSED";
+
                 if (incomingBids.length > 0) {
                   const highestIncomingBid = incomingBids.reduce(
                     (maxBid, currentBid) =>
                       currentBid.amount > maxBid.amount ? currentBid : maxBid
                   );
+
                   if (highestIncomingBid.amount > newHighestPrice) {
                     newHighestPrice = highestIncomingBid.amount;
+                    console.log(
+                      `DEBUG: Product highest price updated via WS to $${newHighestPrice.toFixed(
+                        2
+                      )}`
+                    );
+                  }
+
+                  if (highestIncomingBid.bidTime) {
+                    newLastBidTime = highestIncomingBid.bidTime;
+                  }
+                  if (highestIncomingBid.productIsClosed !== undefined) {
+                    isClosedFromWS = highestIncomingBid.productIsClosed;
+                    console.log(
+                      `DEBUG: WS: Product closed status updated to ${isClosedFromWS}`
+                    );
+                  }
+                  if (highestIncomingBid.auctionStatus !== undefined) {
+                    isClosedFromWS =
+                      highestIncomingBid.auctionStatus === "CLOSED";
                   }
                 }
+
+                setInputBidAmount((prevInputAmount) => {
+                  const calculatedNewInput = Math.max(
+                    prevInputAmount,
+                    newHighestPrice,
+                    myLastPlacedBidAmount || 0
+                  );
+                  console.log(
+                    `DEBUG: inputBidAmount updated via WS to $${calculatedNewInput.toFixed(
+                      2
+                    )}`
+                  );
+                  return calculatedNewInput;
+                });
+
                 return {
                   ...prev,
                   highestPrice: newHighestPrice,
                   lastBidAmount: newHighestPrice,
+                  lastBidTime: newLastBidTime,
+                  isClosed: isClosedFromWS,
+                  auction: {
+                    ...prev.auction,
+                    status: isClosedFromWS ? "CLOSED" : prev.auction?.status,
+                  },
                 };
               });
 
               setParticipants((prevParticipants) => {
                 const combinedBids = [...prevParticipants, ...incomingBids];
                 const latestAndDeduplicated = deduplicateAndSort(combinedBids);
+                console.log(
+                  "DEBUG: WS: Combined and deduplicated participants."
+                );
 
                 const myBid = latestAndDeduplicated.find(
-                  (b) => b.bidderName === currentUserRef.current
+                  (b) =>
+                    normalizeBidderName(b.bidderName) ===
+                    normalizedCurrentUserForComparison
                 );
+
                 if (myBid) {
-                  setAmount(myBid.amount);
+                  setMyLastPlacedBidAmount(myBid.amount);
                   setHasPlacedBid(true);
+                  console.log(
+                    `DEBUG: WS: My bid found: $${myBid.amount.toFixed(2)}`
+                  );
+                } else {
+                  setMyLastPlacedBidAmount(null);
+                  setHasPlacedBid(false);
+                  console.log(
+                    "DEBUG: WS: My bid NOT found in latest participants list."
+                  );
                 }
-
-                if (timerRef.current) {
-                  timerRef.current.resetTimer();
-                  setBiddingClosed(false); // Reset inactivity flag on new bid
-                }
-
                 return latestAndDeduplicated;
               });
             } catch (e) {
               console.error(
-                "Error parsing WebSocket message:",
+                "ERROR: Error parsing WebSocket message:",
                 e,
                 message.body
               );
             }
           });
+
           fetchParticipantsHttp();
         },
         (error) => {
-          console.error("WebSocket error:", error);
+          console.error("ERROR: WebSocket connection error:", error);
+          connectedRef.current = false;
+          stompClient.current = null;
           setTimeout(connect, 3000);
         }
       );
@@ -195,18 +432,167 @@ const PlaceBid = () => {
 
     return () => {
       if (stompClient.current && connectedRef.current) {
-        stompClient.current.disconnect();
+        console.log("DEBUG: Disconnecting WebSocket.");
+        stompClient.current.disconnect(() => {
+          console.log("DEBUG: WebSocket disconnected successfully.");
+        });
+        connectedRef.current = false;
+        stompClient.current = null;
       }
     };
-  }, [productId, token, fetchParticipantsHttp, deduplicateAndSort]);
+  }, [
+    productId,
+    token,
+    fetchParticipantsHttp,
+    deduplicateAndSort,
+    currentUserRef,
+    myLastPlacedBidAmount,
+    normalizeBidderName,
+    normalizedCurrentUserForComparison,
+    auctionStatus, // Added auctionStatus to dependencies
+  ]);
 
-  // Determine if auction is officially over (either by backend status or frontend inactivity)
-  const isAuctionOver =
-    product?.auction?.status === "CLOSED" || product?.isClosed || biddingClosed;
+  // --- Master Timer Logic to determine effectiveAuctionEndTime for BidTimer ---
+  useEffect(() => {
+    let intervalId;
+
+    if (!product) {
+      setEffectiveAuctionEndTime(null);
+      setTimerDisplayType("Loading...");
+      return;
+    }
+
+    const calculateEffectiveTime = () => {
+      const now = new Date();
+      let calculatedEndTime = null;
+      let currentTimerType = "";
+
+      // Update auctionStatus here based on dynamic time calculation
+      const auctionStart = product?.auction?.startTime
+        ? new Date(product.auction.startTime)
+        : null;
+
+      if (product?.auction?.status === "CLOSED" || product?.isClosed) {
+        setAuctionStatus("CLOSED"); // Force closed if backend says so
+      } else if (auctionStart && auctionStart > now) {
+        // If start time is in the future
+        calculatedEndTime = auctionStart.toISOString(); // Countdown to start time
+        currentTimerType = "scheduledStart"; // New type for scheduled auctions
+        setAuctionStatus("SCHEDULED");
+      } else if (product.auction?.endTime) {
+        const auctionEnd = new Date(product.auction.endTime);
+        if (isNaN(auctionEnd.getTime())) {
+          console.warn(
+            "DEBUG Timer: product.auction.endTime is an invalid date:",
+            product.auction.endTime
+          );
+          // Fallback to inactivity if fixed auction end is invalid
+          if (product.lastBidTime) {
+            const lastBidDate = new Date(product.lastBidTime);
+            const inactivityEnd = new Date(
+              lastBidDate.getTime() + inactivityDurationFromBackend * 1000
+            );
+            calculatedEndTime = inactivityEnd.toISOString();
+            currentTimerType = "inactivity";
+            setAuctionStatus("LIVE");
+          } else {
+            const projectedFirstBidEnd = new Date(
+              now.getTime() + inactivityDurationFromBackend * 1000
+            );
+            calculatedEndTime = projectedFirstBidEnd.toISOString();
+            currentTimerType = "awaitingFirstBid";
+            setAuctionStatus("LIVE"); // Still consider it live, just no bids yet
+          }
+        } else if (auctionEnd > now) {
+          calculatedEndTime = auctionEnd.toISOString();
+          currentTimerType = "auction";
+          setAuctionStatus("LIVE");
+        } else {
+          // Fixed auction time has passed, now check inactivity
+          if (product.lastBidTime) {
+            const lastBidDate = new Date(product.lastBidTime);
+            const inactivityEnd = new Date(
+              lastBidDate.getTime() + inactivityDurationFromBackend * 1000
+            );
+            if (inactivityEnd > now) {
+              calculatedEndTime = inactivityEnd.toISOString();
+              currentTimerType = "inactivity";
+              setAuctionStatus("LIVE");
+            } else {
+              // Both fixed auction and inactivity passed
+              calculatedEndTime = now.toISOString();
+              currentTimerType = "closed";
+              setAuctionStatus("CLOSED");
+            }
+          } else {
+            // Fixed auction passed, no bids placed for inactivity timer
+            calculatedEndTime = now.toISOString();
+            currentTimerType = "closed";
+            setAuctionStatus("CLOSED");
+          }
+        }
+      } else if (product.lastBidTime) {
+        // No fixed auction end, rely solely on inactivity
+        const lastBidDate = new Date(product.lastBidTime);
+        const inactivityEnd = new Date(
+          lastBidDate.getTime() + inactivityDurationFromBackend * 1000
+        );
+        if (inactivityEnd > now) {
+          calculatedEndTime = inactivityEnd.toISOString();
+          currentTimerType = "inactivity";
+          setAuctionStatus("LIVE");
+        } else {
+          // Inactivity passed
+          calculatedEndTime = now.toISOString();
+          currentTimerType = "closed";
+          setAuctionStatus("CLOSED");
+        }
+      } else {
+        // No fixed end, no bids placed yet. Timer will start from now for inactivity
+        const projectedFirstBidEnd = new Date(
+          now.getTime() + inactivityDurationFromBackend * 1000
+        );
+        calculatedEndTime = projectedFirstBidEnd.toISOString();
+        currentTimerType = "awaitingFirstBid";
+        setAuctionStatus("LIVE"); // Still live, just awaiting first bid
+      }
+
+      setEffectiveAuctionEndTime(calculatedEndTime);
+      setTimerDisplayType(currentTimerType);
+    };
+
+    calculateEffectiveTime();
+    intervalId = setInterval(calculateEffectiveTime, 1000);
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [
+    product,
+    inactivityDurationFromBackend,
+    // Note: auctionStatus is set *inside* this useEffect and also used as a dependency to trigger re-calculation.
+    // This creates a dependency loop which is often bad.
+    // However, in this case, `auctionStatus` is set based on time and product data,
+    // so it doesn't cause infinite loops, but rather ensures the status is up-to-date.
+    // For simpler cases, it's better to derive `auctionStatus` purely in render or avoid setting it in useEffect directly from itself.
+    // For now, let's keep it, but be mindful of potential issues.
+  ]);
 
   const handleSubmitBid = async (e) => {
     e.preventDefault();
-    const bidValue = Number(amount);
+
+    if (auctionStatus !== "LIVE") {
+      Swal.fire({
+        icon: "warning",
+        title: "Auction Not Live",
+        text: "You cannot place a bid on an auction that is not currently live.",
+      });
+      return;
+    }
+
+    const bidValue = Number(inputBidAmount);
     const minBid = getMinBid(product);
 
     if (isNaN(bidValue) || bidValue <= minBid) {
@@ -220,6 +606,16 @@ const PlaceBid = () => {
       return;
     }
 
+    if (!token) {
+      Swal.fire({
+        icon: "error",
+        title: "Authentication Error",
+        text: "You must be logged in to place a bid.",
+      });
+      return;
+    }
+
+    console.log(`DEBUG: Attempting to place bid: $${bidValue.toFixed(2)}`);
     try {
       const res = await axios.post(
         `http://localhost:7107/bids/place/${productId}`,
@@ -235,52 +631,87 @@ const PlaceBid = () => {
       Swal.fire({
         icon: "success",
         title: "Bid Placed",
-        text: res.data.ReturnObject?.message,
+        text:
+          res.data.ReturnObject?.message ||
+          "Your bid has been placed successfully!",
       });
 
-      if (timerRef.current) {
-        timerRef.current.resetTimer();
-        setBiddingClosed(false); // Reset inactivity flag on new bid
-      }
-      setHasPlacedBid(true);
-      setShowForm(false);
-      setShowAmountInput(false);
-
-      setParticipants((prev) =>
-        deduplicateAndSort([
-          ...prev,
-          { bidderName: currentUser, amount: bidValue },
-        ])
-      );
-
+      // Update product's lastBidTime immediately to trigger timer reset
       setProduct((prev) => ({
         ...prev,
         highestPrice: bidValue,
         lastBidAmount: bidValue,
+        lastBidTime: new Date().toISOString(),
+        isClosed: false, // Ensure it's marked as not closed if a new bid comes in
+        auction: {
+          ...prev.auction,
+          status: "OPEN", // Assuming OPEN means LIVE
+        },
       }));
+
+      setHasPlacedBid(true);
+      setShowForm(false);
+      setShowAmountInput(false);
+
+      setMyLastPlacedBidAmount(bidValue);
+      setInputBidAmount(bidValue);
+      console.log(
+        `DEBUG: Bid placed successfully. myLastPlacedBidAmount updated to: $${bidValue.toFixed(
+          2
+        )}`
+      );
+
+      setParticipants((prev) =>
+        deduplicateAndSort([
+          ...prev,
+          {
+            bidderName: currentUser,
+            amount: bidValue,
+            bidTime: new Date().toISOString(),
+          },
+        ])
+      );
     } catch (error) {
-      const message = error.response?.data?.ReturnObject;
+      const message =
+        error.response?.data?.ReturnObject ||
+        error.response?.data?.message ||
+        "Failed to place bid.";
+      console.error(
+        "ERROR: Failed to place bid:",
+        error.response?.data || error.message
+      );
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text: message || "Failed to place bid.",
+        title: "Error Placing Bid",
+        text: message,
       });
     }
   };
 
   const handleCancelBid = () => {
-    setAmount(getMinBid(product));
+    setInputBidAmount(myLastPlacedBidAmount ?? getMinBid(product));
     setShowForm(false);
     setShowAmountInput(false);
+    console.log(
+      `DEBUG: Bid canceled. Input bid amount reset to $${(
+        myLastPlacedBidAmount ?? getMinBid(product)
+      ).toFixed(2)}`
+    );
   };
 
   const handleUpdateBid = () => {
-    setShowForm(true);
-    setShowAmountInput(false);
+    handleSubmitBid({ preventDefault: () => {} });
   };
 
-  // NEW: Function to fetch bid results from backend and populate modal states
   const handleViewBidResults = async () => {
+    if (!token) {
+      Swal.fire({
+        icon: "error",
+        title: "Authentication Required",
+        text: "Please log in to view bid results.",
+      });
+      return;
+    }
     try {
       const res = await axios.get(
         `http://localhost:7107/bids/check-result/${productId}`,
@@ -294,11 +725,17 @@ const PlaceBid = () => {
       setBidApiWinningAmount(result.winningAmount || null);
       setBidApiCheckoutUrl(result.checkoutUrl || null);
 
-      setShowModal(true); // Open the modal after getting results
+      setShowModal(true);
+      console.log("DEBUG: Bid results fetched:", result);
     } catch (error) {
-      console.error("Failed to fetch bid results:", error);
+      console.error(
+        "ERROR: Failed to fetch bid results:",
+        error.response?.data || error.message
+      );
       const errorMessage =
-        error.response?.data?.ReturnObject || "Could not fetch bid results.";
+        error.response?.data?.ReturnObject ||
+        error.response?.data?.message ||
+        "Could not fetch bid results.";
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -307,67 +744,34 @@ const PlaceBid = () => {
     }
   };
 
-  // REMOVE THIS useEffect. It was the cause of the incorrect message.
-  // The correct message comes from the backend API.
-  /*
-  useEffect(() => {
-    if (!product?.auction?.endTime || !participants.length) return;
-    const checkAuctionEnd = setInterval(() => {
-      const now = new Date();
-      const endTime = new Date(product.auction.endTime);
-      const isClosed = product.auction.status === "CLOSED" || product.isClosed;
-      if (now >= endTime || isClosed) {
-        clearInterval(checkAuctionEnd);
-        const winner = participants[0];
-        const userIsWinner = winner?.bidderName === currentUser;
-        setIsWinner(userIsWinner); // This was setting the frontend state incorrectly
-        setWinningBidAmount(winner?.amount ?? null); // This was setting the frontend state incorrectly
-        setShowModal(true); // Open modal
-      }
-    }, 1000);
-    return () => clearInterval(checkAuctionEnd);
-  }, [
-    product?.auction?.endTime,
-    product?.auction?.status,
-    product?.isClosed,
-    participants,
-    currentUser,
-  ]);
-  */
-
-  // Keep the inactivity check, but ensure it sets biddingClosed, which is part of isAuctionOver
-// Only update biddingClosed if backend says product is closed or inactivity has passed
-  useEffect(() => {
-    if (!product || !product.lastBidTime) return;
-
-    const checkInactivity = () => {
-      const lastBidTime = new Date(product.lastBidTime);
-      const now = new Date();
-      const diffSeconds = Math.floor((now - lastBidTime) / 1000);
-      if (diffSeconds >= 3000 && !biddingClosed) {
-        setBiddingClosed(true);
-      }
-    };
-
-    checkInactivity();
-    const interval = setInterval(checkInactivity, 5000);
-    return () => clearInterval(interval);
-  }, [product?.lastBidTime, biddingClosed]);
-
+  // --- Render ---
   if (!product) return <div className="p-4">Loading product details...</div>;
+
+
+  const formatDateTime = (isoString) => {
+    if (!isoString) return "N/A";
+    const date = new Date(isoString);
+    return date.toLocaleString(); // Formats to local date/time string
+  };
 
   return (
     <div className="container mx-auto p-6">
+      {currentUser && (
+        <p className="text-lg font-semibold text-gray-700 mb-4 text-center">
+          Logged in as:{" "}
+          <span className="text-blue-700 font-bold">{currentUser}</span>
+        </p>
+      )}
+
       <h2 className="text-3xl font-bold mb-6 text-center">
-        Auction Room: {product?.auction?.title}
+        Auction Room: {product?.auction?.title || "Loading..."}
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        {/* Product Info */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <img
             src={
               product.imageUrl ||
-              "https://via.placeholder.com/400x300?text=No+Image "
+              "https://via.placeholder.com/400x300?text=No+Image"
             }
             alt={product.name}
             className="w-full h-60 object-cover rounded-lg mb-4"
@@ -381,82 +785,105 @@ const PlaceBid = () => {
             <span className="text-md font-bold text-green-700 ml-2">
               {product.highestPrice
                 ? `$${product.highestPrice.toFixed(2)}`
-                : "No bids yet"}
+                : `$${product?.auction?.startingPrice?.toFixed(2) || "0.00"}`}
             </span>
           </p>
-          <div className="flex items-center space-x-2 mt-3">
-            {!showAmountInput ? (
-              <>
-                <p className="text-md font-bold text-black">
-                  My Bid Price:
-                  {hasPlacedBid && amount !== null ? (
-                    <span className="text-md font-bold text-green-700 ml-1">
-                      ${amount.toFixed(2)}
-                    </span>
-                  ) : (
-                    <span className="text-md text-gray-500 ml-1">0.00</span>
-                  )}
-                </p>
-                {!isAuctionOver && (
+
+          {/* Conditional rendering for My Bid Price / Place Bid / Update Bid */}
+          {auctionStatus === "LIVE" && (
+            <div className="flex items-center space-x-2 mt-3">
+              {!showAmountInput ? (
+                <>
+                  <p className="text-md font-bold text-black">
+                    My Bid Price:
+                    {myLastPlacedBidAmount !== null ? (
+                      <span className="text-md font-bold text-green-700 ml-1">
+                        ${myLastPlacedBidAmount.toFixed(2)}
+                      </span>
+                    ) : (
+                      <span className="text-md text-gray-500 ml-1">0.00</span>
+                    )}
+                  </p>
                   <button
-                    onClick={() => setShowAmountInput(true)}
+                    onClick={() => {
+                      setShowAmountInput(true);
+                      setInputBidAmount(
+                        myLastPlacedBidAmount ?? getMinBid(product)
+                      );
+                    }}
                     className="text-blue-500 font-bold text-xl"
                     title="Update Bid"
                   >
                     +
                   </button>
-                )}
-              </>
-            ) : (
-              <>
-                <input
-                  type="number"
-                  value={amount}
-                  step="0.01"
-                  onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-                  className="border rounded px-2 py-1 w-24"
-                />
-                <button
-                  onClick={handleUpdateBid}
-                  className="text-sm text-green-600 font-bold"
-                >
-                  OK
-                </button>
-                <button
-                  onClick={() => setShowAmountInput(false)}
-                  className="text-sm text-red-500"
-                >
-                  Cancel
-                </button>
-              </>
-            )}
-          </div>
-          <p className="text-sm text-gray-500 mt-2">
-            Auction Ends:{" "}
-            {product.auction?.endTime
-              ? new Date(product.auction.endTime).toLocaleString()
-              : "N/A"}
-          </p>
+                </>
+              ) : (
+                <>
+                  <input
+                    type="number"
+                    value={inputBidAmount}
+                    step="0.01"
+                    id="inputBidAmount"
+                    onChange={(e) =>
+                      setInputBidAmount(parseFloat(e.target.value) || 0)
+                    }
+                    className="border rounded px-2 py-1 w-24"
+                    min={getMinBid(product).toFixed(2)}
+                  />
+                  <button
+                    onClick={handleUpdateBid}
+                    className="text-sm text-green-600 font-bold hover:underline"
+                  >
+                    OK
+                  </button>
+                  <button
+                    onClick={handleCancelBid}
+                    className="text-sm text-red-500 hover:underline"
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
+            </div>
+          )}
 
-          {/* Conditional rendering for bidding section */}
-          {isAuctionOver ? (
+          {/* Main action area based on auction status */}
+          {auctionStatus === "CLOSED" ? (
             <div className="mt-6 text-center">
-              <p style={{fontFamily:"var(--font-tenor)"}}
-                className=" text-lg text-red-600 font-semibold mb-4">
+              <p
+                style={{ fontFamily: "var(--font-tenor)" }}
+                className="text-lg text-red-600 font-semibold mb-4"
+              >
                 Bidding is closed for this product.
               </p>
               <button
-                onClick={handleViewBidResults} 
+                onClick={handleViewBidResults}
                 className="bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
               >
                 View Bid Results
               </button>
             </div>
+          ) : auctionStatus === "SCHEDULED" ? (
+            <div className="mt-6 text-center">
+              <p className="text-lg text-blue-600 font-semibold mb-4">
+                This auction is scheduled to start on:
+              </p>
+              <p className="text-xl font-bold text-blue-800">
+                {formatDateTime(product?.auction?.startTime)}
+              </p>
+              <p className="text-gray-600 mt-2">
+                Come back then to place your bid!
+              </p>
+            </div>
           ) : (
+            // Auction is LIVE
             <>
-              {!showForm && !hasPlacedBid && (
+              {!showForm && !hasPlacedBid && !showAmountInput && (
                 <button
-                  onClick={() => setShowForm(true)}
+                  onClick={() => {
+                    setShowForm(true);
+                    setInputBidAmount(getMinBid(product));
+                  }}
                   className="mt-4 text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 font-bold"
                 >
                   Place Bid
@@ -466,7 +893,7 @@ const PlaceBid = () => {
                 <form onSubmit={handleSubmitBid} className="mt-6">
                   <div className="mb-4">
                     <label
-                      htmlFor="amount"
+                      htmlFor="inputBidAmount"
                       className="block text-gray-700 text-sm font-bold mb-2"
                     >
                       Your Bid Amount ($):
@@ -474,13 +901,14 @@ const PlaceBid = () => {
                     <input
                       type="number"
                       step="0.01"
-                      id="amount"
-                      value={amount}
+                      id="inputBidAmount"
+                      value={inputBidAmount}
                       onChange={(e) =>
-                        setAmount(parseFloat(e.target.value) || 0)
+                        setInputBidAmount(parseFloat(e.target.value) || 0)
                       }
                       className="border rounded w-full py-2 px-3"
                       required
+                      min={getMinBid(product).toFixed(2)}
                     />
                   </div>
                   <div className="flex justify-end space-x-3">
@@ -488,7 +916,7 @@ const PlaceBid = () => {
                       type="submit"
                       className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
                     >
-                      Place
+                      Place Bid
                     </button>
                     <button
                       type="button"
@@ -504,15 +932,16 @@ const PlaceBid = () => {
           )}
         </div>
 
-        {/* Participants */}
         <div className=" px-6 mx-6 bg-gray-50 rounded-xl shadow-md p-6  justify-center">
           <h3 className="text-2xl font-semibold mb-1 text-center">
             Bidding Participants
           </h3>
-          <BidTimer
-              ref={timerRef}
-              lastBidTime={product?.lastBidTime} // 👈 Pass backend timestamp
-          />
+          <div className="flex flex-col items-center mt-4">
+            <div className="w-90 bg-gray-800 text-white rounded-full py-3 px-6 text-xl font-mono flex items-center justify-center gap-1 mb-2">
+              <BidTimer auctionEndTime={effectiveAuctionEndTime} />
+            </div>
+          </div>
+
           <div className="flex justify-center items-center mt-4 text-sm text-gray-500">
             <span className="mr-2">Waiting for more participants</span>
             <div className="flex space-x-1">
@@ -529,7 +958,9 @@ const PlaceBid = () => {
             ) : (
               <ul className="space-y-3">
                 {participants.map((bid, index) => {
-                  const isMe = bid.bidderName === currentUser;
+                  const isMe =
+                    normalizeBidderName(bid.bidderName) ===
+                    normalizedCurrentUserForComparison;
                   const isHighest = index === 0;
                   let textColorClass = "text-gray-800";
                   if (isMe) textColorClass = "text-blue-600 font-semibold";
@@ -537,9 +968,10 @@ const PlaceBid = () => {
                     textColorClass = "text-green-600 font-semibold";
                   if (isHighest && isMe)
                     textColorClass = "text-purple-600 font-bold";
+
                   return (
                     <li
-                      key={index}
+                      key={`${bid.bidderName}-${bid.amount}-${index}`}
                       className={`flex justify-between ${textColorClass}`}
                     >
                       <span>
@@ -564,11 +996,9 @@ const PlaceBid = () => {
         </div>
       </div>
 
-      {/* Bid Result Modal */}
       <BidResultModal
         isOpen={showModal}
         onOpenChange={(open) => setShowModal(open)}
-        // Pass the data received from the check-result API
         bidApiMessage={bidApiMessage}
         bidApiWinningAmount={bidApiWinningAmount}
         bidApiCheckoutUrl={bidApiCheckoutUrl}

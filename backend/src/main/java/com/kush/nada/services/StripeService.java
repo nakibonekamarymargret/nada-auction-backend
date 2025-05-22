@@ -27,8 +27,8 @@ public class StripeService {
 
         SessionCreateParams params = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl("http://localhost:7107/success")
-                .setCancelUrl("http://localhost:7107/cancel")
+                        .setSuccessUrl("http://localhost:5173/nada/success")
+    .setCancelUrl("http://localhost:7107/cancel")
                 .setCustomerEmail("admin@nadaauction.com") // optional
                 .addLineItem(
                         SessionCreateParams.LineItem.builder()

@@ -25,8 +25,8 @@ public class BidService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final AuctionRepository auctionRepository;
-//sockets
-private final SimpMessagingTemplate messagingTemplate;
+    //sockets
+    private final SimpMessagingTemplate messagingTemplate;
 
 
     public BidService(BidRepository bidRepository, UserRepository userRepository, ProductRepository productRepository, AuctionRepository auctionRepository, SimpMessagingTemplate messagingTemplate) {
@@ -53,9 +53,13 @@ private final SimpMessagingTemplate messagingTemplate;
         if (product.isClosed()) {
             throw new IllegalStateException("Bidding is closed for this product.");
         }
-//Revert back to 30 seconds after successfull completion
+        // Revert back to 30 seconds after successful completion (your comment)
+        // Note: Your current code uses 1800 seconds (30 minutes).
+        // If you intend 30 seconds, change to .plusSeconds(30)
+        // If you intend 180 seconds (3 minutes), change to .plusSeconds(180)
+        // Ensure this matches your frontend's INACTIVITY_TIMEOUT_SECONDS constant.
         if (product.getLastBidTime() != null &&
-                product.getLastBidTime().plusSeconds(180000).isBefore(LocalDateTime.now())) {
+                product.getLastBidTime().plusSeconds(1800).isBefore(LocalDateTime.now())) {
             product.setClosed(true);
             productRepository.save(product);
             throw new IllegalStateException("Bidding timed out for this product.");
@@ -109,7 +113,8 @@ private final SimpMessagingTemplate messagingTemplate;
         BidDto bidDto = new BidDto();
         bidDto.setId(savedBid.getId());
         bidDto.setAmount(savedBid.getAmount());
-        bidDto.setBidderName(savedBid.getBidder().getName());
+        // *** FIX: Set bidderName to the user's email to match frontend's currentUser ***
+        bidDto.setBidderName(savedBid.getBidder().getEmail()); 
         bidDto.setBidTime(savedBid.getBidTime());
 
         // Broadcast DTO to WebSocket clients
@@ -136,6 +141,4 @@ private final SimpMessagingTemplate messagingTemplate;
                 .findTopByBidderIdAndProductIdOrderByBidTimeDesc(userId, productId)
                 .orElse(null);
     }
-
-
 }
