@@ -253,19 +253,19 @@ const ViewProduct = () => {
 
   if (auction.status === "SCHEDULED") {
     actionButton = (
-      <button
-        style={{ fontFamily: "var(--font-button)" }}
-        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 text-lg rounded mr-2 transition-colors duration-200"
-      >
-        Get approved to bid
-      </button>
+        <button
+            onClick={() => navigate(`/approve/${product.id}`)}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+        >
+          Get approved to bid
+        </button>
     );
   } else if (auction.status === "LIVE") {
     actionButton = (
-      <div className="">
-        <button
-          onClick={() => navigate(`/approve/${product.id}`)}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+        <div className="">
+          <button
+              onClick={() => navigate(`/approve/${product.id}`)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
         >
           Get approved to Bid
         </button>
