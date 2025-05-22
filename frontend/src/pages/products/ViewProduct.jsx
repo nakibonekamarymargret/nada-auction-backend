@@ -293,7 +293,7 @@ const ViewProduct = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 bg-white shadow-md rounded-lg">
+    <div className="container mx-auto px-4 py-6 bg-white shadow-md rounded-lg mt-24">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         {/* Left Side: Badge + Product Name */}
