@@ -238,7 +238,7 @@ const Register = () => {
               </div>
             </div>
             <div className="mb-6">
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full bg-[#008080] hover:bg-[#009181]">
                 Register
               </Button>
               {message && (

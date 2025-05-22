@@ -175,7 +175,7 @@ const Login = () => {
 
             {/* Login Button */}
             <div className="pb-5">
-              <Button type="submit" className="w-full pointer">
+              <Button type="submit" className="w-full bg-[#008080] hover:bg-[#009181]">
                 Login
               </Button>
             </div>

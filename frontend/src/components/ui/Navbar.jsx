@@ -188,14 +188,17 @@ const Navbar = () => {
             <div className="flex gap-6 items-center">
               <button
                 onClick={handleLogin}
-                className="px-4 py-2 text-sm font-medium text-black rounded hover:text-blue-700 transition flex items-center gap-1"
+                className="px-4 py-2 text-md font-semibold text-[#008080] rounded hover:text-[#009181] transition flex items-center gap-1"
+                style={{ fontFamily: "'var(--font-playfair)'" }}
               >
                 <CiLogin />
                 Login
               </button>
               <button
                 onClick={handleRegister}
-                className="px-4 py-2 text-sm font-medium text-black rounded hover:text-green-700 transition flex items-center gap-1"
+                className="px-4 py-2 text-md font-semibold text-[#008080] rounded hover:text-[#009181
+                ] transition flex items-center gap-1"
+                style={{ fontFamily: "'var(--font-playfair)'" }}
               >
                 <FaUserPlus />
                 Register
