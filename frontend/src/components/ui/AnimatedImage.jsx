@@ -2,32 +2,35 @@
 import React from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
+const base = import.meta.env.BASE_URL;
 
 const carouselItems = [
   {
     id: 1,
-    image: "/images/camera.jpg",
+      image: `${base}images/camera.jpg`,
     alt: "Camera",
     text: "Got the best products for you",
     describe: "Don't miss out on this",
   },
   {
     id: 2,
-    image: "/images/leatherbag.jpg",
-    alt: "Bag",
+      image: `${base}images/leatherbag.jpg`,
+
+      alt: "Bag",
     text: "For your style and comfort desires",
     describe: "NADA NADA NADA got you covered",
   },
   {
     id: 3,
-    image: "/images/smartwatch.jpg",
-    alt: "Smartwatch",
+      image: `${base}images/smartwatch.jpg`,
+      alt: "Smartwatch",
     text: "There's no better time to shop",
     describe: "Be the first to get it",
   },
   {
     id: 4,
-    image: "/images/speakers.jpg",
+      image: `${base}images/speakers.jpg`,
+
     alt: "Speakers",
     text: "Sounds well when you get your product from NADA",
     describe: "Enjoy the sound",
