@@ -163,8 +163,7 @@ const ViewProduct = () => {
       console.log("Watchlist toggle response:", response.data.message);
     } catch (error) {
       console.error("Failed to toggle watchlist:", error);
-      // Optionally revert UI change or show error message to user
-      // setIsWatchlisted(!isWatchlisted); // Revert optimistic update if it failed
+    
     } finally {
       setIsLoadingWatchlist(false);
     }
@@ -255,7 +254,7 @@ const ViewProduct = () => {
     actionButton = (
         <button
             onClick={() => navigate(`/approve/${product.id}`)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+            className=" pointer bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
         >
           Get approved to bid
         </button>

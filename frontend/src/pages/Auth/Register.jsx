@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { IoKeySharp } from "react-icons/io5";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
-// Import AuthService (assuming it's in the correct location)
 import AuthService from "../../services/AuthService";
 
 const Register = () => {
@@ -19,8 +18,8 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState({});
   const [message, setMessage] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState(""); // State for password confirmation
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // State for showing confirmation password
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
 
   const navigate = useNavigate();
 
@@ -91,14 +90,17 @@ const Register = () => {
   };
   return (
     <div className="flex flex-col md:flex-row items-stretch gap-[5vw] max-w-5xl mx-auto">
-      {/* Left image */}
       <div className="hidden md:block w-1/2 p-4">
-        <img src={`${import.meta.env.BASE_URL}bg1.jpg`} alt="auction" className="rounded-lg"/>
+        <img
+          src={`${import.meta.env.BASE_URL}bg1.jpg`}
+          alt="auction"
+          className="rounded-lg"
+        />
       </div>
 
       {/* Right form section */}
       <div className="w-full md:w-1/2 p-4">
-      <p className="text-xl font-semi-bold text-center mt-7">
+        <p className="text-xl font-semi-bold text-center mt-7">
           Welcome to <b className="text-dark font-bold">NADA</b>{" "}
         </p>
         <h2
@@ -141,13 +143,13 @@ const Register = () => {
             ].map(({ label, name, type, placeholder }) => (
               <div key={name} className="mb-4">
                 <label
-                    htmlFor={name}
-                    className="block text-sm font-medium text-gray-700"
+                  htmlFor={name}
+                  className="block text-sm font-medium text-gray-700"
                 >
                   {label} <span className="text-red-500">*</span>
                 </label>
                 <input
-                    type={type}
+                  type={type}
                   name={name}
                   id={name}
                   value={user[name]}
@@ -162,8 +164,8 @@ const Register = () => {
             {/* Password */}
             <div className="mb-4 relative">
               <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
               >
                 Password <span className="text-red-500">*</span>
               </label>
@@ -218,7 +220,9 @@ const Register = () => {
                   placeholder="Confirm your password"
                 />
                 {error.confirmPassword && (
-                    <p className="text-red-500 text-xs mt-1">{error.confirmPassword}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {error.confirmPassword}
+                  </p>
                 )}
 
                 <div
@@ -243,7 +247,7 @@ const Register = () => {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-black/70">Already have an account?</span>
-              <button type="button" onClick={handleLogin}>
+              <button type="button" onClick={handleLogin} className="pointer">
                 <span className="text-green-600 hover:text-green/50">
                   Login
                 </span>

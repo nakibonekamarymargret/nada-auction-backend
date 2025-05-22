@@ -73,7 +73,11 @@ const Login = () => {
   return (
     <div className="flex flex-col md:flex-row items-start gap-[5vw] max-w-5xl mx-auto">
       <div className="hidden md:block w-1/2 p-4">
-        <img src={`${import.meta.env.BASE_URL}bg1.jpg`} alt="auction" className="rounded-lg"/>
+        <img
+          src={`${import.meta.env.BASE_URL}bg1.jpg`}
+          alt="auction"
+          className="rounded-lg"
+        />
       </div>
 
       <div className="w-full md:w-1/2 p-4 h-full">
@@ -101,6 +105,7 @@ const Login = () => {
                 className="block text-sm font-medium text-gray-700"
               >
                 Email
+                <span className="text-red-500 mx-2">*</span>
               </label>
               <div className="relative">
                 <MdAlternateEmail
@@ -126,6 +131,7 @@ const Login = () => {
                 className="block text-sm font-medium text-gray-700"
               >
                 Password
+                <span className="text-red-500 mx-2">*</span>
               </label>
               <div className="relative">
                 <IoKeySharp
@@ -169,7 +175,7 @@ const Login = () => {
 
             {/* Login Button */}
             <div className="pb-5">
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full pointer">
                 Login
               </Button>
             </div>
@@ -182,7 +188,11 @@ const Login = () => {
             </div>
             <div className="flex items-center gap-2 mt-3">
               <span className="text-black/70">New to NADA ?</span>
-              <button type="button" onClick={handleRegister}>
+              <button
+                type="button"
+                onClick={handleRegister}
+                className="pointer"
+              >
                 <span className="text-green-600 hover:text-green/50">
                   Create account
                 </span>

@@ -155,16 +155,17 @@ const BidApprovalForm = () => {
 
   const renderStep = () => {
     switch (step) {
-      case 1: // Your details form
+      case 1: 
         return (
-            <div className="space-y-4 min-h-screen">
+          
+            <div className="space-y-4 min-h-screen ">
               <h2
                   style={{ fontFamily: "var(--font-baskerville)" }}
                   className="text-2xl font-semibold text-green-600 text-center"
               >
-                Provide Your details to get approved for this bidding
+               Enter your details to get approved for this bidding
               </h2>
-              <div className="p-8 rounded-lg shadow-md">
+              <div className="p-8 rounded-lg ">
                 <div className="relative flex items-center p-4">
                   <label
                       htmlFor="title"
@@ -173,7 +174,7 @@ const BidApprovalForm = () => {
                     Title:
                   </label>
                   <select
-                      id="title"
+                       id="title"
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
@@ -266,7 +267,7 @@ const BidApprovalForm = () => {
                       type="button"
                       onClick={nextStep}
                       style={{ fontFamily: "var(--font-button" }}
-                      className="bg-blue-900/70 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded transition duration-300"
+                      className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded transition duration-300"
                       disabled={isLoading}
                   >
                     Continue
@@ -275,44 +276,92 @@ const BidApprovalForm = () => {
               </div>
             </div>
         );
-      case 2: // View details
+      case 2: 
         return (
-            <div className="space-y-4 min-h-screen">
-              <h2 className="text-2xl font-semibold text-gray-800 text-center">
-                Confirm Your Details
-              </h2>
-              <div className="p-6 rounded-md shadow-md bg-gray-50">
-                <p>
-                  <span className="font-semibold">Title:</span>{" "}
-                  {formData.title || "N/A"}
-                </p>
-                <p>
-                  <span className="font-semibold">Name:</span>{" "}
-                  {formData.name || "N/A"}
-                </p>
-                <p>
-                  <span className="font-semibold">Contact:</span>{" "}
-                  {formData.phoneNumber || "N/A"}
-                </p>
-                <p>
-                  <span className="font-semibold">Email:</span>{" "}
-                  {formData.email || "N/A"}
-                </p>{" "}
-                {/* Display email */}
-                <p>
-                  <span className="font-semibold">Address:</span>{" "}
-                  {formData.address || "N/A"}
-                </p>
-              </div>
+          <div className="space-y-4 min-h-screen">
+            <h2
+              className="text-2xl font-semibold text-gray-800 text-center"
+              style={{ fontFamily: "var(--font-baskerville)" }}
+            >
+              Confirm Your Details
+            </h2>
+            <div className="p-6 rounded-md ">
+              <p className="mb-1">
+                <span
+                  className="font-bold "
+                  style={{ fontFamily: "var(--font-tenor)" }}
+                >
+                  Title:
+                </span>
+                {"  "}
+                <span className="mx-3"> {formData.title || "N/A"}</span>
+              </p>
+              <p className="mb-1">
+                <span
+                  className="font-bold "
+                  style={{ fontFamily: "var(--font-tenor)" }}
+                >
+                  Name:
+                </span>
+                {"  "}
+                <span className="mx-3"> {formData.name || "N/A"}</span>
+              </p>
+              <p className="mb-1">
+                <span
+                  className="font-bold "
+                  style={{ fontFamily: "var(--font-tenor)" }}
+                >
+                  Contact:
+                </span>
+                {"  "}
+                <span className="mx-3"> {formData.phoneNumber || "N/A"}</span>
+              </p>
+              <p className="mb-1">
+                <span
+                  className="font-bold "
+                  style={{ fontFamily: "var(--font-tenor)" }}
+                >
+                  Email:
+                </span>
+                {"  "}
+                <span className="mx-3"> {formData.email || "N/A"}</span>
+              </p>
+              <p className="mb-1">
+                <span
+                  className="font-bold "
+                  style={{ fontFamily: "var(--font-tenor)" }}
+                >
+                  Address:
+                </span>
+                {"  "}
+                <span className="mx-3"> {formData.address || "N/A"}</span>
+              </p>
+            </div>
+            <div className="flex gap-2">
+              {/* Previous Button (Only on Step 2) */}
+              {step === 2 && (
+                <div className="mt-6 flex justify-start">
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    disabled={isLoading}
+                    style={{ fontFamily: "var(--font-button)" }}
+                    className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded transition duration-300"
+                  >
+                    Previous
+                  </button>
+                </div>
+              )}
               <button
-                  type="button"
-                  onClick={handleConfirmAndSubmit}
-                  className="mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full transition duration-300"
-                  disabled={isLoading}
+                type="button"
+                onClick={handleConfirmAndSubmit}
+                className="mt-6 bg-lime-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full transition duration-300"
+                disabled={isLoading}
               >
                 {isLoading ? "Confirming..." : "Confirm and Submit"}
               </button>
             </div>
+          </div>
         );
       default:
         return null;
@@ -320,62 +369,77 @@ const BidApprovalForm = () => {
   };
 
   return (
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-lg mx-auto bg-white shadow-md rounded-lg p-6">
-          <div className="flex justify-between items-center mb-6 max-w-sm mx-auto">
+    <div className="container mx-auto px-4 py-8 pb-7 mt-18">
+      <div className="flex flex-col lg:flex-row bg-white rounded-xl shadow-lg overflow-hidden max-w-6xl mx-auto">
+        {/* Left Column - Image */}
+        <div className="lg:w-1/2 w-full h-64 lg:h-auto relative bg-gray-100">
+          <img
+            src={`${import.meta.env.BASE_URL}bg2.jpg`}
+            alt="Auction"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Right Column - Form */}
+        <div className="lg:w-1/2 w-full p-6 md:p-10 flex flex-col justify-center bg-blue-50">
+          {/* Step Indicator */}
+          <div className="flex justify-between items-center mb-8 max-w-md mx-auto">
+            {/* Step 1 */}
             <div className="flex-1 text-center">
               <div
-                  className={`w-8 h-8 mx-auto rounded-full border-2 flex items-center justify-center ${
-                      step >= 1
-                          ? "bg-blue-600 border-blue-600 text-white"
-                          : "border-gray-300 text-gray-500"
-                  }`}
+                className={`w-10 h-10 mx-auto rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                  step >= 1
+                    ? "bg-blue-600 border-blue-600 text-white"
+                    : "border-gray-300 text-gray-500"
+                }`}
               >
                 1
               </div>
               <p
-                  className={`text-sm mt-1 ${
-                      step >= 1 ? "text-blue-600 font-semibold" : "text-gray-600"
-                  }`}
+                className={`text-sm mt-2 ${
+                  step >= 1 ? "text-blue-600 font-semibold" : "text-gray-600"
+                }`}
+                style={{ fontFamily: "var(--font-inter)" }}
               >
-                Your details
+                Your Details
               </p>
             </div>
+
+            {/* Step 2 */}
             <div className="flex-1 text-center">
               <div
-                  className={`w-8 h-8 mx-auto rounded-full border-2 flex items-center justify-center ${
-                      step >= 2
-                          ? "bg-blue-600 border-blue-600 text-white"
-                          : "border-gray-300 text-gray-500"
-                  }`}
+                className={`w-10 h-10 mx-auto rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                  step >= 2
+                    ? "bg-blue-600 border-blue-600 text-white"
+                    : "border-gray-300 text-gray-500"
+                }`}
               >
                 2
               </div>
               <p
-                  className={`text-sm mt-1 ${
-                      step >= 2 ? "text-blue-600 font-semibold" : "text-gray-600"
+                className={`text-sm  ${
+                  step >= 2 ? "text-blue-600 font-semibold" : "text-gray-600"
                   }`}
+                
+                style={{ fontFamily: "var(--font-inter)" }}
               >
-                View details
+                View Details
               </p>
             </div>
           </div>
 
-          <form onSubmit={(e) => e.preventDefault()}>{renderStep()}</form>
-          {step === 2 && (
-              <div className="mt-6 flex justify-start">
-                <button
-                    type="button"
-                    onClick={prevStep}
-                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded transition duration-300"
-                    disabled={isLoading}
-                >
-                  Previous
-                </button>
-              </div>
-          )}
+          {/* Form Content */}
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="w-full max-w-md mx-auto"
+          >
+            {renderStep()}
+          </form>
+
+        
         </div>
       </div>
+    </div>
   );
 };
 

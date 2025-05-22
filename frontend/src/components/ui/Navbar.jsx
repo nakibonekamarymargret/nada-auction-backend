@@ -77,120 +77,133 @@ const Navbar = () => {
   if (isLoginPage || isRegisterPage) return null;
 
   return (
-      <div className="w-full bg-white text-black border-b border-gray-300 relative z-10">
-        <div className="flex justify-between items-center px-6 py-4 max-w-[1400px] mx-auto relative">
-          {/* Logo */}
-          <h2
-              onClick={() => navigate("/")}
-              className="text-3xl font-bold text-black cursor-pointer"
-          >
-            NADA
-          </h2>
+    <div className="w-full bg-white text-black border-b border-gray-300 fixed top-0 left-0 z-50">
+      <div className="flex justify-between items-center px-6 py-4 max-w-[1400px] mx-auto relative">
+        {/* Logo */}
+        <h2
+          onClick={() => navigate("/")}
+          className="text-3xl font-bold text-black cursor-pointer"
+        >
+          NADA
+        </h2>
 
-          {/* Centered Search Bar & Icon: Only show on home page */}
-          {location.pathname === "/" && (
-              <div className="flex-grow flex justify-center items-center relative">
-                {/* Search Bar for larger screens */}
-                <div className="hidden lg:block w-[40%]"> {/* Hidden on small/medium, block on large */}
-                  <input
-                      type="text"
-                      placeholder="Search for items"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      onKeyDown={handleSearch}
-                      className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none text-black"
-                  />
-                </div>
+        {/* Centered Search Bar & Icon: Only show on home page */}
+        {location.pathname === "/" && (
+          <div className="flex-grow flex justify-center items-center relative">
+            {/* Search Bar for larger screens */}
+            <div className="hidden lg:block w-[40%]">
+              {" "}
+              {/* Hidden on small/medium, block on large */}
+              <input
+                type="text"
+                placeholder="Search for items"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={handleSearch}
+                className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none text-black"
+              />
+            </div>
 
-                {/* Search Icon for small/medium screens */}
-                <div className="lg:hidden flex items-center justify-center"> {/* Visible on small/medium, hidden on large */}
-                  <button
-                      onClick={toggleSearchInput}
-                      className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                  >
-                    <AiOutlineSearch size={24} />
-                  </button>
-                </div>
+            {/* Search Icon for small/medium screens */}
+            <div className="lg:hidden flex items-center justify-center">
+              {" "}
+              {/* Visible on small/medium, hidden on large */}
+              <button
+                onClick={toggleSearchInput}
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+              >
+                <AiOutlineSearch size={24} />
+              </button>
+            </div>
 
-                {/* Collapsible Search Input for small/medium screens */}
-                {isSearchIconVisible && (
-                    <div className="absolute top-full left-0 right-0 mt-2 lg:hidden w-full px-4">
-                      <input
-                          type="text"
-                          placeholder="Search for items"
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          onKeyDown={handleSearch}
-                          className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none text-black"
-                          autoFocus // Automatically focus when visible
-                      />
-                    </div>
-                )}
+            {/* Collapsible Search Input for small/medium screens */}
+            {isSearchIconVisible && (
+              <div className="absolute top-full left-0 right-0 mt-2 lg:hidden w-full px-4">
+                <input
+                  type="text"
+                  placeholder="Search for items"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={handleSearch}
+                  className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none text-black"
+                  autoFocus // Automatically focus when visible
+                />
               </div>
-          )}
-
-          {/* Right side content based on login status */}
-          <div className="flex items-center gap-10 text-sm">
-            {isAuthenticated ? (
-                <>
-                  {/* Watch List */}
-                  <div
-                      className="flex flex-col items-center cursor-pointer"
-                      onClick={() => navigate("/watch")}
-                  >
-                    <AiOutlineHeart size={20} />
-                    <span>My Watch List</span>
-                  </div>
-
-                  {/* Activity Dropdown */}
-                  <div className="flex flex-col items-center cursor-pointer relative" onClick={toggleDropDown}>
-                    <AiOutlineUser size={20} />
-                    <span>My Activity</span>
-
-                    {dropdownOpen && (
-                        <div className="absolute right-0 mt-12 w-48 bg-white text-black rounded-md shadow-lg border z-50">
-                          <ul className="py-1 text-sm">
-                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Bids</li>
-                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Recently Viewed</li>
-                            <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Buy Again</li>
-                            <li
-                                onClick={handleLogout}
-                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                            >
-                              Logout
-                            </li>
-                          </ul>
-                        </div>
-                    )}
-                  </div>
-
-                  {/* Alerts */}
-                  <div className="flex flex-col items-center cursor-pointer">
-                    <AiOutlineBell size={20} />
-                    <span>Alerts</span>
-                  </div>
-                </>
-            ) : (
-                <div className="flex gap-6 items-center">
-                  <button
-                      onClick={handleLogin}
-                      className="px-4 py-2 text-sm font-medium text-black rounded hover:text-blue-700 transition flex items-center gap-1"
-                  >
-                    <CiLogin />
-                    Login
-                  </button>
-                  <button
-                      onClick={handleRegister}
-                      className="px-4 py-2 text-sm font-medium text-black rounded hover:text-green-700 transition flex items-center gap-1"
-                  >
-                    <FaUserPlus />
-                    Register
-                  </button>
-                </div>
             )}
           </div>
+        )}
+
+        {/* Right side content based on login status */}
+        <div className="flex items-center gap-10 text-sm">
+          {isAuthenticated ? (
+            <>
+              {/* Watch List */}
+              <div
+                className="flex flex-col items-center cursor-pointer"
+                onClick={() => navigate("/watch")}
+              >
+                <AiOutlineHeart size={20} />
+                <span>My Watch List</span>
+              </div>
+
+              {/* Activity Dropdown */}
+              <div
+                className="flex flex-col items-center cursor-pointer relative"
+                onClick={toggleDropDown}
+              >
+                <AiOutlineUser size={20} />
+                <span>My Activity</span>
+
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-12 w-48 bg-white text-black rounded-md shadow-lg border z-50">
+                    <ul className="py-1 text-sm">
+                      <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                        Bids
+                      </li>
+                      <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                        Recently Viewed
+                      </li>
+                      <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                        Buy Again
+                      </li>
+                      <li
+                        onClick={handleLogout}
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      >
+                        Logout
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* Alerts */}
+              <div className="flex flex-col items-center cursor-pointer">
+                <AiOutlineBell size={20} />
+                <span>Alerts</span>
+              </div>
+            </>
+          ) : (
+            <div className="flex gap-6 items-center">
+              <button
+                onClick={handleLogin}
+                className="px-4 py-2 text-sm font-medium text-black rounded hover:text-blue-700 transition flex items-center gap-1"
+              >
+                <CiLogin />
+                Login
+              </button>
+              <button
+                onClick={handleRegister}
+                className="px-4 py-2 text-sm font-medium text-black rounded hover:text-green-700 transition flex items-center gap-1"
+              >
+                <FaUserPlus />
+                Register
+              </button>
+            </div>
+          )}
         </div>
       </div>
+    </div>
   );
 };
 

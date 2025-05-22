@@ -156,3 +156,12 @@
   --font-dm-serif: "DM Serif Display", serif;
   --font-button: "Manrope", sans-serif;
 }
+/* Pointer */
+@layer base {
+  .pointer {
+    @apply cursor-pointer;
+  }
+  .pointer:disabled {
+    @apply cursor-not-allowed;
+  }
+}
