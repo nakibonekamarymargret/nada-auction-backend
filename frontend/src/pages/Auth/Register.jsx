@@ -100,7 +100,7 @@ const Register = () => {
 
       {/* Right form section */}
       <div className="w-full md:w-1/2 p-4">
-        <p className="text-xl font-semi-bold text-center mt-7">
+        <p className="text-xl font-semi-bold text-center mt-7 text-[#008080]">
           Welcome to <b className="text-dark font-bold">NADA</b>{" "}
         </p>
         <h2

@@ -254,7 +254,7 @@ const ViewProduct = () => {
     actionButton = (
       <button
         onClick={() => navigate(`/approve/${product.id}`)}
-        className=" pointer bg-[#008080] hover:bg-[#008080] text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+        className=" pointer bg-[#008080] hover:bg-[#009181] text-white font-bold py-2 px-4 rounded transition-colors duration-200"
       >
         Get approved to bid
       </button>
@@ -264,7 +264,7 @@ const ViewProduct = () => {
       <div className="">
         <button
           onClick={() => navigate(`/approve/${product.id}`)}
-          className="bg-[#008080] pointer hover:bg-[#008080] text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+          className="bg-[#008080] pointer hover:bg-[#009181] text-white font-bold py-2 px-4 rounded transition-colors duration-200"
         >
           Get approved to Bid
         </button>

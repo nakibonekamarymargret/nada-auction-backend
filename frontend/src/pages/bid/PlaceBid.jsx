@@ -86,7 +86,6 @@ const PlaceBid = () => {
       const auctionStart = productData?.auction?.startTime
         ? new Date(productData.auction.startTime)
         : null;
-     
 
       if (productData?.auction?.status === "CLOSED" || productData?.isClosed) {
         setAuctionStatus("CLOSED");
@@ -254,11 +253,7 @@ const PlaceBid = () => {
   }, [fetchProductDetails]);
 
   useEffect(() => {
-    if (
-      product &&
-      currentUser &&
-      normalizedCurrentUserForComparison 
-    ) {
+    if (product && currentUser && normalizedCurrentUserForComparison) {
       if (token) {
         fetchMyLatestBid();
       } else {
@@ -565,9 +560,7 @@ const PlaceBid = () => {
         clearInterval(intervalId);
       }
     };
-  }, [
-    product,
-    inactivityDurationFromBackend,]);
+  }, [product, inactivityDurationFromBackend]);
 
   const handleSubmitBid = async (e) => {
     e.preventDefault();
@@ -736,7 +729,6 @@ const PlaceBid = () => {
   // --- Render ---
   if (!product) return <div className="p-4">Loading product details...</div>;
 
-
   const formatDateTime = (isoString) => {
     if (!isoString) return "N/A";
     const date = new Date(isoString);
@@ -869,7 +861,7 @@ const PlaceBid = () => {
               </p>
               <button
                 onClick={handleViewBidResults}
-                className="bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-[#008080] hover:bg-bg-[#008180] text-white font-bold py-2 px-4 rounded"
               >
                 View Bid Results
               </button>
@@ -901,7 +893,7 @@ const PlaceBid = () => {
                     setShowForm(true);
                     setInputBidAmount(getMinBid(product));
                   }}
-                  className="mt-4 text-white bg-[#008080] px-4 py-2 rounded hover:bg-[#008080] font-bold"
+                  className="mt-4 text-white bg-[#008080] px-4 py-2 rounded hover:bg-[#009181] font-bold"
                 >
                   Place Bid
                 </button>
@@ -957,7 +949,7 @@ const PlaceBid = () => {
             Bidding Participants
           </h3>
           <div className="flex flex-col items-center ">
-            <div  className="w-90 bg-gray-80 text-white rounded-full py-3 px-6 text-xl  flex items-center justify-center gap-1">
+            <div className="w-90 bg-gray-80 text-white rounded-full py-3 px-6 text-xl  flex items-center justify-center gap-1">
               <BidTimer auctionEndTime={effectiveAuctionEndTime} />
             </div>
           </div>

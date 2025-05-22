@@ -148,7 +148,7 @@ const WatchlistPage = () => {
                 <Link
                   to={`/product/${product.id}`}
                   className="text-[#008080] hover:text-[#008080] font-medium text-sm py-2 px-3 rounded bg-[#008080] 
-                  hover:bg-[#008080] transition-colors"
+                  hover:bg-[#009181] transition-colors"
                 >
                   View Details
                 </Link>

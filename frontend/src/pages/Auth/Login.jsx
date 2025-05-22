@@ -88,7 +88,7 @@ const Login = () => {
           >
             <h2
               style={{ fontFamily: "var(--font-roboto)" }}
-              className="text-2xl font-normal mb-4 text-center mt-6"
+              className="text-2xl font-normal mb-4 text-center mt-6 text-[#008080]"
             >
               Welcome back to <b className="text-dark font-semi-bold">NADA</b>{" "}
             </h2>

@@ -10,7 +10,7 @@ const BidApprovalForm = () => {
   const [step, setStep] = useState(1);
 
   const [formData, setFormData] = useState({
-    title: "", 
+    title: "",
     name: "",
     phoneNumber: "",
     email: "",
@@ -23,12 +23,12 @@ const BidApprovalForm = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-            "http://localhost:7107/api/user/profile",
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
+          "http://localhost:7107/api/user/profile",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
 
         if (response.data.returnCode === 200) {
@@ -86,28 +86,26 @@ const BidApprovalForm = () => {
     try {
       const token = localStorage.getItem("token");
 
-      
       const validationResponse = await axios.post(
-          "http://localhost:7107/api/auth/validate-user-details",
-          {
-            name: formData.name,
-            phoneNumber: formData.phoneNumber,
-            address: formData.address,
-            email: formData.email,
-         
+        "http://localhost:7107/api/auth/validate-user-details",
+        {
+          name: formData.name,
+          phoneNumber: formData.phoneNumber,
+          address: formData.address,
+          email: formData.email,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
+        }
       );
 
       if (validationResponse.data.returnCode === 200) {
         console.log(
-            "Validation successful:",
-            validationResponse.data.ReturnObject
+          "Validation successful:",
+          validationResponse.data.ReturnObject
         );
 
         Swal.fire({
@@ -126,9 +124,9 @@ const BidApprovalForm = () => {
         });
       } else {
         const validationErrorMessage =
-            validationResponse.data.ReturnObject ||
-            validationResponse.data.message ||
-            "Details validation failed.";
+          validationResponse.data.ReturnObject ||
+          validationResponse.data.message ||
+          "Details validation failed.";
         Swal.fire({
           icon: "error",
           title: "Validation Failed",
@@ -139,9 +137,9 @@ const BidApprovalForm = () => {
       console.error("Submission process failed:", error);
 
       const errorMessage =
-          error.response?.data?.ReturnObject ||
-          error.response?.data?.message ||
-          "An error occurred during the submission process.";
+        error.response?.data?.ReturnObject ||
+        error.response?.data?.message ||
+        "An error occurred during the submission process.";
 
       Swal.fire({
         icon: "error",
@@ -155,7 +153,7 @@ const BidApprovalForm = () => {
 
   const renderStep = () => {
     switch (step) {
-      case 1: 
+      case 1:
         return (
           <div className="space-y-4 min-h-screen ">
             <h2
@@ -266,7 +264,7 @@ const BidApprovalForm = () => {
                   type="button"
                   onClick={nextStep}
                   style={{ fontFamily: "var(--font-button" }}
-                  className="bg-[#008080]  hover:bg-[#008080] text-white font-bold py-2 px-6 rounded transition duration-300"
+                  className="bg-[#008080]  hover:bg-[#009181] text-white font-bold py-2 px-6 rounded transition duration-300"
                   disabled={isLoading}
                 >
                   Continue
@@ -275,7 +273,7 @@ const BidApprovalForm = () => {
             </div>
           </div>
         );
-      case 2: 
+      case 2:
         return (
           <div className="space-y-4 min-h-screen">
             <h2
@@ -345,7 +343,7 @@ const BidApprovalForm = () => {
                     onClick={prevStep}
                     disabled={isLoading}
                     style={{ fontFamily: "var(--font-button)" }}
-                    className="bg-[#008080] hover:bg-[#008080] text-white font-bold py-2 px-6 rounded transition duration-300"
+                    className="bg-[#008080] hover:bg-[#009181] text-white font-bold py-2 px-6 rounded transition duration-300"
                   >
                     Previous
                   </button>
