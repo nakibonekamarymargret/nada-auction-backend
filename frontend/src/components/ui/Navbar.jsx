@@ -77,7 +77,7 @@ const Navbar = () => {
   if (isLoginPage || isRegisterPage) return null;
 
   return (
-    <div className="w-full bg-white text-black border-b border-gray-300 fixed top-0 left-0 z-50">
+    <div className="w-full bg-white text-black border-b border-gray-300 sticky top-0 left-0 z-50 ">
       <div className="flex justify-between items-center px-6 py-4 max-w-[1400px] mx-auto relative">
         {/* Logo */}
         <h2

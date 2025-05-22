@@ -164,4 +164,6 @@
   .pointer:disabled {
     @apply cursor-not-allowed;
   }
+  
 }
+/* buttons */

@@ -27,10 +27,8 @@ const PlaceBid = () => {
   const stompClient = useRef(null);
   const connectedRef = useRef(false);
 
-  // New state to manage the auction's live status more explicitly
   const [auctionStatus, setAuctionStatus] = useState("LOADING"); // "LOADING", "SCHEDULED", "LIVE", "CLOSED"
 
-  // States for the unified timer logic (from previous iteration)
   const [inactivityDurationFromBackend, setInactivityDurationFromBackend] =
     useState(1800); // Default to 30 mins
   const [effectiveAuctionEndTime, setEffectiveAuctionEndTime] = useState(null);
@@ -451,8 +449,6 @@ const PlaceBid = () => {
     normalizedCurrentUserForComparison,
     auctionStatus, // Added auctionStatus to dependencies
   ]);
-
-  // --- Master Timer Logic to determine effectiveAuctionEndTime for BidTimer ---
   useEffect(() => {
     let intervalId;
 
@@ -571,14 +567,7 @@ const PlaceBid = () => {
     };
   }, [
     product,
-    inactivityDurationFromBackend,
-    // Note: auctionStatus is set *inside* this useEffect and also used as a dependency to trigger re-calculation.
-    // This creates a dependency loop which is often bad.
-    // However, in this case, `auctionStatus` is set based on time and product data,
-    // so it doesn't cause infinite loops, but rather ensures the status is up-to-date.
-    // For simpler cases, it's better to derive `auctionStatus` purely in render or avoid setting it in useEffect directly from itself.
-    // For now, let's keep it, but be mindful of potential issues.
-  ]);
+    inactivityDurationFromBackend,]);
 
   const handleSubmitBid = async (e) => {
     e.preventDefault();
@@ -751,23 +740,31 @@ const PlaceBid = () => {
   const formatDateTime = (isoString) => {
     if (!isoString) return "N/A";
     const date = new Date(isoString);
-    return date.toLocaleString(); // Formats to local date/time string
+    return date.toLocaleString();
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6  bg-gray-50">
       {currentUser && (
-        <p className="text-lg font-semibold text-gray-700 mb-4 text-center">
+        <p
+          className="text-lg font-semibold text-gray-800 mb-4 text-center"
+          style={{ fontFamily: "var(--font-tenor)" }}
+        >
           Logged in as:{" "}
-          <span className="text-blue-700 font-bold">{currentUser}</span>
+          <span className="text-[#008080] hover:underline font-bold">
+            {currentUser}
+          </span>
         </p>
       )}
 
-      <h2 className="text-3xl font-bold mb-6 text-center">
+      <h2
+        className="text-xl font-bold mb-6 text-center text-gray-800"
+        style={{ fontFamily: "var(--font-roboto)" }}
+      >
         Auction Room: {product?.auction?.title || "Loading..."}
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className=" rounded-xl shadow-md p-6">
           <img
             src={
               product.imageUrl ||
@@ -776,11 +773,24 @@ const PlaceBid = () => {
             alt={product.name}
             className="w-full h-60 object-cover rounded-lg mb-4"
           />
-          <h3 className="text-xl font-semibold text-red-900">{product.name}</h3>
-          <p className="text-gray-600 mt-2 mb-4">
+          <div className="text-center mt-7">
+            {" "}
+            <h3
+              className="text-2xl font-bold text-[#F4631E]"
+              style={{ fontFamily: "var(--font-roboto)" }}
+            >
+              {product.name}
+            </h3>
+          </div>
+          <hr></hr>
+          <div className="mt-7"></div>
+          <p
+            className="text-[#521C0D] mt-2 mb-4 text-xl"
+            style={{ fontFamily: "var(--font-tenor)" }}
+          >
             {product.description || "No description available."}
           </p>
-          <p className="text-md font-bold text-gray-800 mt-2">
+          <p className="text-md font-bold text-gray-600 mt-2">
             Current Highest Bid:{" "}
             <span className="text-md font-bold text-green-700 ml-2">
               {product.highestPrice
@@ -805,6 +815,7 @@ const PlaceBid = () => {
                     )}
                   </p>
                   <button
+                    style={{ backgroundColor: "var(--btn-primary)" }}
                     onClick={() => {
                       setShowAmountInput(true);
                       setInputBidAmount(
@@ -852,7 +863,7 @@ const PlaceBid = () => {
             <div className="mt-6 text-center">
               <p
                 style={{ fontFamily: "var(--font-tenor)" }}
-                className="text-lg text-red-600 font-semibold mb-4"
+                className="text-lg text-[#BB3E00] font-semibold mb-4"
               >
                 Bidding is closed for this product.
               </p>
@@ -864,14 +875,20 @@ const PlaceBid = () => {
               </button>
             </div>
           ) : auctionStatus === "SCHEDULED" ? (
-            <div className="mt-6 text-center">
-              <p className="text-lg text-blue-600 font-semibold mb-4">
+            <div className="mt-6 text-start">
+              <p
+                className="text-lg text-[#333333]  mb-8"
+                style={{ fontFamily: "var(--font-tenor)" }}
+              >
                 This auction is scheduled to start on:
+                <span className="text-lg mx-2 font-bold text-[#008080]">
+                  {formatDateTime(product?.auction?.startTime)}
+                </span>
               </p>
-              <p className="text-xl font-bold text-blue-800">
-                {formatDateTime(product?.auction?.startTime)}
-              </p>
-              <p className="text-gray-600 mt-2">
+              <p
+                className="text-[#333333] "
+                style={{ fontFamily: "var(--font-tenor)" }}
+              >
                 Come back then to place your bid!
               </p>
             </div>
@@ -884,7 +901,7 @@ const PlaceBid = () => {
                     setShowForm(true);
                     setInputBidAmount(getMinBid(product));
                   }}
-                  className="mt-4 text-white bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 font-bold"
+                  className="mt-4 text-white bg-[#008080] px-4 py-2 rounded hover:bg-[#008080] font-bold"
                 >
                   Place Bid
                 </button>
@@ -933,11 +950,14 @@ const PlaceBid = () => {
         </div>
 
         <div className=" px-6 mx-6 bg-gray-50 rounded-xl shadow-md p-6  justify-center">
-          <h3 className="text-2xl font-semibold mb-1 text-center">
+          <h3
+            className="text-2xl font-bold text-[#008080] mb-1 text-center"
+            style={{ fontFamily: "var(--font-roboto)" }}
+          >
             Bidding Participants
           </h3>
-          <div className="flex flex-col items-center mt-4">
-            <div className="w-90 bg-gray-800 text-white rounded-full py-3 px-6 text-xl font-mono flex items-center justify-center gap-1 mb-2">
+          <div className="flex flex-col items-center ">
+            <div  className="w-90 bg-gray-80 text-white rounded-full py-3 px-6 text-xl  flex items-center justify-center gap-1">
               <BidTimer auctionEndTime={effectiveAuctionEndTime} />
             </div>
           </div>
@@ -949,7 +969,7 @@ const PlaceBid = () => {
               <span className="w-3 h-2 bg-black rounded-full animate-bounce delay-300"></span>
               <span className="w-3 h-3 bg-green-400 rounded-full animate-bounce delay-150"></span>
               <span className="w-3 h-2 bg-black rounded-full animate-bounce delay-300"></span>
-              <span className="w-3 h-3 bg-blue-400 rounded-full animate-bounce delay-300"></span>
+              <span className="w-3 h-3 bg-[#008080] rounded-full animate-bounce delay-300"></span>
             </div>
           </div>
           <div className="mt-3">
@@ -963,7 +983,7 @@ const PlaceBid = () => {
                     normalizedCurrentUserForComparison;
                   const isHighest = index === 0;
                   let textColorClass = "text-gray-800";
-                  if (isMe) textColorClass = "text-blue-600 font-semibold";
+                  if (isMe) textColorClass = "text-[#7F8CAA] font-semibold";
                   if (isHighest && !isMe)
                     textColorClass = "text-green-600 font-semibold";
                   if (isHighest && isMe)

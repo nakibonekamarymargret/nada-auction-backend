@@ -157,124 +157,123 @@ const BidApprovalForm = () => {
     switch (step) {
       case 1: 
         return (
-          
-            <div className="space-y-4 min-h-screen ">
-              <h2
-                  style={{ fontFamily: "var(--font-baskerville)" }}
-                  className="text-2xl font-semibold text-green-600 text-center"
-              >
-               Enter your details to get approved for this bidding
-              </h2>
-              <div className="p-8 rounded-lg ">
-                <div className="relative flex items-center p-4">
-                  <label
-                      htmlFor="title"
-                      className="block text-md font-medium text-gray-700 w-24"
-                  >
-                    Title:
-                  </label>
-                  <select
-                       id="title"
-                      name="title"
-                      value={formData.title}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                      required
-                  >
-                    <option value="">Select Title</option>
-                    <option value="Mr">Mr</option>
-                    <option value="Ms">Ms</option>
-                    <option value="Mrs">Mrs</option>
-                    <option value="Dr">Dr</option>
-                  </select>
-                </div>
-                <div className="relative flex items-center p-4">
-                  <label
-                      htmlFor="name"
-                      className="block text-md font-medium text-gray-700 w-24"
-                  >
-                    Names:{" "}
-                  </label>
-                  <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="mb-2 mx-2 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter your Names"
-                      required
-                  />
-                </div>
-                <div className="relative flex items-center p-4">
-                  <label
-                      htmlFor="phoneNumber"
-                      className="block text-md font-medium text-gray-700 w-24"
-                  >
-                    Contact:{" "}
-                  </label>
-                  <input
-                      type="tel"
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      value={formData.phoneNumber}
-                      onChange={handleInputChange}
-                      className="mb-2 mx-2 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="+256799999999"
-                      required
-                  />
-                </div>
-                {/* Email Field */}
-                <div className="relative flex items-center p-4">
-                  <label
-                      htmlFor="email"
-                      className="block text-md font-medium text-gray-700 w-24"
-                  >
-                    Email:{" "}
-                  </label>
-                  <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="mb-2 mx-2 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter your email"
-                      required
-                  />
-                </div>
-                <div className="relative flex items-center p-4">
-                  <label
-                      htmlFor="address"
-                      className="block text-md font-medium text-gray-700 w-24"
-                  >
-                    Address:{" "}
-                  </label>
-                  <input
-                      type="text"
-                      id="address"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      className="mx-2 mb-3 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter your Location"
-                      required
-                  />
-                </div>
+          <div className="space-y-4 min-h-screen ">
+            <h2
+              style={{ fontFamily: "var(--font-baskerville)" }}
+              className="text-2xl font-semibold text-[#FFA500] text-center"
+            >
+              Enter your details to get approved for this bidding
+            </h2>
+            <div className="p-4 rounded-lg ">
+              <div className="relative flex items-center p-4">
+                <label
+                  htmlFor="title"
+                  className="block text-md font-medium text-gray-700 w-24"
+                >
+                  Title:
+                </label>
+                <select
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#008080] focus:border-[#008080] sm:text-sm rounded-md"
+                  required
+                >
+                  <option value="">Select Title</option>
+                  <option value="Mr">Mr</option>
+                  <option value="Ms">Ms</option>
+                  <option value="Mrs">Mrs</option>
+                  <option value="Dr">Dr</option>
+                </select>
+              </div>
+              <div className="relative flex items-center p-4">
+                <label
+                  htmlFor="name"
+                  className="block text-md font-medium text-gray-700 w-24"
+                >
+                  Names:{" "}
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="mb-2 mx-2 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your Names"
+                  required
+                />
+              </div>
+              <div className="relative flex items-center p-4">
+                <label
+                  htmlFor="phoneNumber"
+                  className="block text-md font-medium text-gray-700 w-24"
+                >
+                  Contact:{" "}
+                </label>
+                <input
+                  type="tel"
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleInputChange}
+                  className="mb-2 mx-2 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="+256799999999"
+                  required
+                />
+              </div>
+              {/* Email Field */}
+              <div className="relative flex items-center p-4">
+                <label
+                  htmlFor="email"
+                  className="block text-md font-medium text-gray-700 w-24"
+                >
+                  Email:{" "}
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="mb-2 mx-2 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your email"
+                  required
+                />
+              </div>
+              <div className="relative flex items-center p-4">
+                <label
+                  htmlFor="address"
+                  className="block text-md font-medium text-gray-700 w-24"
+                >
+                  Address:{" "}
+                </label>
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  className="mx-2 mb-3 block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your Location"
+                  required
+                />
+              </div>
 
-                <div className="flex justify-center mt-6">
-                  <button
-                      type="button"
-                      onClick={nextStep}
-                      style={{ fontFamily: "var(--font-button" }}
-                      className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded transition duration-300"
-                      disabled={isLoading}
-                  >
-                    Continue
-                  </button>
-                </div>
+              <div className="flex justify-center mt-6">
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  style={{ fontFamily: "var(--font-button" }}
+                  className="bg-[#008080]  hover:bg-[#008080] text-white font-bold py-2 px-6 rounded transition duration-300"
+                  disabled={isLoading}
+                >
+                  Continue
+                </button>
               </div>
             </div>
+          </div>
         );
       case 2: 
         return (
@@ -346,7 +345,7 @@ const BidApprovalForm = () => {
                     onClick={prevStep}
                     disabled={isLoading}
                     style={{ fontFamily: "var(--font-button)" }}
-                    className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded transition duration-300"
+                    className="bg-[#008080] hover:bg-[#008080] text-white font-bold py-2 px-6 rounded transition duration-300"
                   >
                     Previous
                   </button>
@@ -355,7 +354,7 @@ const BidApprovalForm = () => {
               <button
                 type="button"
                 onClick={handleConfirmAndSubmit}
-                className="mt-6 bg-lime-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full transition duration-300"
+                className="mt-6 bg-[#FFA500] hover:bg-[#FFA540] text-white font-bold py-2 px-4 rounded w-full transition duration-300"
                 disabled={isLoading}
               >
                 {isLoading ? "Confirming..." : "Confirm and Submit"}
@@ -369,7 +368,7 @@ const BidApprovalForm = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-7 mt-18">
+    <div className="container mx-auto px-4 py-8 pb-7">
       <div className="flex flex-col lg:flex-row bg-white rounded-xl shadow-lg overflow-hidden max-w-6xl mx-auto">
         {/* Left Column - Image */}
         <div className="lg:w-1/2 w-full h-64 lg:h-auto relative bg-gray-100">
@@ -389,7 +388,7 @@ const BidApprovalForm = () => {
               <div
                 className={`w-10 h-10 mx-auto rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                   step >= 1
-                    ? "bg-blue-600 border-blue-600 text-white"
+                    ? "bg-[#008080] border-[#008080] text-white"
                     : "border-gray-300 text-gray-500"
                 }`}
               >
@@ -397,7 +396,7 @@ const BidApprovalForm = () => {
               </div>
               <p
                 className={`text-sm mt-2 ${
-                  step >= 1 ? "text-blue-600 font-semibold" : "text-gray-600"
+                  step >= 1 ? "text-[#008080] font-semibold" : "text-gray-600"
                 }`}
                 style={{ fontFamily: "var(--font-inter)" }}
               >
@@ -410,7 +409,7 @@ const BidApprovalForm = () => {
               <div
                 className={`w-10 h-10 mx-auto rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                   step >= 2
-                    ? "bg-blue-600 border-blue-600 text-white"
+                    ? "bg-[#008080] border-[#008080] text-white"
                     : "border-gray-300 text-gray-500"
                 }`}
               >
@@ -418,9 +417,8 @@ const BidApprovalForm = () => {
               </div>
               <p
                 className={`text-sm  ${
-                  step >= 2 ? "text-blue-600 font-semibold" : "text-gray-600"
-                  }`}
-                
+                  step >= 2 ? "text-[#008080] font-semibold" : "text-gray-600"
+                }`}
                 style={{ fontFamily: "var(--font-inter)" }}
               >
                 View Details
@@ -435,8 +433,6 @@ const BidApprovalForm = () => {
           >
             {renderStep()}
           </form>
-
-        
         </div>
       </div>
     </div>

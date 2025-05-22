@@ -147,7 +147,7 @@ export function EditProductModal({ product, onProductUpdated }) {
       {/* This button should be placed in AdminDashboard */}
       <button
         onClick={() => setIsOpen(true)}
-        className="text-gray-600 hover:text-blue-600 focus:outline-none"
+        className="text-gray-600 hover:text-[#008080] focus:outline-none"
         aria-label={`Edit Product ${product?.name || ""}`}
         title="Edit Product"
       >

@@ -75,7 +75,7 @@ const WatchlistPage = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-6 text-center">
+      <div className="container mx-auto px-4 py-6 text-center ">
         Loading your watchlist...
       </div>
     );
@@ -105,7 +105,7 @@ const WatchlistPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 font-tenor">
+    <div className="container mx-auto px-4 py-6 font-tenor mt-27">
       <h1
         className="text-3xl font-bold mb-6 text-gray-800"
         style={{ fontFamily: "'var(--font-playfair)'" }}
@@ -147,7 +147,8 @@ const WatchlistPage = () => {
               <div className="flex justify-between items-center">
                 <Link
                   to={`/product/${product.id}`}
-                  className="text-blue-500 hover:text-blue-700 font-medium text-sm py-2 px-3 rounded bg-blue-100 hover:bg-blue-200 transition-colors"
+                  className="text-[#008080] hover:text-[#008080] font-medium text-sm py-2 px-3 rounded bg-[#008080] 
+                  hover:bg-[#008080] transition-colors"
                 >
                   View Details
                 </Link>

@@ -98,126 +98,130 @@ const Home = () => {
         }
 
         return (
-            <div>
-                <div className={`grid ${gridColsClass} gap-6`}>
-                    {displayedProducts.map((product) => {
-                        const now = new Date();
-                        const startTime = product?.auction?.startTime
-                            ? new Date(product.auction.startTime)
-                            : null;
-                        let label = "";
+          <div>
+            <div className={`grid ${gridColsClass} gap-6`}>
+              {displayedProducts.map((product) => {
+                const now = new Date();
+                const startTime = product?.auction?.startTime
+                  ? new Date(product.auction.startTime)
+                  : null;
+                let label = "";
 
-            // Only show label if section is SCHEDULED or LIVE
-            if (status === "SCHEDULED" || status === "LIVE") {
-              if (startTime) {
-                const startDate = startTime.toDateString();
-                const today = now.toDateString();
-                const tomorrow = new Date(now);
-                tomorrow.setDate(now.getDate() + 1);
-                const tomorrowDate = tomorrow.toDateString();
+                // Only show label if section is SCHEDULED or LIVE
+                if (status === "SCHEDULED" || status === "LIVE") {
+                  if (startTime) {
+                    const startDate = startTime.toDateString();
+                    const today = now.toDateString();
+                    const tomorrow = new Date(now);
+                    tomorrow.setDate(now.getDate() + 1);
+                    const tomorrowDate = tomorrow.toDateString();
 
-                if (startDate === today) {
-                  label = now < startTime ? "Live Today" : "Live Now";
-                } else if (startDate === tomorrowDate) {
-                  label = "Live Tomorrow";
+                    if (startDate === today) {
+                      label = now < startTime ? "Live Today" : "Live Now";
+                    } else if (startDate === tomorrowDate) {
+                      label = "Live Tomorrow";
+                    }
+                  }
                 }
-              }
-            }
 
-                        return (
-                            <Card
-                                key={product.id || product.name}
-                                className=" shadow-lg cursor-pointer hover:shadow-xl transition duration-300 border rounded-lg overflow-hidden"
-                                onClick={() => handleViewProduct(product.id)}
-                            >
-
-                                <div className="w-full h-80 relative">
-                                    <img
-                                        src={product.imageUrl || "/placeholder-image.jpg"}
-                                        alt={product.name || "Product Image"}
-                                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                                    />
-                                </div>
-
-                                <CardContent className="p-4 space-y-2">
-                                    <h3
-                                        style={{fontFamily: "var(--font-playfair)", color: "var(--chart-2)"}}
-                                        className="text-xl font-semibold "
-                                    >
-                                        {product.name}
-                                    </h3>
-                                    {label && (
-                                        <p
-                                            className="text-sm text-gray-600"
-                                            style={{fontFamily: "var(--font-roboto)"}}
-                                        >
-                                            {label}
-                                        </p>
-                                    )}
-                                    <p
-                                        className="text-base text-gray-700 line-clamp-2"
-                                        style={{fontFamily: "var(--font-roboto)"}}
-                                    >
-                                        {product.description.split(".")[0]}...
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
-                </div>
-                {showButton && (
-                    <div className="mt-6 flex justify-center">
-                        <button
-                            onClick={() => toggleSection(status)}
-                            className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-300 px-4 py-2 rounded-md transition"
-                        >
-                            <span className="text-white">{isExpanded ? "Show Less" : "Show More"}</span>
-                            {isExpanded ? (
-                                <FaAngleUp className="text-white" />
-                            ) : (
-                                <FaAngleDown className="text-white" />
-                            )}
-                        </button>
+                return (
+                  <Card
+                    key={product.id || product.name}
+                    className=" shadow-lg cursor-pointer hover:shadow-xl transition duration-300 border rounded-lg overflow-hidden"
+                    onClick={() => handleViewProduct(product.id)}
+                  >
+                    <div className="w-full h-80 relative">
+                      <img
+                        src={product.imageUrl || "/placeholder-image.jpg"}
+                        alt={product.name || "Product Image"}
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                      />
                     </div>
-                )}
+
+                    <CardContent className="p-4 space-y-2">
+                      <h3
+                        style={{
+                          fontFamily: "var(--font-playfair)",
+                          color: "var(--chart-2)",
+                        }}
+                        className="text-xl font-semibold "
+                      >
+                        {product.name}
+                      </h3>
+                      {label && (
+                        <p
+                          className="text-sm text-gray-600"
+                          style={{ fontFamily: "var(--font-roboto)" }}
+                        >
+                          {label}
+                        </p>
+                      )}
+                      <p
+                        className="text-base text-gray-700 line-clamp-2"
+                        style={{ fontFamily: "var(--font-roboto)" }}
+                      >
+                        {product.description.split(".")[0]}...
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
+            {showButton && (
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={() => toggleSection(status)}
+                  className="flex items-center space-x-2 bg-[#008080] hover:bg-[#008080] px-4 py-2 rounded-md transition"
+                >
+                  <span className="text-white">
+                    {isExpanded ? "Show Less" : "Show More"}
+                  </span>
+                  {isExpanded ? (
+                    <FaAngleUp className="text-white" />
+                  ) : (
+                    <FaAngleDown className="text-white" />
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
         );
     };
 
     return (
-        <div className="container mx-auto px-4 pt-5 mt-20">
-            <AnimatedImage />
+      <div className="container mx-auto px-4 pt-5">
+        <AnimatedImage />
 
-            <section className="p-6">
-                <h2
-                    className="text-dark text-2xl font-bold mb-4"
-                    style={{ fontFamily: "var(--font-baskerville)" }}
-                >
-                    UPCOMING EVENTS
-                </h2>
-                {renderProducts(getProductsByStatus("SCHEDULED"), "SCHEDULED")}
-            </section>
+        <section className="p-6">
+          <h2
+            className="text-[#FFA500] text-2xl font-bold mb-4"
+            style={{ fontFamily: "var(--font-playfair)" }}
+          >
+            UPCOMING EVENTS
+          </h2>
+          {renderProducts(getProductsByStatus("SCHEDULED"), "SCHEDULED")}
+        </section>
 
-            <section className="p-6">
-                <h2
-                    className="text-dark text-2xl font-bold mb-4"
-                    style={{ fontFamily: "var(--font-baskerville)" }}
-                >
-                    LIVE EVENTS
-                </h2>
-                {renderProducts(getProductsByStatus("LIVE"), "LIVE")}
-            </section>
+        <section className="p-6">
+          <h2
+            className="text-[#FFA400] text-2xl font-bold mb-4"
+            style={{ fontFamily: "var(--font-playfair)" }}
+          >
+            LIVE EVENTS
+          </h2>
+          {renderProducts(getProductsByStatus("LIVE"), "LIVE")}
+        </section>
 
-            <section className="p-6">
-                <h2
-                    className="text-red-800 text-xl font-semibold mb-4"
-                    style={{ fontFamily: "var(--font-baskerville)" }}
-                >
-                    CLOSED EVENTS
-                </h2>
-                {renderProducts(getProductsByStatus("CLOSED"), "CLOSED")}
-            </section>
-        </div>
+        <section className="p-6">
+          <h2
+            className="text-red-800 text-xl font-semibold mb-4"
+            style={{ fontFamily: "var(--font-playfair)" }}
+          >
+            CLOSED EVENTS
+          </h2>
+          {renderProducts(getProductsByStatus("CLOSED"), "CLOSED")}
+        </section>
+      </div>
     );
 };
 

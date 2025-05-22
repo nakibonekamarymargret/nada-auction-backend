@@ -56,7 +56,7 @@ function AboutUsPage() {
               Join our community and take part in exciting auctions
             </p>
             <Link to={"/register"}>
-              <button className=" w-fit bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-primary/90 transition flex items-center gap-2 text-base">
+              <button className=" w-fit bg-[#008080] text-white px-6 py-2 rounded-md hover:bg-[#008080] transition flex items-center gap-2 text-base">
                 Join Us Now
                 <span>
                   <FaCircleArrowRight className="text-lg" />

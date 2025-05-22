@@ -216,7 +216,7 @@ const ViewProduct = () => {
       case "SCHEDULED":
         return {
           text: "SCHEDULED",
-          className: "bg-blue-500 text-md font-bold",
+          className: "bg-[#008080] text-md font-bold",
         };
       default:
         return {
@@ -252,19 +252,19 @@ const ViewProduct = () => {
 
   if (auction.status === "SCHEDULED") {
     actionButton = (
-        <button
-            onClick={() => navigate(`/approve/${product.id}`)}
-            className=" pointer bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
-        >
-          Get approved to bid
-        </button>
+      <button
+        onClick={() => navigate(`/approve/${product.id}`)}
+        className=" pointer bg-[#008080] hover:bg-[#008080] text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+      >
+        Get approved to bid
+      </button>
     );
   } else if (auction.status === "LIVE") {
     actionButton = (
-        <div className="">
-          <button
-              onClick={() => navigate(`/approve/${product.id}`)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+      <div className="">
+        <button
+          onClick={() => navigate(`/approve/${product.id}`)}
+          className="bg-[#008080] pointer hover:bg-[#008080] text-white font-bold py-2 px-4 rounded transition-colors duration-200"
         >
           Get approved to Bid
         </button>
@@ -293,10 +293,9 @@ const ViewProduct = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 bg-white shadow-md rounded-lg mt-24">
+    <div className="container mx-auto px-4 py-6 bg-white shadow-md rounded-lg ">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        {/* Left Side: Badge + Product Name */}
         <div className="flex items-center gap-3">
           <Badge
             className={auctionStatusDisplay.className}
@@ -345,9 +344,9 @@ const ViewProduct = () => {
           disabled={isLoadingWatchlist}
           className={`flex items-center gap-1 px-3 py-1 rounded-full border ${
             isWatchlisted
-              ? "bg-red-100 text-red-600 border-red-300"
-              : "text-gray-600 border-gray-300"
-          } hover:bg-red-50 transition-colors duration-200`}
+              ? "bg-red-300 text-red-600 border-red-300"
+              : "text-white-600 border-gray-300"
+          } hover:bg-grey-50 transition-colors duration-200`}
         >
           {isWatchlisted ? <FaHeart size={16} /> : <CiHeart size={20} />}
           {isWatchlisted ? "Saved" : "Save"}
@@ -378,14 +377,14 @@ const ViewProduct = () => {
               Current Highest Bid:{" "}
               <span className="text-green-600">
                 {product.highestPrice
-                    ? `$${product.highestPrice.toFixed(2)}`
-                    : "No bids yet"}
+                  ? `$${product.highestPrice.toFixed(2)}`
+                  : "No bids yet"}
               </span>
             </p>
 
             <button
               onClick={toggleDetails}
-              className="text-blue-600 hover:underline text-md mt-1 block"
+              className="text-[#008080] hover:underline text-md mt-1 block"
             >
               <span style={{ fontFamily: "var(--font-tenor)" }}>
                 {showDetails ? "Hide full details" : "Show full details"}

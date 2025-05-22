@@ -37,8 +37,10 @@ const BidTimer = ({ initialSecondsLeft }) => {
 
   return (
     <div className="flex flex-col items-center mt-4">
-      <div className="w-90 bg-gray-800 text-white rounded-full py-3 px-6 text-xl font-tenor flex items-center justify-center gap-1 mb-2">
-        <span>⏳ Last Chance to Bid:</span>
+      <div className="w-90 bg-gray-700 text-white rounded-full py-3 px-6 text-xl font-tenor flex items-center justify-center gap-1 mb-2">
+        <span style={{ fontFamily: "var(----font-inter)" }}>
+          ⏳ Last Chance to Bid:
+        </span>
         <span className="text-yellow-400">{formatTime(secondsLeft)}</span>
       </div>
     </div>
