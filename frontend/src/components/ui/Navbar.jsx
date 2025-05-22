@@ -13,7 +13,7 @@ const Navbar = () => {
       !!localStorage.getItem("token")
   );
   const [searchTerm, setSearchTerm] = useState("");
-  const [auctions, setAuctions] = useState([]);
+  const [, setAuctions] = useState([]);
   const [isSearchIconVisible, setIsSearchIconVisible] = useState(false); // New state to control search icon visibility
 
   const isLoginPage = location.pathname === "/login";
@@ -82,12 +82,13 @@ const Navbar = () => {
         {/* Logo */}
         <h2
           onClick={() => navigate("/")}
-          className="text-3xl font-bold text-black cursor-pointer"
+          className="text-3xl font-bold text-[#008080] cursor-pointer
+             border-2 border-[#008080] rounded-full
+             px-4 py-2 inline-block" // Added styles for border and padding
         >
-          NADA
+          NAD<span className="text-[#FFA500]">A</span>
         </h2>
 
-        {/* Centered Search Bar & Icon: Only show on home page */}
         {location.pathname === "/" && (
           <div className="flex-grow flex justify-center items-center relative">
             {/* Search Bar for larger screens */}

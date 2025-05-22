@@ -185,7 +185,7 @@ const Home = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 pt-5">
+        <div className="container mx-auto px-4 pt-5 mt-20">
             <AnimatedImage />
 
             <section className="p-6">
