@@ -191,7 +191,7 @@ const Navbar = () => {
                 className="px-4 py-2 text-md font-semibold text-[#008080] rounded hover:text-[#009181] transition flex items-center gap-1"
                 style={{ fontFamily: "'var(--font-playfair)'" }}
               >
-                <CiLogin />
+                <CiLogin size={24} />
                 Login
               </button>
               <button
@@ -200,7 +200,7 @@ const Navbar = () => {
                 ] transition flex items-center gap-1"
                 style={{ fontFamily: "'var(--font-playfair)'" }}
               >
-                <FaUserPlus />
+                <FaUserPlus size={24} />
                 Register
               </button>
             </div>

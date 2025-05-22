@@ -427,7 +427,8 @@ const AdminDashboard = () => {
 
   return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full ">
+        
           <AppSidebar />
           <main className="flex-1 overflow-y-auto">
             <div className="nav flex items-center justify-between p-4 rounded-lg mb-6 shadow w-full">

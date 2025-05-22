@@ -75,10 +75,10 @@ function AppSidebar() {
 
   return (
     <Sidebar className="flex flex-col h-full justify-between">
-      <SidebarContent className="flex flex-col h-full justify-between">
-        <div>
+      <SidebarContent className="flex flex-col h-full justify-between bg-[#008080] text-white">
+        <div className="">
           <SidebarGroup>
-            <SidebarGroupLabel>NADA EAuctioning</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-xl text-white">NADA EAuctioning</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {items.map((item) => (
